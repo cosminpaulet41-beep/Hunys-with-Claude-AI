@@ -1,0 +1,52 @@
+plugins {
+    id 'com.android.application'
+}
+
+// Build number from GitHub Actions, so every new APK installs over the previous one.
+def buildNumber = (System.getenv('GITHUB_RUN_NUMBER') ?: '1') as Integer
+
+android {
+    namespace 'ro.hunys.viermelestelar'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'ro.hunys.viermelestelar'
+        minSdk 21
+        targetSdk 34
+        versionCode buildNumber
+        versionName "1.${buildNumber}"
+    }
+
+    // A fixed key kept in the repository: updates install over older versions without
+    // uninstalling. It only signs this open source game.
+    signingConfigs {
+        shared {
+            storeFile file('viermele-stelar.keystore')
+            storePassword 'hunys-viermele'
+            keyAlias 'viermele'
+            keyPassword 'hunys-viermele'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.shared
+        }
+        debug {
+            signingConfig signingConfigs.shared
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+// The game itself lives one folder up (viermele-stelar/index.html); copy it into the app.
+def copyGame = tasks.register('copyGame', Copy) {
+    from('../../index.html')
+    into('src/main/assets')
+}
+tasks.named('preBuild') { dependsOn copyGame }

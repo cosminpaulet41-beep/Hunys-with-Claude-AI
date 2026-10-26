@@ -158,6 +158,46 @@ h1.title span{color:var(--mint)}
 .bchips{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
 .bchip{display:flex;align-items:center;gap:6px;height:32px;padding:0 12px 0 8px;border-radius:999px;background:var(--inset);border:1px solid var(--line2);font-size:13px;font-weight:700}
 .btn.again{height:56px;border:0;border-radius:16px;background:var(--mint);color:var(--mint-ink);font-weight:700;font-size:18px}
+/* compact start menu */
+.menu-screen{background:rgba(5,8,18,.38)}
+.menuwrap{box-sizing:border-box;min-height:100%;display:flex;align-items:center;justify-content:center;padding:calc(16px + var(--st)) max(16px, calc(12px + var(--sr))) calc(16px + var(--sb)) max(16px, calc(12px + var(--sl)))}
+.menucard{box-sizing:border-box;width:100%;max-width:330px;padding:14px;border-radius:20px;background:rgba(16,22,44,.94);border:1px solid var(--line);box-shadow:0 20px 50px rgba(0,0,0,.45);display:flex;flex-direction:column;gap:12px}
+.menucard .dust{height:34px;padding:0 12px 0 9px;font-size:13px;gap:6px}
+.menucard .dust svg{width:16px;height:16px}
+.menucard .seg button{height:30px;min-width:40px;padding:0 10px;font-size:12px}
+.brand{display:flex;align-items:center;gap:10px}
+.logo{width:78px;height:auto;flex:none}
+.menucard h1.title{font-size:25px;text-align:left;margin:0;line-height:1.05}
+.menucard .sub{font-size:12px;text-align:left;margin:4px 0 0}
+.menucard .form{gap:6px}
+.menucard .flbl{font-size:10px}
+.menucard .input{height:42px;font-size:15px;border-radius:12px}
+.menucard .speeds{gap:5px}
+.menucard .speeds button{height:44px;font-size:11px;gap:1px;border-radius:10px}
+.menucard .btn{height:42px;font-size:14px;border-radius:12px}
+.menucard .btn svg{width:18px;height:18px}
+.menucard .btn.primary{height:48px;font-size:17px;border-radius:14px}
+.menucard .foot{margin-top:0;font-size:11px}
+/* compact game over and pause cards */
+.modal{box-sizing:border-box;padding:calc(16px + var(--st)) 16px calc(16px + var(--sb))}
+.modal .mcard{width:100%;max-width:310px;margin:auto;padding:16px 14px 14px;gap:10px;border-radius:20px}
+.modal .mcard h2{font-size:22px}
+#over .reason{font-size:14px;margin-top:-2px}
+#over .reason svg{width:16px;height:16px}
+#over .tip{font-size:12px;line-height:1.4}
+#over .big{padding:8px 12px 10px;border-radius:14px}
+#over .big .k{font-size:11px}
+#over .big .v{font-size:36px}
+#over .rec{height:22px;font-size:11px;margin-top:2px}
+#over .stats{gap:8px}
+#over .stat{padding:7px 10px;border-radius:12px}
+#over .stat .k{font-size:10px}
+#over .stat .v{font-size:17px;margin-top:0}
+#over .stat .v svg{width:16px;height:16px}
+#over .bchip{height:26px;font-size:11px;padding:0 10px 0 6px}
+#over .bchip svg{width:16px;height:16px}
+.modal .btn.again{height:46px;font-size:16px;border-radius:14px}
+.modal .btn{height:40px;font-size:13px;border-radius:12px}
 @media (prefers-reduced-motion: reduce){.notice,#bite.show{animation:none}}
 @media (min-width:700px) and (min-height:500px){.board{width:190px;font-size:12px}.brow{height:17px}}
 </style>
@@ -187,13 +227,13 @@ h1.title span{color:var(--mint)}
   <button id="boostBtn" data-i18n-aria="boost"><svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L4.5 13.5H11L10 22l8.5-11.5H12z" fill="#6EF2B0"></path></svg></button>
 </div>
 
-<div id="menu" class="screen">
-  <div class="col">
+<div id="menu" class="screen menu-screen">
+  <div class="menuwrap"><div class="menucard">
     <div class="toprow">
       <div class="dust"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z" fill="#FFC857"></path></svg><span class="num" data-dust>0</span></div>
       <div class="seg"><button data-lang="ro" aria-pressed="true">RO</button><button data-lang="en" aria-pressed="false">EN</button></div>
     </div>
-    <svg class="hero" viewBox="0 0 350 300" role="img" data-i18n-aria="heroAria">
+    <div class="brand"><svg class="logo" viewBox="10 20 335 280" role="img" data-i18n-aria="heroAria">
       <g stroke-opacity=".25" stroke-width="5"><circle cx="40" cy="40" r="3" fill="#FFC857" stroke="#FFC857"></circle><circle cx="122" cy="28" r="2.5" fill="#6FC8FF" stroke="#6FC8FF"></circle><circle cx="318" cy="42" r="3" fill="#FF7AC6" stroke="#FF7AC6"></circle><circle cx="334" cy="236" r="3" fill="#FFC857" stroke="#FFC857"></circle><circle cx="20" cy="150" r="2.5" fill="#6EF2B0" stroke="#6EF2B0"></circle><circle cx="100" cy="214" r="2.5" fill="#6FC8FF" stroke="#6FC8FF"></circle></g>
       <circle cx="70" cy="70" r="11" fill="#C9CEDD"></circle><circle cx="66" cy="67" r="2.6" fill="#A9AFC2"></circle><circle cx="74" cy="74" r="2" fill="#A9AFC2"></circle>
       <ellipse cx="175" cy="150" rx="120" ry="26" transform="rotate(-18 175 150)" fill="none" stroke="#9C84FF" stroke-opacity=".5" stroke-width="3"></ellipse>
@@ -202,22 +242,21 @@ h1.title span{color:var(--mint)}
       <g fill="none"><path d="M 28 236 C 80 292, 214 300, 272 236 C 318 186, 312 112, 262 86" stroke="#000" stroke-opacity=".35" stroke-width="30" stroke-linecap="round" transform="translate(0 5)"></path><path d="M 28 236 C 80 292, 214 300, 272 236 C 318 186, 312 112, 262 86" stroke="#3ED39A" stroke-width="26" stroke-linecap="round"></path><path d="M 28 236 C 80 292, 214 300, 272 236 C 318 186, 312 112, 262 86" stroke="#8CF7C4" stroke-width="26" stroke-dasharray="10 12"></path><path d="M 28 236 C 80 292, 214 300, 272 236 C 318 186, 312 112, 262 86" stroke="#FFFFFF" stroke-opacity=".3" stroke-width="7" stroke-linecap="round" transform="translate(-2 -5)"></path></g>
       <circle cx="262" cy="86" r="17" fill="#8CF7C4" stroke="#3ED39A" stroke-width="3"></circle><circle cx="259.9" cy="77" r="5.5" fill="#fff"></circle><circle cx="253.5" cy="89.4" r="5.5" fill="#fff"></circle><circle cx="258.3" cy="76.2" r="2.8" fill="#0A0F1F"></circle><circle cx="251.9" cy="88.6" r="2.8" fill="#0A0F1F"></circle>
     </svg>
-    <h1 class="title" data-i18n-html="titleHtml"></h1>
-    <p class="sub" data-i18n="subtitle"></p>
-    <div class="spacer"></div>
+    <div><h1 class="title" data-i18n-html="titleHtml"></h1>
+    <p class="sub" data-i18n="subtitle"></p></div></div>
     <div class="form">
       <label class="flbl" for="nameInput" data-i18n="yourName"></label>
       <input id="nameInput" class="input" type="text" maxlength="14" autocomplete="off" spellcheck="false">
-      <span class="flbl" id="speedLbl" style="margin-top:8px" data-i18n="speed"></span>
+      <span class="flbl" id="speedLbl" style="margin-top:4px" data-i18n="speed"></span>
       <div class="speeds" role="radiogroup" aria-labelledby="speedLbl" id="speedsMenu"></div>
-      <button id="playBtn" class="btn primary" style="margin-top:10px"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="#062014"></path></svg><span data-i18n="play"></span></button>
+      <button id="playBtn" class="btn primary" style="margin-top:6px"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="#062014"></path></svg><span data-i18n="play"></span></button>
       <div class="row2" style="margin-top:2px">
         <button class="btn" id="skinsBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EEF2FF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.8-1.7 1.7-1.7h2A4.5 4.5 0 0 0 21 10.7C21 6.4 17 3 12 3z"></path><circle cx="7.5" cy="11" r="1.2" fill="#EEF2FF"></circle><circle cx="10.5" cy="7" r="1.2" fill="#EEF2FF"></circle><circle cx="15" cy="7.5" r="1.2" fill="#EEF2FF"></circle></svg><span data-i18n="skins"></span></button>
         <button class="btn" id="settingsBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EEF2FF" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h11M19 17h1"></path><circle cx="15" cy="7" r="2"></circle><circle cx="9" cy="12" r="2"></circle><circle cx="17" cy="17" r="2"></circle></svg><span data-i18n="settings"></span></button>
       </div>
     </div>
     <div class="foot"><span><span data-i18n="record"></span>: <strong class="num" id="recordVal">0</strong></span><span>Hunys with Claude AI · open source</span></div>
-  </div>
+  </div></div>
 </div>
 
 <div id="skins" class="screen" hidden>
@@ -305,17 +344,18 @@ const STR = {
     crownOther: '<span class="hl">{name}</span> poartă coroana', crownYou: '<span class="hl">Porți coroana!</span> Praf de stele în plus',
     moonT: 'Lună înghițită!', moonD: 'Magnet: +25% rază de colectare', planetT: 'Planetă înghițită!', planetD: 'Scut: rezisti la o lovitură',
     tooSmall: 'Ai nevoie de lungime {n} ca să o înghiți', shieldUsed: 'Scutul te-a salvat!',
-    biteT: 'Mușcătură!', biteD: '{name} a pierdut {n}', bittenT: '{name} te-a mușcat!', bittenD: 'Ai pierdut {n}',
+    eatT: 'Ai mâncat un vierme!', eatD: '{name} a lăsat energie în urmă', deathEaten: 'Te-a mâncat {name}',
+    tipEaten: 'Sfat: viermii mai mari decât tine te mănâncă dacă te ating. Ferește-te de ei până crești.',
     holeT: 'Gaura neagră te-a aruncat departe!', holeD: 'Ai pierdut {n}', boostShort: 'Prea scurt pentru turbo (ai nevoie de {n}+)',
     magnet: 'Magnet', shield: 'Scut',
     over: 'Joc terminat', deathMeteor: 'Ai lovit un meteorit', deathWorm: 'Te-ai lovit de {name}', deathEdge: 'Ai ieșit din arenă',
     tipMeteor: 'Sfat: când vezi ținta roșie pe un meteorit, ești pe drumul lui. Schimbă direcția sau folosește turbo.',
-    tipWorm: 'Sfat: capul tău nu are voie să atingă corpul altui vierme. Când ești de 1,5 ori mai mare, îl poți mușca.',
+    tipWorm: 'Sfat: dacă te lovești de un vierme mai mare, pierzi. Pe cei mai mici decât tine îi poți mânca.',
     tipEdge: 'Sfat: marginea arenei e linia roșie. Harta din stânga sus îți arată cât de aproape ești de ea.',
     maxLen: 'Lungime maximă', newRecord: 'Record nou!', kills: 'Eliminări', swallowed: 'Corpuri înghițite', survived: 'Timp supraviețuit', dust: 'Praf de stele',
     moons: 'Luni ×{n}', planets: 'Planete ×{n}', again: 'Joacă din nou', menu: 'Meniu', paused: 'Pauză', resume: 'Continuă', mainMenu: 'Meniu principal',
     equipped: 'Echipat', all: 'Toate', owned: 'Deținute ({n})', pickOwned: 'Deținut · Alege', crownLock: 'Ia coroana de {n} ori ({c}/{n})', need: 'Îți mai trebuie {n}',
-    earnHint: 'Câștigi praf de stele mâncând, mușcând și purtând coroana.',
+    earnHint: 'Câștigi praf de stele mâncând, eliminând viermi și purtând coroana.',
     language: 'Limbă', names: 'Arată numele viermilor', vibration: 'Vibrații', back: 'Înapoi',
     controlsHint: 'Pe telefon: trage cu degetul în stânga ecranului ca să conduci, ține apăsat fulgerul pentru turbo. Pe calculator: mouse-ul conduce, click sau Space pentru turbo.'
   },
@@ -327,17 +367,18 @@ const STR = {
     crownOther: '<span class="hl">{name}</span> wears the crown', crownYou: '<span class="hl">You wear the crown!</span> Bonus stardust',
     moonT: 'Moon swallowed!', moonD: 'Magnet: +25% pickup range', planetT: 'Planet swallowed!', planetD: 'Shield: survive one hit',
     tooSmall: 'You need length {n} to swallow it', shieldUsed: 'Your shield saved you!',
-    biteT: 'Bite!', biteD: '{name} lost {n}', bittenT: '{name} bit you!', bittenD: 'You lost {n}',
+    eatT: 'You ate a worm!', eatD: '{name} left energy behind', deathEaten: '{name} ate you',
+    tipEaten: 'Tip: worms bigger than you eat you if they touch you. Keep away from them until you grow.',
     holeT: 'The black hole flung you away!', holeD: 'You lost {n}', boostShort: 'Too short to boost (you need {n}+)',
     magnet: 'Magnet', shield: 'Shield',
     over: 'Game over', deathMeteor: 'You hit a meteor', deathWorm: 'You crashed into {name}', deathEdge: 'You left the arena',
     tipMeteor: 'Tip: when a meteor shows the red target, you are heading into it. Turn away or boost.',
-    tipWorm: 'Tip: your head must not touch another worm’s body. Once you are 1.5 times bigger, you can bite it instead.',
+    tipWorm: 'Tip: crashing into a bigger worm ends your run. Worms smaller than you can be eaten.',
     tipEdge: 'Tip: the arena edge is the red line. The map at the top left shows how close you are.',
     maxLen: 'Best length', newRecord: 'New record!', kills: 'Eliminations', swallowed: 'Bodies swallowed', survived: 'Time survived', dust: 'Stardust',
     moons: 'Moons ×{n}', planets: 'Planets ×{n}', again: 'Play again', menu: 'Menu', paused: 'Paused', resume: 'Resume', mainMenu: 'Main menu',
     equipped: 'Equipped', all: 'All', owned: 'Owned ({n})', pickOwned: 'Owned · Equip', crownLock: 'Win the crown {n} times ({c}/{n})', need: 'You need {n} more',
-    earnHint: 'You earn stardust by eating, biting and wearing the crown.',
+    earnHint: 'You earn stardust by eating, taking out worms and wearing the crown.',
     language: 'Language', names: 'Show worm names', vibration: 'Vibration', back: 'Back',
     controlsHint: 'On a phone: drag on the left side of the screen to steer, hold the lightning button to boost. On a computer: the mouse steers, click or Space to boost.'
   }
@@ -376,7 +417,7 @@ const FOOD_WEIGHTS = [3, 3, 3, 3, 2, 1];
 const SPEED_MUL = [0.6, 1, 1.3, 1.6];
 
 const ARENA_R = 2200, FOOD_TARGET = 2800, BOT_COUNT = 34;
-const BASE_SPEED = 80, BOOST_MUL = 1.8, MIN_BOOST = 12, BITE_RATIO = 1.5, BITE_MIN = 40;
+const BASE_SPEED = 80, BOOST_MUL = 1.8, MIN_BOOST = 12;
 const MOON_NEED = 25, PLANET_NEED = 60;
 
 const rOf = w => 5 + 0.22 * Math.sqrt(w.score);
@@ -427,8 +468,8 @@ function makeWorm(o) {
   const w = {
     id: nextId++, name: o.name, isPlayer: !!o.isPlayer, base: o.base, band: o.band, stars: !!o.stars,
     x: o.x, y: o.y, angle: o.angle ?? rand(0, TAU), targetAngle: 0, score: o.score ?? 10, pts: [], alive: true, boosting: false,
-    trimmed: 0, kills: 0, bites: 0, moons: 0, planets: 0, magnetT: 0, shield: 0, invuln: o.isPlayer ? 2.5 : 1.2,
-    think: rand(0, 0.15), wander: rand(0, TAU), boostAcc: 0, biteCd: {}, maxScore: o.score ?? 10, wantBoost: false, bbox: null
+    trimmed: 0, kills: 0, moons: 0, planets: 0, magnetT: 0, shield: 0, invuln: o.isPlayer ? 2.5 : 1.2,
+    think: rand(0, 0.15), wander: rand(0, TAU), boostAcc: 0, maxScore: o.score ?? 10, wantBoost: false, hunter: Math.random() < 0.35
   };
   w.targetAngle = w.angle;
   const n = targetN(w.score), sp = spacingOf(w), r = rOf(w);
@@ -527,11 +568,11 @@ function dropBody(w, keep) {
   for (let i = 0; i < pts.length; i += step) { const p = pts[i]; addFood(p.x + rand(-jr, jr), p.y + rand(-jr, jr), r, v, Math.random() < 0.5 ? w.band : w.base, false); }
 }
 
-function killWorm(w, reason, by) {
+function killWorm(w, reason, by, keep) {
   if (!w.alive) return;
   w.alive = false; w.boosting = false;
   W.deaths[reason] = (W.deaths[reason] || 0) + 1;
-  dropBody(w);
+  dropBody(w, keep);
   if (by && by.alive) by.kills++;
   if (w.isPlayer) {
     run.reason = reason; run.killer = by ? by.name : ''; run.diedAt = performance.now();
@@ -549,17 +590,17 @@ function teleport(w) {
   if (w.isPlayer) notifyCard('hole', t('holeT'), t('holeD', { n: fmt(lost) }));
 }
 
-function bite(a, b, idx) {
-  if ((a.biteCd[b.id] || 0) > W.t) return;
-  a.biteCd[b.id] = W.t + 0.6;
-  const removed = b.pts.splice(Math.max(2, idx));
-  const frac = removed.length / (removed.length + b.pts.length);
-  const lost = Math.max(1, Math.floor(b.score * frac));
-  dropBody({ pts: removed, score: lost, band: b.band, base: b.base }, 0.75);
-  b.score -= lost; a.bites++;
-  if (a.isPlayer) showBite(t('biteT'), t('biteD', { name: esc(b.name), n: fmt(lost) }));
-  else if (b.isPlayer) showBite(t('bittenT', { name: esc(a.name) }), t('bittenD', { n: fmt(lost) }));
-  if (b.score < 10) killWorm(b, 'worm', a);
+function useShield(w) {
+  if (w.shield <= 0) return false;
+  w.shield--; w.invuln = 1.5; w.angle += Math.PI; w.targetAngle = w.angle;
+  if (w.isPlayer) notifyPill('<span class="hl">' + t('shieldUsed') + '</span>', 'gold');
+  return true;
+}
+// The bigger worm always wins a touch: the smaller one dies and leaves its energy behind.
+function eatWorm(a, b) {
+  if (useShield(b)) return;
+  if (a.isPlayer) showBite(t('eatT'), t('eatD', { name: esc(b.name) }));
+  killWorm(b, b.isPlayer ? 'eaten' : 'worm', a, 0.85);
 }
 
 function collide(w) {
@@ -578,7 +619,7 @@ function collide(w) {
   if (w.invuln > 0) return;
   for (const m of W.meteors) {
     if (dist2(w.x, w.y, m.x, m.y) < (m.rock + hr) ** 2) {
-      if (w.shield > 0) { w.shield--; w.invuln = 1.5; w.angle += Math.PI; w.targetAngle = w.angle; if (w.isPlayer) notifyPill('<span class="hl">' + t('shieldUsed') + '</span>', 'gold'); return; }
+      if (useShield(w)) return;
       killWorm(w, 'meteor', null); return;
     }
   }
@@ -590,9 +631,8 @@ function collide(w) {
     if (dist2(w.x, w.y, p.x, p.y) < rr * rr) { hit = { o, i }; return false; }
   });
   if (hit) {
-    if (w.score >= BITE_RATIO * hit.o.score && w.score >= BITE_MIN) bite(w, hit.o, hit.i);
-    else if (w.shield > 0) { w.shield--; w.invuln = 1.5; w.angle += Math.PI; w.targetAngle = w.angle; if (w.isPlayer) notifyPill('<span class="hl">' + t('shieldUsed') + '</span>', 'gold'); }
-    else killWorm(w, 'worm', hit.o);
+    if (w.score > hit.o.score) eatWorm(w, hit.o);
+    else if (!useShield(w)) killWorm(w, 'worm', hit.o);
   }
 }
 
@@ -609,7 +649,7 @@ function rayDanger(b, a, L) {
     segGrid.pairs(x, y, r * 2 + 14, (o, i) => {
       if (o === b || !o.alive) return;
       const p = o.pts[i]; if (!p) return;
-      if (dist2(x, y, p.x, p.y) < (r * 1.3 + rOf(o) + 8) ** 2 && !(b.score >= BITE_RATIO * o.score && b.score >= BITE_MIN)) { hits++; if (hits > 2) return false; }
+      if (o.score >= b.score && dist2(x, y, p.x, p.y) < (r * 1.3 + rOf(o) + 8) ** 2) { hits++; if (hits > 2) return false; }
     });
     danger += Math.min(hits, 2) * 0.9 * wt;
   }
@@ -620,10 +660,10 @@ function botGoal(b) {
   const dc = Math.hypot(b.x, b.y);
   if (dc > ARENA_R * 0.82) return Math.atan2(-b.y, -b.x);
   for (const h of W.holes) { const d2 = dist2(b.x, b.y, h.x, h.y); if (d2 < (h.R * 0.8) ** 2) return Math.atan2(b.y - h.y, b.x - h.x); }
-  if (b.score > 70) {
-    let prey = null, best = 300 * 300;
-    for (const o of W.worms) { if (o === b || !o.alive || o.score * 1.65 > b.score || o.invuln > 0) continue; const d2 = dist2(b.x, b.y, o.x, o.y); if (d2 < best) { best = d2; prey = o; } }
-    if (prey && Math.random() < 0.7) { const lead = 40 + rOf(prey) * 4; if (best < 170 * 170 && Math.random() < 0.35) b.wantBoost = true; return Math.atan2(prey.y + Math.sin(prey.angle) * lead - b.y, prey.x + Math.cos(prey.angle) * lead - b.x); }
+  if (b.hunter && b.score > 40) {
+    let prey = null, best = 240 * 240;
+    for (const o of W.worms) { if (o === b || !o.alive || o.score * 1.3 > b.score || o.score < 20 || o.invuln > 0) continue; const d2 = dist2(b.x, b.y, o.x, o.y); if (d2 < best) { best = d2; prey = o; } }
+    if (prey) { const lead = 40 + rOf(prey) * 4; if (best < 170 * 170 && Math.random() < 0.35) b.wantBoost = true; return Math.atan2(prey.y + Math.sin(prey.angle) * lead - b.y, prey.x + Math.cos(prey.angle) * lead - b.x); }
   }
   for (const c of W.bodies) if (c.alive && b.score >= c.need && dist2(b.x, b.y, c.x, c.y) < 420 * 420) return Math.atan2(c.y - b.y, c.x - b.x);
   let tgt = null, bestS = 0;
@@ -675,17 +715,24 @@ boostBtn.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropag
 const boostUp = () => { input.boostBtn = false; };
 boostBtn.addEventListener('pointerup', boostUp); boostBtn.addEventListener('pointercancel', boostUp); boostBtn.addEventListener('lostpointercapture', boostUp);
 boostBtn.addEventListener('contextmenu', e => e.preventDefault());
+// Keyboard and TV-remote keys (the remote's arrows steer, its OK button boosts while playing).
+const keyOf = e => e.code || e.key || '';
+const isLeft = k => k === 'ArrowLeft' || k === 'KeyA';
+const isRight = k => k === 'ArrowRight' || k === 'KeyD';
+const isBoostKey = (k, e) => k === 'Space' || k === 'ArrowUp' || k === 'KeyW' || (state === 'play' && (e.key === 'Enter' || k === 'Enter' || k === 'NumpadEnter'));
 addEventListener('keydown', e => {
   if (e.target && e.target.tagName === 'INPUT') return;
-  if (e.code === 'ArrowLeft' || e.code === 'KeyA') input.keyL = true;
-  else if (e.code === 'ArrowRight' || e.code === 'KeyD') input.keyR = true;
-  else if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') { input.keyBoost = true; if (state === 'play') e.preventDefault(); }
-  else if ((e.code === 'Escape' || e.code === 'KeyP') && (state === 'play' || state === 'pause')) togglePause();
+  const k = keyOf(e);
+  if (isLeft(k)) input.keyL = true;
+  else if (isRight(k)) input.keyR = true;
+  else if (isBoostKey(k, e)) { input.keyBoost = true; if (state === 'play') e.preventDefault(); }
+  else if ((k === 'Escape' || k === 'KeyP') && (state === 'play' || state === 'pause')) togglePause();
 });
 addEventListener('keyup', e => {
-  if (e.code === 'ArrowLeft' || e.code === 'KeyA') input.keyL = false;
-  else if (e.code === 'ArrowRight' || e.code === 'KeyD') input.keyR = false;
-  else if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') input.keyBoost = false;
+  const k = keyOf(e);
+  if (isLeft(k)) input.keyL = false;
+  else if (isRight(k)) input.keyR = false;
+  else if (isBoostKey(k, e) || e.key === 'Enter') input.keyBoost = false;
 });
 app.addEventListener('contextmenu', e => { if (state === 'play') e.preventDefault(); });
 
@@ -1127,12 +1174,12 @@ function showGameOver() {
   if (state !== 'dead') return;
   state = 'over';
   const p = player, maxLen = Math.floor(p.maxScore);
-  const dust = Math.floor(maxLen / 8) + p.kills * 15 + p.bites * 5 + Math.floor(run.crownTime) + Math.floor(run.maxCombo / 5);
+  const dust = Math.floor(maxLen / 8) + p.kills * 15 + Math.floor(run.crownTime) + Math.floor(run.maxCombo / 5);
   const isRec = maxLen > save.record;
   save.dust += dust; if (isRec) save.record = maxLen; persist();
-  const reason = run.reason === 'meteor' ? t('deathMeteor') : run.reason === 'edge' ? t('deathEdge') : t('deathWorm', { name: run.killer || '?' });
-  $('overReason').textContent = reason;
-  $('overTip').textContent = run.reason === 'meteor' ? t('tipMeteor') : run.reason === 'edge' ? t('tipEdge') : t('tipWorm');
+  const R = run.reason, who = run.killer || '?';
+  $('overReason').textContent = R === 'meteor' ? t('deathMeteor') : R === 'edge' ? t('deathEdge') : R === 'eaten' ? t('deathEaten', { name: who }) : t('deathWorm', { name: who });
+  $('overTip').textContent = R === 'meteor' ? t('tipMeteor') : R === 'edge' ? t('tipEdge') : R === 'eaten' ? t('tipEaten') : t('tipWorm');
   $('overLen').textContent = fmt(maxLen); $('overRec').hidden = !isRec;
   $('overKills').textContent = fmt(p.kills); $('overBodies').textContent = fmt(p.moons + p.planets);
   const sec = Math.floor(run.time); $('overTime').textContent = Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
@@ -1153,6 +1200,14 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 resize(); makePatterns(); newWorld(false); applyI18n(); showScreen('menu');
+// Android back button (used by the app wrapper): returns true when the game handled it.
+window.__androidBack = () => {
+  const open = ['skins', 'settings'].find(id => !$(id).hidden);
+  if (open && (state === 'menu' || state === 'over')) { $(open).querySelector('[data-back]').click(); return true; }
+  if (state === 'play' || state === 'pause') { togglePause(); return true; }
+  if (state === 'over' || state === 'dead') { toMenu(); return true; }
+  return false;
+};
 window.__game = { get state() { return state; }, get player() { return player; }, get world() { return W; }, startGame, killPlayer: r => player && killWorm(player, r || 'meteor', null) };
 requestAnimationFrame(frame);
 })();

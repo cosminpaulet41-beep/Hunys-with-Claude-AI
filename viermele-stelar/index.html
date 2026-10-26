@@ -439,6 +439,7 @@ const STR = {
     controlsHint: 'Pe telefon: trage cu degetul în stânga ecranului ca să conduci, ține apăsat fulgerul pentru turbo. Când iei o armă apare butonul de foc deasupra fulgerului. Pe calculator: mouse-ul conduce, click sau Space pentru turbo, F sau click dreapta pentru foc.',
     diff: 'Dificultate', diffs: ['Ușor', 'Normal', 'Greu'],
     online: 'Joacă online', onlineSub: 'Până la 4 jucători, plus boți. Gazda alege viteza și dificultatea. Numărul de boți îl poate schimba oricine din cameră, și în timpul jocului, din pauză.',
+    savedBy: 'Scutul lui {name} l-a salvat',
     myCodeLbl: 'Codul camerei tale', newCode: 'Cod nou', errTaken: 'Codul {code} e folosit acum de altă cameră. Alege alt cod.',
     botsLbl: 'Boți în cameră', botsHostLbl: 'Boți în camera ta', botsNote: 'Se schimbă pentru toți cei din cameră.', botsLess: 'Mai puțini boți', botsMore: 'Mai mulți boți',
     botsSet: 'Boți în cameră: <span class="hl">{n}</span> · schimbat de {name}',
@@ -488,6 +489,7 @@ const STR = {
     controlsHint: 'On a phone: drag on the left side of the screen to steer, hold the lightning button to boost. When you pick up a weapon, a fire button appears above the lightning button. On a computer: the mouse steers, click or Space to boost, F or right-click to fire.',
     diff: 'Difficulty', diffs: ['Easy', 'Normal', 'Hard'],
     online: 'Play online', onlineSub: 'Up to 4 players, plus bots. The host picks the speed and difficulty. Anyone in the room can change the number of bots, even mid-game from the pause menu.',
+    savedBy: '{name}’s shield saved it',
     myCodeLbl: 'Your room code', newCode: 'New code', errTaken: 'Code {code} is being used by another room right now. Pick another code.',
     botsLbl: 'Bots in the room', botsHostLbl: 'Bots in your room', botsNote: 'Changes it for everyone in the room.', botsLess: 'Fewer bots', botsMore: 'More bots',
     botsSet: 'Bots in the room: <span class="hl">{n}</span> · changed by {name}',
@@ -826,13 +828,15 @@ function showEvent(ev) {
   else if (ev.e === 'hitStun') notifyPill(pkSvg('stun', 13) + '<span>' + t('hitStun', { name: esc(ev.n) }) + '</span>', 'gold');
   else if (ev.e === 'hitRepel') notifyPill(pkSvg('repel', 13) + '<span>' + t('hitRepel', { name: esc(ev.n) }) + '</span>', 'gold');
   else if (ev.e === 'blocked') notifyPill(pkSvg('shield', 13) + '<span>' + t('blocked', { name: esc(ev.n) }) + '</span>');
+  else if (ev.e === 'saved') notifyPill(pkSvg('shield', 13) + '<span>' + t('savedBy', { name: esc(ev.n) }) + '</span>');
   else if (ev.e === 'bots') { notices.querySelectorAll('.bots').forEach(e => e.remove()); notifyPill('<span>' + t('botsSet', { n: ev.n, name: esc(ev.by || '?') }) + '</span>', 'bots'); }
   else if (ev.e === 'hitBlocked') notifyPill(pkSvg('shield', 13) + '<span>' + t('hitBlocked', { name: esc(ev.n) }) + '</span>');
 }
 
 /* ---------------- Pickups & weapons ---------------- */
 // Bots never pick up weapons, and on Easy they leave every pickup for you.
-function canTake(w, p) { if (w.isPlayer || w.human) return true; return diffCfg().botPick && !PICKUPS[p.type].weapon; }
+// Bots only grab boosts and double energy, never weapons, shields or ghosts; on Easy they take nothing.
+function canTake(w, p) { if (w.isPlayer || w.human) return true; return diffCfg().botPick && (p.type === 'turbo' || p.type === 'x2'); }
 function takePickup(w, p) {
   p.alive = false; p.back = W.t + rand(12, 20); W.pkVer++;
   const k = p.type;
@@ -934,7 +938,7 @@ function eatWorm(a, b, idx) {
   if ((a.biteCd || 0) > W.t) return;
   const headZone = Math.max(3, Math.ceil(rOf(b) * 2.6 / spacingOf(b)));
   if (idx <= headZone) {
-    if (useShield(b)) return;
+    if (useShield(b)) { tell(a, { e: 'saved', n: b.name }); return; }
     tell(a, { e: 'eat', n: b.name });
     killWorm(b, (b.isPlayer || b.remote) ? 'eaten' : 'worm', a, 0.85);
     return;
@@ -972,10 +976,11 @@ function collide(w) {
     }
   }
   let hit = null;
-  segGrid.pairs(w.x, w.y, hr + 16, (o, i) => {
+  segGrid.pairs(w.x, w.y, hr + 30, (o, i) => {
     if (o === w || !o.alive || o.invuln > 0) return;
-    const p = o.pts[i]; if (!p) return;
-    const rr = hr + rOf(o) * 0.95;
+    const head = i < 0, p = head ? o : o.pts[i]; if (!p) return;
+    // heads touch as soon as the drawn heads touch; bodies a little later
+    const rr = head ? (r + rOf(o)) * 1.3 * 0.92 : hr + rOf(o) * 0.95;
     if (dist2(w.x, w.y, p.x, p.y) < rr * rr) { hit = { o, i }; return false; }
   });
   if (hit) {
@@ -996,7 +1001,7 @@ function rayDanger(b, a, L) {
     let hits = 0;
     segGrid.pairs(x, y, r * 2 + 14, (o, i) => {
       if (o === b || !o.alive) return;
-      const p = o.pts[i]; if (!p) return;
+      const p = i < 0 ? o : o.pts[i]; if (!p) return;
       if (o.score >= b.score && dist2(x, y, p.x, p.y) < (r * 1.3 + rOf(o) + 8) ** 2) { hits++; if (hits > 2) return false; }
     });
     danger += Math.min(hits, 2) * 0.9 * wt;
@@ -1167,7 +1172,7 @@ function drawWorm(w, time) {
   if (w.stars) { ctx.setLineDash([0.1, r * 1.7]); ctx.lineCap = 'round'; ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = Math.max(1, r * 0.35); ctx.stroke(path); }
   ctx.setLineDash([]); ctx.lineDashOffset = 0; ctx.lineCap = 'round';
   ctx.save(); ctx.translate(-r * 0.18, -r * 0.32); ctx.strokeStyle = 'rgba(255,255,255,0.28)'; ctx.lineWidth = Math.max(1.1, r * 0.52); ctx.stroke(path); ctx.restore();
-  if (w.shield > 0) { ctx.strokeStyle = 'rgba(180,156,255,0.85)'; ctx.lineWidth = Math.max(1.2, r * 0.25); ctx.setLineDash([r * 0.6, r * 0.5]); ctx.beginPath(); ctx.arc(w.x, w.y, hr * 1.55, 0, TAU); ctx.stroke(); ctx.setLineDash([]); }
+  if (w.shield > 0) { ctx.fillStyle = 'rgba(180,156,255,0.12)'; ctx.beginPath(); ctx.arc(w.x, w.y, hr * 1.55, 0, TAU); ctx.fill(); ctx.strokeStyle = 'rgba(180,156,255,0.95)'; ctx.lineWidth = Math.max(1.8, r * 0.32); ctx.setLineDash([r * 0.6, r * 0.5]); ctx.beginPath(); ctx.arc(w.x, w.y, hr * 1.55, 0, TAU); ctx.stroke(); ctx.setLineDash([]); }
   ctx.fillStyle = w.band; ctx.strokeStyle = w.base; ctx.lineWidth = r * 0.24; ctx.beginPath(); ctx.arc(w.x, w.y, hr, 0, TAU); ctx.fill(); ctx.stroke();
   const a = w.angle, fx = Math.cos(a), fy = Math.sin(a), px = -fy, py = fx, er = r * 0.46, lx = Math.cos(w.targetAngle), ly = Math.sin(w.targetAngle);
   for (const s of [1, -1]) {
@@ -1455,7 +1460,7 @@ function step(dt) {
     b.x += b.vx * dt; b.y += b.vy * dt; if (b.x * b.x + b.y * b.y > (ARENA_R - 200) ** 2) { b.vx = -b.vx; b.vy = -b.vy; }
   }
   segGrid.clear();
-  for (const w of W.worms) { if (!w.alive) continue; const pts = w.pts; for (let i = 0; i < pts.length; i += 2) segGrid.add(pts[i].x, pts[i].y, w, i); }
+  for (const w of W.worms) { if (!w.alive) continue; const pts = w.pts; for (let i = 0; i < pts.length; i += 2) segGrid.add(pts[i].x, pts[i].y, w, i); segGrid.add(w.x, w.y, w, -1); }
   foodGrid.clear();
   for (const f of W.food) if (f.alive) foodGrid.add(f.x, f.y, f);
   const thinkT = diffCfg().think;

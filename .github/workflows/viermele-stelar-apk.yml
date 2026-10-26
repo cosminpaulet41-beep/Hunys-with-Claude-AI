@@ -33,6 +33,10 @@ jobs:
       - name: Name the APK
         run: cp viermele-stelar/android/app/build/outputs/apk/release/app-release.apk ViermeleStelar.apk
 
+      # Android's Bluetooth refuses .apk files but accepts .zip, so ship a zipped copy for sending by Bluetooth.
+      - name: Zip a copy for Bluetooth
+        run: zip -j ViermeleStelar-bluetooth.zip ViermeleStelar.apk
+
       - uses: actions/upload-artifact@v4
         with:
           name: ViermeleStelar-apk
@@ -44,8 +48,12 @@ jobs:
           tag_name: viermele-stelar-build-${{ github.run_number }}
           name: Viermele Stelar · build ${{ github.run_number }}
           make_latest: true
-          files: ViermeleStelar.apk
+          files: |
+            ViermeleStelar.apk
+            ViermeleStelar-bluetooth.zip
           body: |
             **RO:** Descarcă `ViermeleStelar.apk` de mai jos și deschide-l pe telefon ca să-l instalezi (permite instalarea din surse necunoscute dacă îți cere). Versiunile noi se instalează peste cea veche, fără să pierzi progresul.
+            Ca să-l trimiți altui telefon prin Bluetooth, trimite `ViermeleStelar-bluetooth.zip` (Bluetooth-ul de pe Android nu acceptă fișiere .apk). Pe celălalt telefon deschide arhiva din aplicația Fișiere, extrage-o și apasă pe APK.
 
             **EN:** Download `ViermeleStelar.apk` below and open it on your phone to install (allow installs from unknown sources if asked). New versions install over the old one and keep your progress.
+            To send it to another phone by Bluetooth, send `ViermeleStelar-bluetooth.zip` instead (Android's Bluetooth won't accept .apk files). On the other phone, open the zip in the Files app, extract it and tap the APK.

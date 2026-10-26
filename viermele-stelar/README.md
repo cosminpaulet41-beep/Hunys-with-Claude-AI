@@ -16,7 +16,7 @@
 
 Un joc cu viermi în spațiu, pentru telefon și calculator. Mănânci scântei ca să crești (cele mari valorează triplu), îi muști pe cei mai mici decât tine, aduni scuturi și arme, porți coroana când ești pe primul loc și eviți meteoriții, găurile negre și marginea arenei.
 
-**Aplicația Android:** descarcă `ViermeleStelar.apk` de la [Releases](https://github.com/cosminpaulet41-beep/Hunys-with-Claude-AI/releases/latest) și instalează-l. Versiunile noi se instalează peste cea veche. APK-ul îl construiește GitHub automat din folderul `android/` de fiecare dată când jocul se schimbă. Merge și pe proiectoare sau televizoare cu Android: săgețile telecomenzii conduc, iar OK dă turbo.
+**Aplicația Android:** descarcă `ViermeleStelar.apk` de la [Releases](https://github.com/cosminpaulet41-beep/Hunys-with-Claude-AI/releases/latest) și instalează-l. Versiunile noi se instalează peste cea veche. APK-ul îl construiește GitHub automat din folderul `android/` de fiecare dată când jocul se schimbă. Merge și pe proiectoare sau televizoare cu Android: săgețile telecomenzii conduc, iar OK dă turbo. Ca să-l trimiți altui telefon prin Bluetooth, trimite `ViermeleStelar-bluetooth.zip` de la aceeași pagină: Bluetooth-ul de pe Android nu acceptă fișiere .apk, dar acceptă .zip. Pe celălalt telefon deschizi arhiva în aplicația Fișiere, o extragi și apeși pe APK.
 
 **În browser:** deschide `index.html` în orice browser. Funcționează fără internet, iar fonturile sunt incluse în fișier.
 
@@ -47,7 +47,7 @@ Prin arenă sunt împrăștiate obiecte care reapar la 12–20 de secunde după 
 - **Fantomă** (alb): 8 secunde nu te poate mânca nimeni și treci prin orice.
 - **Energie ×2** (albastru): 20 de secunde, tot ce mănânci valorează dublu.
 
-Arma țintește singură: trage spre un vierme mai mare care te urmărește (chiar dacă e în spatele tău) sau spre cel din fața ta. Dacă iei aceeași armă din nou primești încă 3 focuri (maximum 6), iar o armă nouă o înlocuiește pe cea veche. Boții nu folosesc arme.
+Arma țintește singură: trage spre un vierme mai mare care te urmărește (chiar dacă e în spatele tău) sau spre cel din fața ta. Dacă iei aceeași armă din nou primești încă 3 focuri (maximum 6), iar o armă nouă o înlocuiește pe cea veche. Boții nu folosesc arme și nu iau scuturi sau fantome din arenă: pe Normal și Greu iau doar turbo și energie ×2. Dacă un vierme e salvat de scut, vezi un mesaj, iar scutul se vede ca un cerc violet în jurul capului.
 
 **Dificultate**
 - **Ușor:** 16 boți mici și mai lenți, care nu vânează și nu iau obiectele. Crești cu 50% mai repede, pornești cu un scut, sunt doar 5 meteoriți și 32 de obiecte prin arenă.
@@ -60,7 +60,7 @@ Progresul (praful de stele, recordul și skin-urile) se salvează doar în brows
 
 A space worm game for phones and computers. Eat sparks to grow (big ones are worth three), bite worms smaller than you, collect shields and weapons, wear the crown when you lead, and avoid meteors, black holes and the arena edge.
 
-**Android app:** download `ViermeleStelar.apk` from [Releases](https://github.com/cosminpaulet41-beep/Hunys-with-Claude-AI/releases/latest) and install it. New versions install over the old one. GitHub builds the APK automatically from the `android/` folder whenever the game changes. It also runs on Android projectors and TVs: the remote's arrows steer and OK boosts.
+**Android app:** download `ViermeleStelar.apk` from [Releases](https://github.com/cosminpaulet41-beep/Hunys-with-Claude-AI/releases/latest) and install it. New versions install over the old one. GitHub builds the APK automatically from the `android/` folder whenever the game changes. It also runs on Android projectors and TVs: the remote's arrows steer and OK boosts. To send it to another phone by Bluetooth, send `ViermeleStelar-bluetooth.zip` from the same page: Android's Bluetooth won't accept .apk files but does accept .zip. On the other phone, open the zip in the Files app, extract it and tap the APK.
 
 **In a browser:** open `index.html` in any browser. It works offline, and the fonts are bundled in the file.
 
@@ -91,7 +91,7 @@ Pickups are scattered around the arena and come back 12–20 seconds after someo
 - **Ghost** (white): nothing can eat you for 8 seconds and you pass through everything.
 - **Energy ×2** (blue): everything you eat counts double for 20 seconds.
 
-Weapons aim by themselves: at a bigger worm chasing you (even from behind) or at the worm in front of you. Picking up the same weapon again adds 3 shots (up to 6), and a different weapon replaces the old one. Bots don’t use weapons.
+Weapons aim by themselves: at a bigger worm chasing you (even from behind) or at the worm in front of you. Picking up the same weapon again adds 3 shots (up to 6), and a different weapon replaces the old one. Bots don’t use weapons and don’t take shields or ghosts from the arena: on Normal and Hard they only take boosts and double energy. When a shield saves a worm you get a message, and a shield shows as a violet ring around the head.
 
 **Difficulty**
 - **Easy:** 16 small, slower bots that never hunt and leave pickups for you. You grow 50% faster, start with a shield, and there are only 5 meteors and 32 pickups.

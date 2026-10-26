@@ -14,13 +14,13 @@
 
 ## Română
 
-Un joc cu viermi în spațiu, pentru telefon și calculator. Mănânci scântei ca să crești, îi muști pe cei mai mici decât tine, aduni scuturi și arme, porți coroana când ești pe primul loc și eviți meteoriții, găurile negre și marginea arenei.
+Un joc cu viermi în spațiu, pentru telefon și calculator. Mănânci scântei ca să crești (cele mari valorează triplu), îi muști pe cei mai mici decât tine, aduni scuturi și arme, porți coroana când ești pe primul loc și eviți meteoriții, găurile negre și marginea arenei.
 
 **Aplicația Android:** descarcă `ViermeleStelar.apk` de la [Releases](https://github.com/cosminpaulet41-beep/Hunys-with-Claude-AI/releases/latest) și instalează-l. Versiunile noi se instalează peste cea veche. APK-ul îl construiește GitHub automat din folderul `android/` de fiecare dată când jocul se schimbă. Merge și pe proiectoare sau televizoare cu Android: săgețile telecomenzii conduc, iar OK dă turbo.
 
 **În browser:** deschide `index.html` în orice browser. Funcționează fără internet, iar fonturile sunt incluse în fișier.
 
-**Online:** butonul „Joacă online” te pune într-o cameră cu până la 4 jucători, plus boți. Poți intra la oricine are o cameră deschisă, poți crea o cameră privată sau poți intra cu un cod de 4 litere. Telefonul gazdei rulează boții și arena, iar viteza și dificultatea sunt cele alese de gazdă. Telefoanele comunică printr-un serviciu public gratuit de mesaje MQTT (HiveMQ, cu EMQX și Mosquitto ca rezervă), deci nu ai nevoie de server propriu. Online merge în aplicație și în `index.html`, dar nu în pagina de previzualizare de pe claude.ai. Toți cei din cameră au nevoie de aceeași versiune a jocului (actualizează aplicația pe fiecare telefon).
+**Online:** butonul „Joacă online” te pune într-o cameră cu până la 4 jucători, plus boți. Poți intra la oricine are o cameră deschisă, poți crea o cameră privată sau poți intra cu un cod de 4 litere. Telefonul gazdei rulează boții și arena, iar viteza și dificultatea sunt cele alese de gazdă. Codul camerei tale rămâne același de fiecare dată când creezi camera, până îl schimbi tu: îl poți scrie singur (4 litere sau cifre) sau poți apăsa butonul de lângă el pentru un cod nou. Prietenii tăi intră mereu cu același cod, iar căsuța de cod ține minte ultimul cod folosit. Numărul de boți din cameră (de la 0 la 50) îl alegi pe ecranul online și îl poate schimba oricine din cameră și în timpul jocului, din pauză. Telefoanele comunică printr-un serviciu public gratuit de mesaje MQTT (HiveMQ, cu EMQX și Mosquitto ca rezervă), deci nu ai nevoie de server propriu. Online merge în aplicație și în `index.html`, dar nu în pagina de previzualizare de pe claude.ai. Toți cei din cameră au nevoie de aceeași versiune a jocului (actualizează aplicația pe fiecare telefon).
 
 **Control**
 - Telefon: trage cu degetul în stânga ecranului ca să conduci. Ține apăsat fulgerul pentru turbo. Când ai o armă, apare butonul de foc deasupra fulgerului.
@@ -58,13 +58,13 @@ Progresul (praful de stele, recordul și skin-urile) se salvează doar în brows
 
 ## English
 
-A space worm game for phones and computers. Eat sparks to grow, bite worms smaller than you, collect shields and weapons, wear the crown when you lead, and avoid meteors, black holes and the arena edge.
+A space worm game for phones and computers. Eat sparks to grow (big ones are worth three), bite worms smaller than you, collect shields and weapons, wear the crown when you lead, and avoid meteors, black holes and the arena edge.
 
 **Android app:** download `ViermeleStelar.apk` from [Releases](https://github.com/cosminpaulet41-beep/Hunys-with-Claude-AI/releases/latest) and install it. New versions install over the old one. GitHub builds the APK automatically from the `android/` folder whenever the game changes. It also runs on Android projectors and TVs: the remote's arrows steer and OK boosts.
 
 **In a browser:** open `index.html` in any browser. It works offline, and the fonts are bundled in the file.
 
-**Online:** “Play online” puts you in a room with up to 4 players, plus bots. You can join anyone with an open room, create a private room, or join with a 4-letter code. The host’s phone runs the bots and the arena, and the host’s speed and difficulty apply. Phones talk through a free public MQTT message service (HiveMQ, with EMQX and Mosquitto as backups), so no server of your own is needed. Online play works in the app and in `index.html`, but not in the claude.ai preview page. Everyone in a room needs the same version of the game (update the app on every phone).
+**Online:** “Play online” puts you in a room with up to 4 players, plus bots. You can join anyone with an open room, create a private room, or join with a 4-letter code. The host’s phone runs the bots and the arena, and the host’s speed and difficulty apply. Your room code stays the same every time you create your room, until you change it: type your own (4 letters or digits) or tap the button next to it for a new one. Your friends always join with the same code, and the code box remembers the last code used. You pick the number of bots in the room (0 to 50) on the online screen, and anyone in the room can change it mid-game from the pause menu. Phones talk through a free public MQTT message service (HiveMQ, with EMQX and Mosquitto as backups), so no server of your own is needed. Online play works in the app and in `index.html`, but not in the claude.ai preview page. Everyone in a room needs the same version of the game (update the app on every phone).
 
 **Controls**
 - Phone: drag on the left side of the screen to steer. Hold the lightning button to boost. When you have a weapon, a fire button appears above the lightning button.

@@ -221,6 +221,15 @@ h1.title span{color:var(--mint)}
 .netstatus{margin:0;min-height:18px;font-size:12px;line-height:1.45;color:var(--muted);text-align:center}
 .netstatus.err{color:var(--coral)}
 .btn[disabled]{opacity:.55;cursor:default}
+.botsrow{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:48px;box-sizing:border-box;padding:4px 5px 4px 12px;border-radius:12px;background:var(--inset);border:1px solid var(--line2);text-align:left}
+.botsrow .bl{font-size:13px;font-weight:500;line-height:1.3}
+.stepper{display:flex;align-items:center;gap:4px;flex:none}
+.stepper button{width:38px;height:38px;padding:0;border-radius:10px;border:1px solid var(--line);background:var(--solid);font-size:20px;font-weight:700;line-height:1;display:flex;align-items:center;justify-content:center}
+.stepper button[disabled]{opacity:.35;cursor:default}
+.menucard .input.mycode{width:86px;height:38px;padding:0 4px;border-radius:10px;font-size:16px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;text-align:center}
+.stepper .bv{min-width:34px;text-align:center;font-size:17px;font-weight:700}
+#pauseBots{display:flex;flex-direction:column;gap:6px}
+#pauseBots .tip{font-size:11px;line-height:1.35}
 @media (prefers-reduced-motion: reduce){.notice,#bite.show,#fireBtn.fresh{animation:none}}
 @media (min-width:700px) and (min-height:500px){.board{width:190px;font-size:12px}.brow{height:17px}}
 </style>
@@ -326,6 +335,8 @@ h1.title span{color:var(--mint)}
     <p class="osub" data-i18n="onlineSub"></p>
     <button id="quickBtn" class="btn primary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#062014" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9M12 3c-2.5 2.6-3.8 5.6-3.8 9s1.3 6.4 3.8 9"></path></svg><span data-i18n="quick"></span></button>
     <button id="createBtn" class="btn"><span data-i18n="create"></span></button>
+    <div class="botsrow"><label class="bl" for="myCodeInput" data-i18n="myCodeLbl"></label><div class="stepper"><input id="myCodeInput" class="input mycode" type="text" maxlength="4" autocomplete="off" spellcheck="false" autocapitalize="characters"><button id="newCodeBtn" data-i18n-aria="newCode"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EEF2FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.3-4.9L4 8M4 4v4h4M4 13a8 8 0 0 0 14.3 4.9L20 16M20 20v-4h-4"></path></svg></button></div></div>
+    <div class="botsrow"><span class="bl" data-i18n="botsHostLbl"></span><div class="stepper"><button data-bots="online" data-dir="-1" data-i18n-aria="botsLess">−</button><span class="bv num" id="botsOnline">20</span><button data-bots="online" data-dir="1" data-i18n-aria="botsMore">+</button></div></div>
     <label class="flbl" for="codeInput" data-i18n="codeLbl"></label>
     <div class="coderow"><input id="codeInput" class="input" type="text" maxlength="4" autocomplete="off" spellcheck="false" autocapitalize="characters"><button id="joinCodeBtn" class="btn"><span data-i18n="join"></span></button></div>
     <p id="netStatus" class="netstatus" aria-live="polite"></p>
@@ -344,6 +355,10 @@ h1.title span{color:var(--mint)}
   <div class="mcard">
     <h2 data-i18n="paused"></h2>
     <p class="tip" id="pauseNote" data-i18n="onlineGoesOn" hidden></p>
+    <div id="pauseBots" hidden>
+      <div class="botsrow"><span class="bl" data-i18n="botsLbl"></span><div class="stepper"><button data-bots="room" data-dir="-1" data-i18n-aria="botsLess">−</button><span class="bv num" id="botsRoom">20</span><button data-bots="room" data-dir="1" data-i18n-aria="botsMore">+</button></div></div>
+      <p class="tip" data-i18n="botsNote"></p>
+    </div>
     <button class="btn again" id="resumeBtn"><span data-i18n="resume"></span></button>
     <button class="btn" id="quitBtn"><span data-i18n="mainMenu"></span></button>
   </div>
@@ -423,7 +438,10 @@ const STR = {
     language: 'Limbă', names: 'Arată numele viermilor', vibration: 'Vibrații', back: 'Înapoi',
     controlsHint: 'Pe telefon: trage cu degetul în stânga ecranului ca să conduci, ține apăsat fulgerul pentru turbo. Când iei o armă apare butonul de foc deasupra fulgerului. Pe calculator: mouse-ul conduce, click sau Space pentru turbo, F sau click dreapta pentru foc.',
     diff: 'Dificultate', diffs: ['Ușor', 'Normal', 'Greu'],
-    online: 'Joacă online', onlineSub: 'Până la 4 jucători, plus boți. Gazda camerei alege viteza și dificultatea.',
+    online: 'Joacă online', onlineSub: 'Până la 4 jucători, plus boți. Gazda alege viteza și dificultatea. Numărul de boți îl poate schimba oricine din cameră, și în timpul jocului, din pauză.',
+    myCodeLbl: 'Codul camerei tale', newCode: 'Cod nou', errTaken: 'Codul {code} e folosit acum de altă cameră. Alege alt cod.',
+    botsLbl: 'Boți în cameră', botsHostLbl: 'Boți în camera ta', botsNote: 'Se schimbă pentru toți cei din cameră.', botsLess: 'Mai puțini boți', botsMore: 'Mai mulți boți',
+    botsSet: 'Boți în cameră: <span class="hl">{n}</span> · schimbat de {name}',
     quick: 'Joacă cu oricine', create: 'Creează cameră privată', codeLbl: 'Ai un cod de cameră?', codePh: 'COD', join: 'Intră',
     stConnecting: 'Mă conectez…', stSearching: 'Caut o cameră liberă…', stJoining: 'Intru în camera {code}…',
     errConnect: 'Nu mă pot conecta la jocul online. Verifică internetul și încearcă din nou.',
@@ -469,7 +487,10 @@ const STR = {
     language: 'Language', names: 'Show worm names', vibration: 'Vibration', back: 'Back',
     controlsHint: 'On a phone: drag on the left side of the screen to steer, hold the lightning button to boost. When you pick up a weapon, a fire button appears above the lightning button. On a computer: the mouse steers, click or Space to boost, F or right-click to fire.',
     diff: 'Difficulty', diffs: ['Easy', 'Normal', 'Hard'],
-    online: 'Play online', onlineSub: 'Up to 4 players, plus bots. The room host picks the speed and difficulty.',
+    online: 'Play online', onlineSub: 'Up to 4 players, plus bots. The host picks the speed and difficulty. Anyone in the room can change the number of bots, even mid-game from the pause menu.',
+    myCodeLbl: 'Your room code', newCode: 'New code', errTaken: 'Code {code} is being used by another room right now. Pick another code.',
+    botsLbl: 'Bots in the room', botsHostLbl: 'Bots in your room', botsNote: 'Changes it for everyone in the room.', botsLess: 'Fewer bots', botsMore: 'More bots',
+    botsSet: 'Bots in the room: <span class="hl">{n}</span> · changed by {name}',
     quick: 'Play with anyone', create: 'Create a private room', codeLbl: 'Got a room code?', codePh: 'CODE', join: 'Join',
     stConnecting: 'Connecting…', stSearching: 'Looking for an open room…', stJoining: 'Joining room {code}…',
     errConnect: 'Can’t reach online play. Check your internet connection and try again.',
@@ -491,7 +512,7 @@ const fmt = n => String(Math.max(0, Math.floor(n))).replace(/\B(?=(\d{3})+(?!\d)
 
 /* ---------------- Saved progress (this browser only) ---------------- */
 const SAVE_KEY = 'viermele-stelar-v1';
-const save = { lang: '', name: '', speed: 1, diff: 1, dust: 0, record: 0, owned: ['aurora', 'cometa'], skin: 'aurora', crowns: 0, names: true, vibrate: true };
+const save = { lang: '', name: '', speed: 1, diff: 1, dust: 0, record: 0, owned: ['aurora', 'cometa'], skin: 'aurora', crowns: 0, names: true, vibrate: true, netBots: 20, roomCode: '', lastCode: '' };
 try { const s = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); if (s && typeof s === 'object') Object.assign(save, s); } catch (e) { /* storage unavailable */ }
 function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) { /* ignore */ } }
 if (!save.lang) save.lang = 'ro';
@@ -515,7 +536,7 @@ const FOOD_COLORS = ['#FFC857', '#6FC8FF', '#FF7AC6', '#6EF2B0', '#B49CFF', '#FF
 const FOOD_WEIGHTS = [3, 3, 3, 3, 2, 1];
 const SPEED_MUL = [0.6, 1, 1.3, 1.6];
 
-const ARENA_R = 2200, FOOD_TARGET = 2800;
+const ARENA_R = 2200, FOOD_TARGET = 5000;
 // Difficulty: how many bots, how many of them hunt, how fast they react and look ahead.
 // Easy: few small, slower bots that never hunt; you grow faster, start with a shield and find more pickups.
 const DIFF = [
@@ -578,6 +599,8 @@ const run = { time: 0, combo: 0, lastEat: -9, maxCombo: 0, gains: [], crownTime:
 
 function weightedColor() { let s = 0; for (const w of FOOD_WEIGHTS) s += w; let r = Math.random() * s; for (let i = 0; i < FOOD_WEIGHTS.length; i++) { r -= FOOD_WEIGHTS[i]; if (r <= 0) return FOOD_COLORS[i]; } return FOOD_COLORS[0]; }
 function randInArena(maxR) { const a = rand(0, TAU), r = Math.sqrt(Math.random()) * maxR; return { x: Math.cos(a) * r, y: Math.sin(a) * r }; }
+// Natural sparks: most are small, one in ten is a big one worth three.
+function addNatFood() { const p = randInArena(ARENA_R - 30); if (Math.random() < 0.1) addFood(p.x, p.y, rand(4, 4.8), 3, weightedColor(), true); else addFood(p.x, p.y, rand(2, 3.4), 1, weightedColor(), true); }
 function addFood(x, y, r, v, c, nat) { W.food.push({ id: ++W.foodSeq, x, y, r, v, c, nat, alive: true, life: nat ? 1e9 : 45, ph: rand(0, TAU) }); if (nat) W.natFood++; }
 
 function farFromHazards(x, y, margin) {
@@ -624,6 +647,33 @@ function spawnBot(first) {
   W.worms.push(b); return b;
 }
 
+// How many bots the arena keeps: the room's choice online, the difficulty's otherwise.
+function botTarget() { return NET.mode === 'host' ? NET.bots : diffCfg().bots; }
+let balAt = 0;
+function balanceBots(dt) {
+  balAt -= dt; if (balAt > 0) return; balAt = 0.25;
+  const target = botTarget(); let alive = 0;
+  for (const w of W.worms) if (w.alive && !w.isPlayer && !w.human) alive++;
+  const pend = W.respawns.length;
+  if (alive + pend < target) { for (let k = alive + pend; k < target; k++) W.respawns.push(W.t + rand(0.2, 2.5)); }
+  else if (alive + pend > target) {
+    W.respawns.length = Math.max(0, Math.min(pend, target - alive));
+    for (let k = 0; k < 4 && alive > target; k++, alive--) removeBot();
+  }
+}
+// Takes away the bot farthest from every human; it turns into energy.
+function removeBot() {
+  const humans = W.worms.filter(w => w.alive && (w.isPlayer || w.human));
+  let best = null, bestD = -1;
+  for (const b of W.worms) {
+    if (!b.alive || b.isPlayer || b.human) continue;
+    let d = 1e12; for (const h of humans) d = Math.min(d, dist2(b.x, b.y, h.x, h.y));
+    if (d > bestD) { bestD = d; best = b; }
+  }
+  if (!best) return;
+  best.alive = false; best.boosting = false; dropBody(best, 0.5);
+}
+
 function newWorld(withPlayer) {
   W = { worms: [], food: [], meteors: [], holes: [], bodies: [], pickups: [], shots: [], fx: [], pkVer: 0, natFood: 0, deadFood: 0, respawns: [], t: 0, deaths: {}, foodSeq: 0 };
   nextId = 1; player = null;
@@ -639,7 +689,7 @@ function newWorld(withPlayer) {
     const moon = i < 8, p = randInArena(ARENA_R - 300);
     W.bodies.push({ type: moon ? 'moon' : 'planet', x: p.x, y: p.y, r: moon ? 11 : 15, need: moon ? MOON_NEED : PLANET_NEED, vx: rand(-10, 10), vy: rand(-10, 10), alive: true, back: 0 });
   }
-  for (let i = 0; i < FOOD_TARGET; i++) { const p = randInArena(ARENA_R - 30); addFood(p.x, p.y, rand(2, 3.4), 1, weightedColor(), true); }
+  for (let i = 0; i < FOOD_TARGET; i++) addNatFood();
   // one of every kind first, then a weighted mix
   for (let i = 0; i < cfg.pickups; i++) { const p = { type: i < PK_TYPES.length ? PK_TYPES[i] : randomPickupType(), x: 0, y: 0, alive: true, back: 0, ph: rand(0, TAU) }; placePickup(p); W.pickups.push(p); }
   if (withPlayer) {
@@ -650,7 +700,7 @@ function newWorld(withPlayer) {
     player.shield = cfg.startShield;
     W.worms.push(player);
   }
-  for (let i = 0; i < cfg.bots; i++) spawnBot(true);
+  for (let i = 0, n = botTarget(); i < n; i++) spawnBot(true);
   if (cfg.maxBot >= 700 && !W.worms.some(w => !w.isPlayer && w.score > 700)) { const b = W.worms.find(w => !w.isPlayer); if (b) { b.score = rand(800, 1200); b.maxScore = b.score; } }
 }
 function placePickup(p) {
@@ -776,6 +826,7 @@ function showEvent(ev) {
   else if (ev.e === 'hitStun') notifyPill(pkSvg('stun', 13) + '<span>' + t('hitStun', { name: esc(ev.n) }) + '</span>', 'gold');
   else if (ev.e === 'hitRepel') notifyPill(pkSvg('repel', 13) + '<span>' + t('hitRepel', { name: esc(ev.n) }) + '</span>', 'gold');
   else if (ev.e === 'blocked') notifyPill(pkSvg('shield', 13) + '<span>' + t('blocked', { name: esc(ev.n) }) + '</span>');
+  else if (ev.e === 'bots') { notices.querySelectorAll('.bots').forEach(e => e.remove()); notifyPill('<span>' + t('botsSet', { n: ev.n, name: esc(ev.by || '?') }) + '</span>', 'bots'); }
   else if (ev.e === 'hitBlocked') notifyPill(pkSvg('shield', 13) + '<span>' + t('hitBlocked', { name: esc(ev.n) }) + '</span>');
 }
 
@@ -1420,10 +1471,11 @@ function step(dt) {
   let deadNow = 0;
   for (const f of W.food) { if (!f.alive) { deadNow++; continue; } if (!f.nat) { f.life -= dt; if (f.life <= 0) { f.alive = false; deadNow++; } } }
   if (deadNow > 300) W.food = W.food.filter(f => f.alive);
-  let spawn = Math.min(60, FOOD_TARGET - W.natFood);
-  while (spawn-- > 0) { const p = randInArena(ARENA_R - 30); addFood(p.x, p.y, rand(2, 3.4), 1, weightedColor(), true); }
+  let spawn = Math.min(120, FOOD_TARGET - W.natFood);
+  while (spawn-- > 0) addNatFood();
   // bots respawn
   for (let i = W.respawns.length - 1; i >= 0; i--) if (W.t >= W.respawns[i]) { W.respawns.splice(i, 1); spawnBot(false); }
+  balanceBots(dt);
   if (W.worms.length > 60) W.worms = W.worms.filter(w => w.alive || w.isPlayer);
   for (const s of W.shots) if (s.owner && !s.owner.alive) s.owner = null;
   // crown
@@ -1531,7 +1583,7 @@ const NET = {
   mode: 'solo', mq: null, cid: '', room: '', isPublic: false, hostCid: '', clients: new Map(), lobby: null, busy: false,
   myId: 0, speed: 1, lb: [], myRank: 1, humans: 1, mm: [], meta: new Map(), leaderId: 0, foods: new Map(), remotes: new Map(),
   lastPkt: 0, timeOff: 0, sendAcc: 0, annAcc: 0, inAcc: 0, lbAcc: 0, mmAcc: 0, bodyAcc: 0, myScore: 10, joinResolve: null, joinTimer: 0,
-  diff: 1, fireN: 0, fireAt: 0, fxOut: []
+  diff: 1, fireN: 0, fireAt: 0, fxOut: [], bots: 20, botsHold: 0
 };
 const inFrame = (() => { try { return window.top !== window; } catch (e) { return true; } })();
 
@@ -1551,6 +1603,7 @@ function netOnMessage(topic, text) {
   if (rest.startsWith('lobby/')) { if (NET.lobby && m && m.room) NET.lobby.set(m.room, Object.assign(m, { seen: performance.now() })); return; }
   if (rest.startsWith('gone/')) { const who = rest.slice(5); if (NET.mode === 'host') hostDropClient(who); else if (NET.mode === 'client' && who === NET.hostCid) netLost('host'); return; }
   const p = rest.split('/');
+  if (NET.probe && p[0] === 'r' && p[1] === NET.probe.code && p[2] === 'c' && p[3] === NET.cid) { if (m && m.t === 'taken') NET.probe.done(true); return; }
   if (p[0] !== 'r' || p[1] !== NET.room) return;
   if (NET.mode === 'host') {
     if (p[2] === 'join') hostOnJoin(m);
@@ -1593,6 +1646,7 @@ async function netQuick() {
     const rooms = [...NET.lobby.values()].filter(r => r.v === NET_V && r.open && r.n < 4 && now - r.seen < 5000).sort((a, b) => b.n - a.n);
     NET.lobby = null; NET.mq.unsub(T('lobby/+'));
     for (const r of rooms.slice(0, 3)) if ((await netJoin(r.room)) === 'ok') return;
+    if (await codeTaken(save.roomCode)) { setNetStatus(t('errTaken', { code: save.roomCode }), true); return; }
     netHost(true);
   } finally { NET.busy = false; setOnlineBusy(false); }
 }
@@ -1604,6 +1658,7 @@ async function netJoinCode(code) {
     setNetStatus(t('stConnecting'));
     if (!(await netConnect())) { setNetStatus(t(inFrame ? 'errBlocked' : 'errConnect'), true); return; }
     const res = await netJoin(code);
+    if (res === 'ok') { save.lastCode = code; persist(); }
     if (res !== 'ok') { setNetStatus(t(res === 'version' ? 'errVersion' : 'errNoRoom', { code }), true); netLeave(); }
   } finally { NET.busy = false; setOnlineBusy(false); }
 }
@@ -1612,8 +1667,21 @@ async function netCreate() {
   try {
     setNetStatus(t('stConnecting'));
     if (!(await netConnect())) { setNetStatus(t(inFrame ? 'errBlocked' : 'errConnect'), true); return; }
+    if (await codeTaken(save.roomCode)) { setNetStatus(t('errTaken', { code: save.roomCode }), true); return; }
     netHost(false);
   } finally { NET.busy = false; setOnlineBusy(false); }
+}
+const validCode = c => /^[A-Z0-9]{4}$/.test(c || '');
+// Asks the relay whether a room with this code is already running (its host answers).
+function codeTaken(code) {
+  return new Promise(res => {
+    let tm = 0;
+    const done = v => { clearTimeout(tm); NET.probe = null; try { NET.mq.unsub(T(`r/${code}/c/${NET.cid}`)); } catch (e) { /* ignore */ } res(v); };
+    NET.probe = { code, done };
+    NET.mq.sub(T(`r/${code}/c/${NET.cid}`));
+    tm = setTimeout(() => done(false), 1300);
+    setTimeout(() => { if (NET.probe) NET.mq.pub(T(`r/${code}/join`), JSON.stringify({ cid: NET.cid, probe: 1 })); }, 150);
+  });
 }
 function sendJoin(code) {
   const sk = SKINS.find(s => s.id === save.skin) || SKINS[0];
@@ -1632,7 +1700,7 @@ function netJoin(code) {
 
 /* -- host -- */
 function netHost(isPublic) {
-  NET.mode = 'host'; NET.isPublic = isPublic; NET.room = rid(4); NET.clients = new Map(); NET.hostCid = NET.cid; NET.annAcc = 0;
+  NET.mode = 'host'; NET.isPublic = isPublic; NET.room = validCode(save.roomCode) ? save.roomCode : rid(4); NET.clients = new Map(); NET.hostCid = NET.cid; NET.annAcc = 0; NET.bots = clamp(save.netBots ?? 20, 0, 50);
   for (const k of ['join', 'in/+', 'leave']) NET.mq.sub(T(`r/${NET.room}/${k}`));
   startGame();
   notifyPill(t('hostTip', { code: NET.room }), 'gold');
@@ -1641,6 +1709,7 @@ const okColor = c => (/^#[0-9a-fA-F]{6}$/.test(c) ? c : '#6EF2B0');
 function hostOnJoin(m) {
   if (!m || typeof m.cid !== 'string') return;
   const reply = o => NET.mq.pub(T(`r/${NET.room}/c/${m.cid}`), JSON.stringify(o));
+  if (m.probe) { reply({ t: 'taken' }); return; } // someone checking whether this code is free
   if (m.v !== NET_V) { reply({ t: 'err' }); return; }
   let c = NET.clients.get(m.cid);
   if (!c) {
@@ -1659,7 +1728,7 @@ function hostOnJoin(m) {
   }
   const w = c.worm;
   reply({
-    t: 'w', tm: r3(W.t), you: w.id, x: r1(w.x), y: r1(w.y), a: r3(w.angle), sp: save.speed, df: save.diff, room: NET.room, hc: NET.cid,
+    t: 'w', tm: r3(W.t), you: w.id, x: r1(w.x), y: r1(w.y), a: r3(w.angle), sp: save.speed, df: save.diff, bc: NET.bots, room: NET.room, hc: NET.cid,
     pk: W.pickups.map(p => PK_TYPES.indexOf(p.type)),
     holes: W.holes.map(h => [r1(h.x), r1(h.y), r1(h.R), h.core]),
     met: W.meteors.map(q => [r1(q.ax), r1(q.ay), r1(q.ring), r1(q.rock), r1(q.orbit), r3(q.a0), r3(q.av), r3(q.spin), q.poly.map(r3)]),
@@ -1668,7 +1737,9 @@ function hostOnJoin(m) {
   NET.sendAcc = 0; updateRoomPill();
 }
 function hostOnInput(cid, m) {
-  const c = NET.clients.get(cid); if (!c || !c.worm || !m) return;
+  const c = NET.clients.get(cid); if (!c || !m) return;
+  if (m.t === 'bots') { c.last = performance.now(); hostSetBots(+m.n, c.cid, c.name); return; }
+  if (!c.worm) return;
   c.last = performance.now();
   if (m.vw) { c.vw = clamp(+m.vw, 200, 1400); c.vh = clamp(+m.vh, 200, 1400); }
   const x = +m.x, y = +m.y; if (!isFinite(x) || !isFinite(y)) return;
@@ -1683,6 +1754,15 @@ function hostDropClient(cid) {
   if (c.worm && c.worm.alive) killWorm(c.worm, 'left', null);
   notifyPill(t('leftNote', { name: esc(c.name) }));
   updateRoomPill();
+}
+// Anyone in the room can change the number of bots; everyone else gets a note.
+function hostSetBots(n, byCid, byName) {
+  n = clamp(Math.round(n) || 0, 0, 50);
+  if (n === NET.bots) return;
+  NET.bots = n; refreshBotsUI();
+  const ev = { e: 'bots', n, by: byName };
+  for (const c of NET.clients.values()) if (c.cid !== byCid) c.events.push(ev);
+  if (byCid !== NET.cid) showEvent(ev);
 }
 function netQueue(w, ev) { const c = NET.clients.get(w.remote); if (c) c.events.push(ev); }
 function netTeleported(w) {
@@ -1748,7 +1828,7 @@ function hostSendTo(c, alive, ranks, mm, doB) {
   const fx = []; for (const f of NET.fxOut) if (inBox(f.x, f.y)) fx.push([Math.round(f.x), Math.round(f.y), PK_TYPES.indexOf(f.type), Math.round(f.s * 10)]);
   if (fx.length) m.fx = fx;
   if (c.events.length) { m.ev = c.events; c.events = []; }
-  if (alive) { const top = alive.slice(0, 5); top.forEach(needMeta); m.lb = top.map(w => [w.id, Math.round(w.score)]); m.rk = ranks.get(me) || 0; m.hn = 1 + NET.clients.size; m.ld = run.leader ? run.leader.id : 0; }
+  if (alive) { const top = alive.slice(0, 5); top.forEach(needMeta); m.lb = top.map(w => [w.id, Math.round(w.score)]); m.rk = ranks.get(me) || 0; m.hn = 1 + NET.clients.size; m.ld = run.leader ? run.leader.id : 0; m.bc = NET.bots; }
   if (mm) m.mm = mm;
   if (meta.length) m.meta = meta; if (ws.length) m.w = ws; if (nb.length) m.nb = nb; if (gone.length) m.wg = gone; if (fa.length) m.fa = fa; if (fr.length) m.fr = fr;
   NET.mq.pub(T(`r/${NET.room}/c/${c.cid}`), JSON.stringify(m));
@@ -1756,7 +1836,7 @@ function hostSendTo(c, alive, ranks, mm, doB) {
 
 /* -- guest -- */
 function clientStart(m) {
-  NET.mode = 'client'; NET.myId = m.you; NET.speed = clamp(m.sp | 0, 0, 3); NET.diff = clamp(m.df ?? 1, 0, 2); NET.hostCid = m.hc; NET.room = m.room; NET.fireN = 0;
+  NET.mode = 'client'; NET.myId = m.you; NET.speed = clamp(m.sp | 0, 0, 3); NET.diff = clamp(m.df ?? 1, 0, 2); NET.bots = m.bc ?? NET.bots; NET.hostCid = m.hc; NET.room = m.room; NET.fireN = 0;
   NET.mq.sub(T('gone/' + m.hc));
   NET.timeOff = m.tm - performance.now() / 1000;
   W = { worms: [], food: [], meteors: [], holes: [], bodies: [], pickups: [], shots: [], fx: [], pkVer: 0, natFood: 0, deadFood: 0, respawns: [], t: m.tm, deaths: {}, foodSeq: 0 };
@@ -1830,6 +1910,7 @@ function clientOnMsg(m) {
     }
   }
   if (m.mm) NET.mm = m.mm;
+  if (m.bc !== undefined && m.bc !== NET.bots && performance.now() > NET.botsHold) { NET.bots = m.bc; refreshBotsUI(); }
   if (m.ev) for (const ev of m.ev) clientEvent(ev);
 }
 function clientEvent(ev) {
@@ -1842,6 +1923,7 @@ function clientEvent(ev) {
   if (ev.e === 'shield' && player) { player.angle += Math.PI; player.targetAngle = player.angle; }
   if (ev.e === 'pushed' && player && player.alive && isFinite(ev.ux)) applyPush(player, ev.ux, ev.uy);
   if (ev.e === 'stunned' && player) { player.stunT = STUN_TIME; player.pushT = 0; }
+  if (ev.e === 'bots') { NET.bots = ev.n; refreshBotsUI(); }
   showEvent(ev);
 }
 function clientStep(dt) {
@@ -1893,7 +1975,7 @@ function updateRoomPill() {
   if (on) el.textContent = t('room', { code: NET.room, n: NET.mode === 'host' ? 1 + NET.clients.size : NET.humans });
 }
 function setNetStatus(text, isError) { const el = $('netStatus'); el.textContent = text; el.classList.toggle('err', !!isError); }
-function setOnlineBusy(b) { for (const id of ['quickBtn', 'createBtn', 'joinCodeBtn']) $(id).disabled = b; }
+function setOnlineBusy(b) { for (const id of ['quickBtn', 'createBtn', 'joinCodeBtn', 'myCodeInput', 'newCodeBtn']) $(id).disabled = b; }
 function showMsg(title, text) { $('msgTitle').textContent = title; $('msgText').textContent = text; $('hud').hidden = true; $('over').hidden = true; $('pause').hidden = true; $('msg').hidden = false; state = 'over'; }
 
 /* ---------------- Screens ---------------- */
@@ -2019,11 +2101,11 @@ function beginPlay() {
 function togglePause() {
   // Online the world never stops: the menu just opens on top while the room keeps playing.
   if (NET.mode !== 'solo') {
-    const opening = $('pause').hidden; $('pause').hidden = !opening; $('pauseNote').hidden = false;
+    const opening = $('pause').hidden; $('pause').hidden = !opening; $('pauseNote').hidden = false; $('pauseBots').hidden = false; refreshBotsUI();
     if (opening) { input.boostBtn = false; input.joyActive = false; joyRest(); }
     return;
   }
-  $('pauseNote').hidden = true;
+  $('pauseNote').hidden = true; $('pauseBots').hidden = true;
   if (state === 'play') { state = 'pause'; $('pause').hidden = false; input.boostBtn = false; input.joyActive = false; joyRest(); }
   else if (state === 'pause') { state = 'play'; $('pause').hidden = true; }
 }
@@ -2051,10 +2133,34 @@ function showGameOver() {
 }
 $('againBtn').addEventListener('click', () => { if (NET.mode === 'solo') startGame(); else netRespawn(); });
 $('msgBtn').addEventListener('click', toMenu);
-$('onlineBtn').addEventListener('click', () => { setNetStatus(''); showScreen('online'); });
+$('onlineBtn').addEventListener('click', () => { setNetStatus(''); showScreen('online'); refreshBotsUI(); });
+// Bot count steppers: on the online screen (for a room you host) and in the pause menu (the room right now).
+const BOT_STEPS = [0, 2, 5, 10, 15, 20, 25, 30, 40, 50];
+function nextBots(cur, dir) {
+  if (dir > 0) { for (const v of BOT_STEPS) if (v > cur) return v; return BOT_STEPS[BOT_STEPS.length - 1]; }
+  for (let i = BOT_STEPS.length - 1; i >= 0; i--) if (BOT_STEPS[i] < cur) return BOT_STEPS[i];
+  return 0;
+}
+function refreshBotsUI() {
+  const set = (scope, v) => { $(scope === 'online' ? 'botsOnline' : 'botsRoom').textContent = v; document.querySelectorAll('[data-bots="' + scope + '"]').forEach(b => { b.disabled = +b.dataset.dir < 0 ? v <= 0 : v >= 50; }); };
+  set('online', save.netBots ?? 20); set('room', NET.bots);
+}
+document.querySelectorAll('[data-bots]').forEach(b => b.addEventListener('click', () => {
+  const dir = +b.dataset.dir;
+  if (b.dataset.bots === 'online') { save.netBots = nextBots(save.netBots ?? 20, dir); persist(); refreshBotsUI(); return; }
+  const n = nextBots(NET.bots, dir); save.netBots = n; persist();
+  if (NET.mode === 'host') hostSetBots(n, NET.cid, save.name.trim() || t('you'));
+  else if (NET.mode === 'client' && NET.mq) { NET.bots = n; NET.botsHold = performance.now() + 2000; NET.mq.pub(T(`r/${NET.room}/in/${NET.cid}`), JSON.stringify({ t: 'bots', n })); refreshBotsUI(); }
+}));
 $('quickBtn').addEventListener('click', netQuick);
 $('createBtn').addEventListener('click', netCreate);
 $('joinCodeBtn').addEventListener('click', () => netJoinCode($('codeInput').value));
+// Your room code stays the same until you change it.
+if (!validCode(save.roomCode)) { save.roomCode = rid(4); persist(); }
+$('myCodeInput').value = save.roomCode; $('codeInput').value = save.lastCode || '';
+$('myCodeInput').addEventListener('input', e => { const v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4); e.target.value = v; if (validCode(v)) { save.roomCode = v; persist(); } });
+$('myCodeInput').addEventListener('blur', e => { e.target.value = save.roomCode; });
+$('newCodeBtn').addEventListener('click', () => { save.roomCode = rid(4); persist(); $('myCodeInput').value = save.roomCode; });
 $('codeInput').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4); });
 $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') netJoinCode(e.target.value); });
 $('overMenu').addEventListener('click', toMenu);

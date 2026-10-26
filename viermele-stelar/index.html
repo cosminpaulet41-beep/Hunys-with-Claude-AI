@@ -198,6 +198,19 @@ h1.title span{color:var(--mint)}
 #over .bchip svg{width:16px;height:16px}
 .modal .btn.again{height:46px;font-size:16px;border-radius:14px}
 .modal .btn{height:40px;font-size:13px;border-radius:12px}
+/* difficulty, online */
+.speeds.diffs{grid-template-columns:repeat(3,minmax(0,1fr))}
+.btn.online{border-color:#2E5C86;color:var(--text)}
+.board-col{flex:none;display:flex;flex-direction:column;align-items:stretch;gap:5px}
+.roompill{align-self:flex-end;height:22px;padding:0 10px;border-radius:999px;background:rgba(16,22,44,.88);border:1px solid #2E5C86;color:#9AD8FF;font-size:10px;font-weight:700;line-height:22px;white-space:nowrap}
+.brow.human .nm{color:#9AD8FF}
+.osub{margin:0;font-size:12px;line-height:1.45;color:var(--muted)}
+.menucard .head h2{font-size:20px}
+.coderow{display:grid;grid-template-columns:minmax(0,1fr) 96px;gap:8px}
+.coderow .input{text-transform:uppercase;letter-spacing:.3em;font-weight:700;text-align:center}
+.netstatus{margin:0;min-height:18px;font-size:12px;line-height:1.45;color:var(--muted);text-align:center}
+.netstatus.err{color:var(--coral)}
+.btn[disabled]{opacity:.55;cursor:default}
 @media (prefers-reduced-motion: reduce){.notice,#bite.show{animation:none}}
 @media (min-width:700px) and (min-height:500px){.board{width:190px;font-size:12px}.brow{height:17px}}
 </style>
@@ -216,7 +229,7 @@ h1.title span{color:var(--mint)}
       <canvas id="mini" width="240" height="240" role="img" data-i18n-aria="mapAria"></canvas>
     </div>
     <div class="grow"></div>
-    <div class="panel board num"><div class="lbl" data-i18n="board" style="margin-bottom:1px"></div><div id="boardRows"></div></div>
+    <div class="board-col"><div class="panel board num"><div class="lbl" data-i18n="board" style="margin-bottom:1px"></div><div id="boardRows"></div></div><div id="roomPill" class="roompill num" hidden></div></div>
     <button id="pauseBtn" class="panel iconbtn" data-i18n-aria="pause"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="5" height="16" rx="1.5" fill="#EEF2FF"></rect><rect x="14" y="4" width="5" height="16" rx="1.5" fill="#EEF2FF"></rect></svg></button>
   </div>
   <div id="notices" aria-live="polite"></div>
@@ -249,7 +262,10 @@ h1.title span{color:var(--mint)}
       <input id="nameInput" class="input" type="text" maxlength="14" autocomplete="off" spellcheck="false">
       <span class="flbl" id="speedLbl" style="margin-top:4px" data-i18n="speed"></span>
       <div class="speeds" role="radiogroup" aria-labelledby="speedLbl" id="speedsMenu"></div>
+      <span class="flbl" id="diffLbl" style="margin-top:4px" data-i18n="diff"></span>
+      <div class="speeds diffs" role="radiogroup" aria-labelledby="diffLbl" id="diffsMenu"></div>
       <button id="playBtn" class="btn primary" style="margin-top:6px"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="#062014"></path></svg><span data-i18n="play"></span></button>
+      <button id="onlineBtn" class="btn online"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6FC8FF" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9M12 3c-2.5 2.6-3.8 5.6-3.8 9s1.3 6.4 3.8 9"></path></svg><span data-i18n="online"></span></button>
       <div class="row2" style="margin-top:2px">
         <button class="btn" id="skinsBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EEF2FF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.8-1.7 1.7-1.7h2A4.5 4.5 0 0 0 21 10.7C21 6.4 17 3 12 3z"></path><circle cx="7.5" cy="11" r="1.2" fill="#EEF2FF"></circle><circle cx="10.5" cy="7" r="1.2" fill="#EEF2FF"></circle><circle cx="15" cy="7.5" r="1.2" fill="#EEF2FF"></circle></svg><span data-i18n="skins"></span></button>
         <button class="btn" id="settingsBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EEF2FF" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h11M19 17h1"></path><circle cx="15" cy="7" r="2"></circle><circle cx="9" cy="12" r="2"></circle><circle cx="17" cy="17" r="2"></circle></svg><span data-i18n="settings"></span></button>
@@ -282,6 +298,7 @@ h1.title span{color:var(--mint)}
     <div class="settings">
       <div class="set"><span data-i18n="language"></span><div class="seg"><button data-lang="ro" aria-pressed="true">RO</button><button data-lang="en" aria-pressed="false">EN</button></div></div>
       <div class="set col2"><span id="speedLbl2" data-i18n="speedName"></span><div class="speeds" role="radiogroup" aria-labelledby="speedLbl2" id="speedsSettings"></div></div>
+      <div class="set col2"><span id="diffLbl2" data-i18n="diff"></span><div class="speeds diffs" role="radiogroup" aria-labelledby="diffLbl2" id="diffsSettings"></div></div>
       <div class="set"><span id="namesLbl" data-i18n="names"></span><button class="switch" id="namesSw" aria-labelledby="namesLbl" aria-pressed="true"></button></div>
       <div class="set"><span id="vibLbl" data-i18n="vibration"></span><button class="switch" id="vibSw" aria-labelledby="vibLbl" aria-pressed="true"></button></div>
     </div>
@@ -289,9 +306,33 @@ h1.title span{color:var(--mint)}
   </div>
 </div>
 
+<div id="online" class="screen menu-screen" hidden>
+  <div class="menuwrap"><div class="menucard">
+    <div class="head">
+      <button class="back" data-back data-i18n-aria="back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EEF2FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg></button>
+      <h2 data-i18n="online"></h2>
+    </div>
+    <p class="osub" data-i18n="onlineSub"></p>
+    <button id="quickBtn" class="btn primary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#062014" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9M12 3c-2.5 2.6-3.8 5.6-3.8 9s1.3 6.4 3.8 9"></path></svg><span data-i18n="quick"></span></button>
+    <button id="createBtn" class="btn"><span data-i18n="create"></span></button>
+    <label class="flbl" for="codeInput" data-i18n="codeLbl"></label>
+    <div class="coderow"><input id="codeInput" class="input" type="text" maxlength="4" autocomplete="off" spellcheck="false" autocapitalize="characters"><button id="joinCodeBtn" class="btn"><span data-i18n="join"></span></button></div>
+    <p id="netStatus" class="netstatus" aria-live="polite"></p>
+  </div></div>
+</div>
+
+<div id="msg" class="modal" hidden>
+  <div class="mcard">
+    <h2 id="msgTitle"></h2>
+    <p class="tip" id="msgText"></p>
+    <button class="btn again" id="msgBtn"><span data-i18n="mainMenu"></span></button>
+  </div>
+</div>
+
 <div id="pause" class="modal" hidden>
   <div class="mcard">
     <h2 data-i18n="paused"></h2>
+    <p class="tip" id="pauseNote" data-i18n="onlineGoesOn" hidden></p>
     <button class="btn again" id="resumeBtn"><span data-i18n="resume"></span></button>
     <button class="btn" id="quitBtn"><span data-i18n="mainMenu"></span></button>
   </div>
@@ -345,19 +386,31 @@ const STR = {
     moonT: 'Lună înghițită!', moonD: 'Magnet: +25% rază de colectare', planetT: 'Planetă înghițită!', planetD: 'Scut: rezisti la o lovitură',
     tooSmall: 'Ai nevoie de lungime {n} ca să o înghiți', shieldUsed: 'Scutul te-a salvat!',
     eatT: 'Ai mâncat un vierme!', eatD: '{name} a lăsat energie în urmă', deathEaten: 'Te-a mâncat {name}',
-    tipEaten: 'Sfat: viermii mai mari decât tine te mănâncă dacă te ating. Ferește-te de ei până crești.',
+    biteT: 'Mușcătură!', biteD: '{name} a pierdut {n}', bittenT: '{name} te-a mușcat!', bittenD: 'Ai pierdut {n} din coadă',
+    tipEaten: 'Sfat: un vierme mai mare care îți prinde capul te mănâncă. Dacă te prinde de corp, pierzi doar coada. Ferește-ți capul de cei mari.',
     holeT: 'Gaura neagră te-a aruncat departe!', holeD: 'Ai pierdut {n}', boostShort: 'Prea scurt pentru turbo (ai nevoie de {n}+)',
     magnet: 'Magnet', shield: 'Scut',
     over: 'Joc terminat', deathMeteor: 'Ai lovit un meteorit', deathWorm: 'Te-ai lovit de {name}', deathEdge: 'Ai ieșit din arenă',
     tipMeteor: 'Sfat: când vezi ținta roșie pe un meteorit, ești pe drumul lui. Schimbă direcția sau folosește turbo.',
-    tipWorm: 'Sfat: dacă te lovești de un vierme mai mare, pierzi. Pe cei mai mici decât tine îi poți mânca.',
+    tipWorm: 'Sfat: dacă te lovești cu capul de un vierme mai mare, pierzi. Pe cei mai mici îi poți mușca de oriunde, iar dacă le prinzi capul, îi mănânci de tot.',
     tipEdge: 'Sfat: marginea arenei e linia roșie. Harta din stânga sus îți arată cât de aproape ești de ea.',
     maxLen: 'Lungime maximă', newRecord: 'Record nou!', kills: 'Eliminări', swallowed: 'Corpuri înghițite', survived: 'Timp supraviețuit', dust: 'Praf de stele',
     moons: 'Luni ×{n}', planets: 'Planete ×{n}', again: 'Joacă din nou', menu: 'Meniu', paused: 'Pauză', resume: 'Continuă', mainMenu: 'Meniu principal',
     equipped: 'Echipat', all: 'Toate', owned: 'Deținute ({n})', pickOwned: 'Deținut · Alege', crownLock: 'Ia coroana de {n} ori ({c}/{n})', need: 'Îți mai trebuie {n}',
     earnHint: 'Câștigi praf de stele mâncând, eliminând viermi și purtând coroana.',
     language: 'Limbă', names: 'Arată numele viermilor', vibration: 'Vibrații', back: 'Înapoi',
-    controlsHint: 'Pe telefon: trage cu degetul în stânga ecranului ca să conduci, ține apăsat fulgerul pentru turbo. Pe calculator: mouse-ul conduce, click sau Space pentru turbo.'
+    controlsHint: 'Pe telefon: trage cu degetul în stânga ecranului ca să conduci, ține apăsat fulgerul pentru turbo. Pe calculator: mouse-ul conduce, click sau Space pentru turbo.',
+    diff: 'Dificultate', diffs: ['Ușor', 'Normal', 'Greu'],
+    online: 'Joacă online', onlineSub: 'Până la 4 jucători, plus boți. Gazda camerei alege viteza și dificultatea.',
+    quick: 'Joacă cu oricine', create: 'Creează cameră privată', codeLbl: 'Ai un cod de cameră?', codePh: 'COD', join: 'Intră',
+    stConnecting: 'Mă conectez…', stSearching: 'Caut o cameră liberă…', stJoining: 'Intru în camera {code}…',
+    errConnect: 'Nu mă pot conecta la jocul online. Verifică internetul și încearcă din nou.',
+    errBlocked: 'Jocul online nu merge în această pagină. Folosește aplicația Android sau fișierul index.html.',
+    errNoRoom: 'Camera {code} nu există sau e plină.', errVersion: 'Camera folosește altă versiune a jocului. Actualizați amândoi aplicația.',
+    room: 'Camera {code} · {n}/4', hostTip: 'Ai creat camera <span class="hl">{code}</span>. Spune codul prietenilor.',
+    joinedNote: '<span class="hl">{name}</span> a intrat în cameră', leftNote: '{name} a ieșit din cameră',
+    lostT: 'Conexiune pierdută', lostHost: 'Gazda a închis camera.', lostNet: 'Nu mai primesc nimic de la cameră.',
+    hostOffline: 'Conexiunea online s-a pierdut. Joci mai departe singur.', onlineGoesOn: 'Jocul online continuă cât timp ești aici.', ok: 'OK'
   },
   en: {
     titleHtml: 'STAR<br><span>WORM</span>', subtitle: 'Grow. Bite. Survive.', heroAria: 'A star worm coiled around a planet',
@@ -368,19 +421,31 @@ const STR = {
     moonT: 'Moon swallowed!', moonD: 'Magnet: +25% pickup range', planetT: 'Planet swallowed!', planetD: 'Shield: survive one hit',
     tooSmall: 'You need length {n} to swallow it', shieldUsed: 'Your shield saved you!',
     eatT: 'You ate a worm!', eatD: '{name} left energy behind', deathEaten: '{name} ate you',
-    tipEaten: 'Tip: worms bigger than you eat you if they touch you. Keep away from them until you grow.',
+    biteT: 'Bite!', biteD: '{name} lost {n}', bittenT: '{name} bit you!', bittenD: 'You lost {n} off your tail',
+    tipEaten: 'Tip: a bigger worm that catches your head eats you. If it catches your body, you only lose your tail. Keep your head away from big worms.',
     holeT: 'The black hole flung you away!', holeD: 'You lost {n}', boostShort: 'Too short to boost (you need {n}+)',
     magnet: 'Magnet', shield: 'Shield',
     over: 'Game over', deathMeteor: 'You hit a meteor', deathWorm: 'You crashed into {name}', deathEdge: 'You left the arena',
     tipMeteor: 'Tip: when a meteor shows the red target, you are heading into it. Turn away or boost.',
-    tipWorm: 'Tip: crashing into a bigger worm ends your run. Worms smaller than you can be eaten.',
+    tipWorm: 'Tip: crashing your head into a bigger worm ends your run. You can bite smaller worms anywhere, and catching their head eats them whole.',
     tipEdge: 'Tip: the arena edge is the red line. The map at the top left shows how close you are.',
     maxLen: 'Best length', newRecord: 'New record!', kills: 'Eliminations', swallowed: 'Bodies swallowed', survived: 'Time survived', dust: 'Stardust',
     moons: 'Moons ×{n}', planets: 'Planets ×{n}', again: 'Play again', menu: 'Menu', paused: 'Paused', resume: 'Resume', mainMenu: 'Main menu',
     equipped: 'Equipped', all: 'All', owned: 'Owned ({n})', pickOwned: 'Owned · Equip', crownLock: 'Win the crown {n} times ({c}/{n})', need: 'You need {n} more',
     earnHint: 'You earn stardust by eating, taking out worms and wearing the crown.',
     language: 'Language', names: 'Show worm names', vibration: 'Vibration', back: 'Back',
-    controlsHint: 'On a phone: drag on the left side of the screen to steer, hold the lightning button to boost. On a computer: the mouse steers, click or Space to boost.'
+    controlsHint: 'On a phone: drag on the left side of the screen to steer, hold the lightning button to boost. On a computer: the mouse steers, click or Space to boost.',
+    diff: 'Difficulty', diffs: ['Easy', 'Normal', 'Hard'],
+    online: 'Play online', onlineSub: 'Up to 4 players, plus bots. The room host picks the speed and difficulty.',
+    quick: 'Play with anyone', create: 'Create a private room', codeLbl: 'Got a room code?', codePh: 'CODE', join: 'Join',
+    stConnecting: 'Connecting…', stSearching: 'Looking for an open room…', stJoining: 'Joining room {code}…',
+    errConnect: 'Can’t reach online play. Check your internet connection and try again.',
+    errBlocked: 'Online play doesn’t work on this page. Use the Android app or the index.html file.',
+    errNoRoom: 'Room {code} doesn’t exist or is full.', errVersion: 'That room runs a different game version. Both of you should update the app.',
+    room: 'Room {code} · {n}/4', hostTip: 'You created room <span class="hl">{code}</span>. Share the code with friends.',
+    joinedNote: '<span class="hl">{name}</span> joined the room', leftNote: '{name} left the room',
+    lostT: 'Connection lost', lostHost: 'The host closed the room.', lostNet: 'Nothing is arriving from the room anymore.',
+    hostOffline: 'Online connection lost. You keep playing on your own.', onlineGoesOn: 'The online game keeps running while you are here.', ok: 'OK'
   }
 };
 let lang = 'ro';
@@ -393,12 +458,13 @@ const fmt = n => String(Math.max(0, Math.floor(n))).replace(/\B(?=(\d{3})+(?!\d)
 
 /* ---------------- Saved progress (this browser only) ---------------- */
 const SAVE_KEY = 'viermele-stelar-v1';
-const save = { lang: '', name: '', speed: 1, dust: 0, record: 0, owned: ['aurora', 'cometa'], skin: 'aurora', crowns: 0, names: true, vibrate: true };
+const save = { lang: '', name: '', speed: 1, diff: 1, dust: 0, record: 0, owned: ['aurora', 'cometa'], skin: 'aurora', crowns: 0, names: true, vibrate: true };
 try { const s = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); if (s && typeof s === 'object') Object.assign(save, s); } catch (e) { /* storage unavailable */ }
 function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) { /* ignore */ } }
 if (!save.lang) save.lang = 'ro';
 lang = save.lang === 'en' ? 'en' : 'ro';
 save.speed = clamp(save.speed | 0, 0, 3);
+save.diff = clamp(save.diff ?? 1, 0, 2) | 0;
 if (!Array.isArray(save.owned)) save.owned = ['aurora', 'cometa'];
 
 /* ---------------- Content ---------------- */
@@ -416,7 +482,14 @@ const FOOD_COLORS = ['#FFC857', '#6FC8FF', '#FF7AC6', '#6EF2B0', '#B49CFF', '#FF
 const FOOD_WEIGHTS = [3, 3, 3, 3, 2, 1];
 const SPEED_MUL = [0.6, 1, 1.3, 1.6];
 
-const ARENA_R = 2200, FOOD_TARGET = 2800, BOT_COUNT = 34;
+const ARENA_R = 2200, FOOD_TARGET = 2800;
+// Difficulty: how many bots, how many of them hunt, how fast they react and look ahead.
+const DIFF = [
+  { bots: 22, hunter: 0.1, think: 0.17, look: 0.75, huntR: 170, boostP: 0.12 },
+  { bots: 34, hunter: 0.35, think: 0.08, look: 1, huntR: 240, boostP: 0.35 },
+  { bots: 42, hunter: 0.6, think: 0.05, look: 1.15, huntR: 320, boostP: 0.6 }
+];
+const diffCfg = () => DIFF[save.diff] || DIFF[1];
 const BASE_SPEED = 80, BOOST_MUL = 1.8, MIN_BOOST = 12;
 const MOON_NEED = 25, PLANET_NEED = 60;
 
@@ -445,7 +518,7 @@ const run = { time: 0, combo: 0, lastEat: -9, maxCombo: 0, gains: [], crownTime:
 
 function weightedColor() { let s = 0; for (const w of FOOD_WEIGHTS) s += w; let r = Math.random() * s; for (let i = 0; i < FOOD_WEIGHTS.length; i++) { r -= FOOD_WEIGHTS[i]; if (r <= 0) return FOOD_COLORS[i]; } return FOOD_COLORS[0]; }
 function randInArena(maxR) { const a = rand(0, TAU), r = Math.sqrt(Math.random()) * maxR; return { x: Math.cos(a) * r, y: Math.sin(a) * r }; }
-function addFood(x, y, r, v, c, nat) { W.food.push({ x, y, r, v, c, nat, alive: true, life: nat ? 1e9 : 45, ph: rand(0, TAU) }); if (nat) W.natFood++; }
+function addFood(x, y, r, v, c, nat) { W.food.push({ id: ++W.foodSeq, x, y, r, v, c, nat, alive: true, life: nat ? 1e9 : 45, ph: rand(0, TAU) }); if (nat) W.natFood++; }
 
 function farFromHazards(x, y, margin) {
   for (const m of W.meteors) if (dist2(x, y, m.ax, m.ay) < (m.ring + margin) ** 2) return false;
@@ -469,7 +542,7 @@ function makeWorm(o) {
     id: nextId++, name: o.name, isPlayer: !!o.isPlayer, base: o.base, band: o.band, stars: !!o.stars,
     x: o.x, y: o.y, angle: o.angle ?? rand(0, TAU), targetAngle: 0, score: o.score ?? 10, pts: [], alive: true, boosting: false,
     trimmed: 0, kills: 0, moons: 0, planets: 0, magnetT: 0, shield: 0, invuln: o.isPlayer ? 2.5 : 1.2,
-    think: rand(0, 0.15), wander: rand(0, TAU), boostAcc: 0, maxScore: o.score ?? 10, wantBoost: false, hunter: Math.random() < 0.35
+    think: rand(0, 0.15), wander: rand(0, TAU), boostAcc: 0, maxScore: o.score ?? 10, wantBoost: false, hunter: Math.random() < diffCfg().hunter
   };
   w.targetAngle = w.angle;
   const n = targetN(w.score), sp = spacingOf(w), r = rOf(w);
@@ -487,7 +560,7 @@ function spawnBot(first) {
 }
 
 function newWorld(withPlayer) {
-  W = { worms: [], food: [], meteors: [], holes: [], bodies: [], natFood: 0, deadFood: 0, respawns: [], t: 0, deaths: {} };
+  W = { worms: [], food: [], meteors: [], holes: [], bodies: [], natFood: 0, deadFood: 0, respawns: [], t: 0, deaths: {}, foodSeq: 0 };
   nextId = 1; player = null;
   const taken = [];
   const spot = (maxR, sep) => { for (let i = 0; i < 60; i++) { const p = randInArena(maxR); if (taken.every(q => dist2(p.x, p.y, q.x, q.y) > (sep + q.s) ** 2)) { p.s = sep; taken.push(p); return p; } } const p = randInArena(maxR); p.s = sep; taken.push(p); return p; };
@@ -495,7 +568,7 @@ function newWorld(withPlayer) {
   for (let i = 0; i < 10; i++) {
     const p = spot(ARENA_R - 250, 260), ring = rand(90, 150), rock = rand(16, 27);
     const poly = []; for (let k = 0; k < 9; k++) poly.push(rand(0.78, 1.08));
-    W.meteors.push({ ax: p.x, ay: p.y, ring, rock, orbit: Math.max(8, ring - rock - rand(10, 34)), a: rand(0, TAU), av: rand(0.25, 0.6) * (Math.random() < 0.5 ? -1 : 1), spin: rand(-1.2, 1.2), rot: 0, poly, x: p.x, y: p.y });
+    W.meteors.push({ ax: p.x, ay: p.y, ring, rock, orbit: Math.max(8, ring - rock - rand(10, 34)), a: 0, a0: rand(0, TAU), av: rand(0.25, 0.6) * (Math.random() < 0.5 ? -1 : 1), spin: rand(-1.2, 1.2), rot: 0, poly, x: p.x, y: p.y });
   }
   for (let i = 0; i < 12; i++) {
     const moon = i < 8, p = randInArena(ARENA_R - 300);
@@ -509,32 +582,31 @@ function newWorld(withPlayer) {
     player = makeWorm({ name: save.name.trim() || t('you'), isPlayer: true, base: sk.base, band: sk.band, stars: sk.stars, x: p.x, y: p.y, score: 10 });
     W.worms.push(player);
   }
-  for (let i = 0; i < BOT_COUNT; i++) spawnBot(true);
+  for (let i = 0; i < diffCfg().bots; i++) spawnBot(true);
   if (!W.worms.some(w => !w.isPlayer && w.score > 700)) { const b = W.worms.find(w => !w.isPlayer); if (b) { b.score = rand(800, 1200); b.maxScore = b.score; } }
 }
 
 /* ---------------- Simulation ---------------- */
-function speedOf(w) { const r = rOf(w); return BASE_SPEED * SPEED_MUL[save.speed] * (w.boosting ? BOOST_MUL : 1) * (1 - Math.min(0.22, (r - 4.5) * 0.015)); }
+// In an online room everyone uses the host's speed setting.
+const curSpeed = () => (NET.mode === 'client' ? NET.speed : save.speed);
+function speedOf(w) { const r = rOf(w); return BASE_SPEED * SPEED_MUL[curSpeed()] * (w.boosting ? BOOST_MUL : 1) * (1 - Math.min(0.22, (r - 4.5) * 0.015)); }
 function turnOf(w) { return 3.8 / (1 + (rOf(w) - 4.5) * 0.07); }
 
 function moveWorm(w, dt) {
-  const tr = turnOf(w) * dt; w.angle += clamp(angDiff(w.targetAngle, w.angle), -tr, tr);
-  const sp = speedOf(w);
-  let vx = Math.cos(w.angle) * sp, vy = Math.sin(w.angle) * sp;
-  for (const h of W.holes) { const dx = h.x - w.x, dy = h.y - w.y, d2 = dx * dx + dy * dy; if (d2 < h.R * h.R && d2 > 1) { const d = Math.sqrt(d2), s = 85 * (1 - d / h.R); vx += dx / d * s; vy += dy / d * s; } }
-  w.x += vx * dt; w.y += vy * dt;
-  const spacing = spacingOf(w);
-  let p0 = w.pts[0];
-  if (!p0) { w.pts.push({ x: w.x, y: w.y }); p0 = w.pts[0]; }
-  let dx = w.x - p0.x, dy = w.y - p0.y, d = Math.hypot(dx, dy), guard = 0;
-  while (d >= spacing && guard++ < 50) { const k = spacing / d; const q = { x: p0.x + dx * k, y: p0.y + dy * k }; w.pts.unshift(q); p0 = q; dx = w.x - p0.x; dy = w.y - p0.y; d = Math.hypot(dx, dy); }
-  const n = targetN(w.score);
-  while (w.pts.length > n) { const a = w.pts.pop(), b = w.pts[w.pts.length - 1]; if (b) w.trimmed += Math.hypot(a.x - b.x, a.y - b.y); }
-  // boosting costs length
-  if (w.boosting) {
+  if (w.remote) netApplyRemote(w, dt);
+  else {
+    const tr = turnOf(w) * dt; w.angle += clamp(angDiff(w.targetAngle, w.angle), -tr, tr);
+    const sp = speedOf(w);
+    let vx = Math.cos(w.angle) * sp, vy = Math.sin(w.angle) * sp;
+    for (const h of W.holes) { const dx = h.x - w.x, dy = h.y - w.y, d2 = dx * dx + dy * dy; if (d2 < h.R * h.R && d2 > 1) { const d = Math.sqrt(d2), s = 85 * (1 - d / h.R); vx += dx / d * s; vy += dy / d * s; } }
+    w.x += vx * dt; w.y += vy * dt;
+  }
+  advanceTrail(w);
+  // boosting costs length (an online client gets its length from the host)
+  if (w.boosting && NET.mode !== 'client') {
     if (w.score <= MIN_BOOST) w.boosting = false;
     else {
-      const loss = (3 + w.score * 0.004) * dt * SPEED_MUL[save.speed];
+      const loss = (3 + w.score * 0.004) * dt * SPEED_MUL[curSpeed()];
       w.score = Math.max(MIN_BOOST, w.score - loss); w.boostAcc += loss;
       if (w.boostAcc >= 1.2) { const tail = w.pts[w.pts.length - 1] || w; addFood(tail.x + rand(-3, 3), tail.y + rand(-3, 3), 3, w.boostAcc * 0.7, w.band, false); w.boostAcc = 0; }
     }
@@ -542,6 +614,17 @@ function moveWorm(w, dt) {
   if (w.magnetT > 0) w.magnetT -= dt;
   if (w.invuln > 0) w.invuln -= dt;
   if (w.score > w.maxScore) w.maxScore = w.score;
+}
+
+// Lays the body behind the head as it moves and trims the tail to the worm's length.
+function advanceTrail(w) {
+  const spacing = spacingOf(w);
+  let p0 = w.pts[0];
+  if (!p0) { w.pts.push({ x: w.x, y: w.y }); p0 = w.pts[0]; }
+  let dx = w.x - p0.x, dy = w.y - p0.y, d = Math.hypot(dx, dy), guard = 0;
+  while (d >= spacing && guard++ < 50) { const k = spacing / d; const q = { x: p0.x + dx * k, y: p0.y + dy * k }; w.pts.unshift(q); p0 = q; dx = w.x - p0.x; dy = w.y - p0.y; d = Math.hypot(dx, dy); }
+  const n = targetN(w.score);
+  while (w.pts.length > n) { const a = w.pts.pop(), b = w.pts[w.pts.length - 1]; if (b) w.trimmed += Math.hypot(a.x - b.x, a.y - b.y); }
 }
 
 function grow(w, v) { w.score += v; if (w.isPlayer) { run.gains.push({ t: run.time, v }); if (run.time - run.lastEat < 1.1) run.combo++; else run.combo = 1; run.lastEat = run.time; if (run.combo > run.maxCombo) run.maxCombo = run.combo; } }
@@ -578,29 +661,60 @@ function killWorm(w, reason, by, keep) {
     run.reason = reason; run.killer = by ? by.name : ''; run.diedAt = performance.now();
     state = 'dead'; vibrate(220);
     setTimeout(showGameOver, 1300);
+  } else if (w.remote) {
+    tell(w, { e: 'die', r: reason, k: by ? by.name : '' });
   } else {
     W.respawns.push(W.t + rand(2, 5));
   }
+}
+
+// Something happened to worm w that its human should hear about (here, or on another phone).
+function tell(w, ev) { if (w.isPlayer) showEvent(ev); else if (w.remote) netQueue(w, ev); }
+function showEvent(ev) {
+  if (ev.e === 'eat') showBite(t('eatT'), t('eatD', { name: esc(ev.n) }));
+  else if (ev.e === 'moon') notifyCard('moon', t('moonT'), t('moonD'));
+  else if (ev.e === 'planet') notifyCard('planet', t('planetT'), t('planetD'));
+  else if (ev.e === 'small') notifyPill(t('tooSmall', { n: ev.n }));
+  else if (ev.e === 'shield') notifyPill('<span class="hl">' + t('shieldUsed') + '</span>', 'gold');
+  else if (ev.e === 'hole') notifyCard('hole', t('holeT'), t('holeD', { n: fmt(ev.l) }));
+  else if (ev.e === 'bite') showBite(t('biteT'), t('biteD', { name: esc(ev.n), n: fmt(ev.l) }));
+  else if (ev.e === 'bitten') { showBite(t('bittenT', { name: esc(ev.n) }), t('bittenD', { n: fmt(ev.l) })); vibrate(60); }
 }
 
 function teleport(w) {
   const p = safeSpot(120, null), dx = p.x - w.x, dy = p.y - w.y;
   w.x += dx; w.y += dy; for (const q of w.pts) { q.x += dx; q.y += dy; }
   const lost = Math.floor(w.score * 0.1); w.score = Math.max(10, w.score - lost); w.invuln = Math.max(w.invuln, 1.2);
-  if (w.isPlayer) notifyCard('hole', t('holeT'), t('holeD', { n: fmt(lost) }));
+  if (NET.mode === 'host') netTeleported(w);
+  tell(w, { e: 'hole', l: lost, x: Math.round(w.x), y: Math.round(w.y) });
 }
 
 function useShield(w) {
   if (w.shield <= 0) return false;
   w.shield--; w.invuln = 1.5; w.angle += Math.PI; w.targetAngle = w.angle;
-  if (w.isPlayer) notifyPill('<span class="hl">' + t('shieldUsed') + '</span>', 'gold');
+  tell(w, { e: 'shield' });
   return true;
 }
-// The bigger worm always wins a touch: the smaller one dies and leaves its energy behind.
-function eatWorm(a, b) {
-  if (useShield(b)) return;
-  if (a.isPlayer) showBite(t('eatT'), t('eatD', { name: esc(b.name) }));
-  killWorm(b, b.isPlayer ? 'eaten' : 'worm', a, 0.85);
+// The bigger worm wins a touch. Biting the head eats the whole worm; biting the body cuts off
+// everything behind the bite (it turns into energy) and the part towards the head lives on.
+function eatWorm(a, b, idx) {
+  if ((a.biteCd || 0) > W.t) return;
+  const headZone = Math.max(3, Math.ceil(rOf(b) * 2.6 / spacingOf(b)));
+  if (idx <= headZone) {
+    if (useShield(b)) return;
+    tell(a, { e: 'eat', n: b.name });
+    killWorm(b, (b.isPlayer || b.remote) ? 'eaten' : 'worm', a, 0.85);
+    return;
+  }
+  a.biteCd = W.t + 0.35;
+  const removed = b.pts.splice(idx);
+  const lost = Math.max(1, Math.floor(b.score * removed.length / (removed.length + b.pts.length)));
+  dropBody({ pts: removed, score: lost, band: b.band, base: b.base }, 0.8);
+  b.score -= lost;
+  if (NET.mode === 'host') for (const c of NET.clients.values()) c.bodies.delete(b.id);
+  tell(a, { e: 'bite', n: b.name, l: lost });
+  tell(b, { e: 'bitten', n: a.name, l: lost });
+  if (b.score < 10) killWorm(b, (b.isPlayer || b.remote) ? 'eaten' : 'worm', a, 0.85);
 }
 
 function collide(w) {
@@ -612,9 +726,9 @@ function collide(w) {
     if (!b.alive || dist2(w.x, w.y, b.x, b.y) > (b.r + r * 1.3) ** 2) continue;
     if (w.score >= b.need) {
       b.alive = false; b.back = W.t + 25;
-      if (b.type === 'moon') { w.moons++; w.magnetT = Math.max(0, w.magnetT) + 30; grow(w, 15); if (w.isPlayer) notifyCard('moon', t('moonT'), t('moonD')); }
-      else { w.planets++; w.shield = Math.min(3, w.shield + 1); grow(w, 30); if (w.isPlayer) notifyCard('planet', t('planetT'), t('planetD')); }
-    } else if (w.isPlayer && run.time - run.hintAt > 3) { run.hintAt = run.time; notifyPill(t('tooSmall', { n: b.need })); }
+      if (b.type === 'moon') { w.moons++; w.magnetT = Math.max(0, w.magnetT) + 30; grow(w, 15); tell(w, { e: 'moon' }); }
+      else { w.planets++; w.shield = Math.min(3, w.shield + 1); grow(w, 30); tell(w, { e: 'planet' }); }
+    } else if ((w.isPlayer || w.remote) && W.t - (w.hintAt ?? -9) > 3) { w.hintAt = W.t; tell(w, { e: 'small', n: b.need }); }
   }
   if (w.invuln > 0) return;
   for (const m of W.meteors) {
@@ -631,7 +745,7 @@ function collide(w) {
     if (dist2(w.x, w.y, p.x, p.y) < rr * rr) { hit = { o, i }; return false; }
   });
   if (hit) {
-    if (w.score > hit.o.score) eatWorm(w, hit.o);
+    if (w.score > hit.o.score) eatWorm(w, hit.o, hit.i);
     else if (!useShield(w)) killWorm(w, 'worm', hit.o);
   }
 }
@@ -661,9 +775,9 @@ function botGoal(b) {
   if (dc > ARENA_R * 0.82) return Math.atan2(-b.y, -b.x);
   for (const h of W.holes) { const d2 = dist2(b.x, b.y, h.x, h.y); if (d2 < (h.R * 0.8) ** 2) return Math.atan2(b.y - h.y, b.x - h.x); }
   if (b.hunter && b.score > 40) {
-    let prey = null, best = 240 * 240;
+    let prey = null, best = diffCfg().huntR ** 2;
     for (const o of W.worms) { if (o === b || !o.alive || o.score * 1.3 > b.score || o.score < 20 || o.invuln > 0) continue; const d2 = dist2(b.x, b.y, o.x, o.y); if (d2 < best) { best = d2; prey = o; } }
-    if (prey) { const lead = 40 + rOf(prey) * 4; if (best < 170 * 170 && Math.random() < 0.35) b.wantBoost = true; return Math.atan2(prey.y + Math.sin(prey.angle) * lead - b.y, prey.x + Math.cos(prey.angle) * lead - b.x); }
+    if (prey) { const lead = 40 + rOf(prey) * 4; if (best < 170 * 170 && Math.random() < diffCfg().boostP) b.wantBoost = true; return Math.atan2(prey.y + Math.sin(prey.angle) * lead - b.y, prey.x + Math.cos(prey.angle) * lead - b.x); }
   }
   for (const c of W.bodies) if (c.alive && b.score >= c.need && dist2(b.x, b.y, c.x, c.y) < 420 * 420) return Math.atan2(c.y - b.y, c.x - b.x);
   let tgt = null, bestS = 0;
@@ -672,7 +786,7 @@ function botGoal(b) {
   b.wander += rand(-0.6, 0.6); return b.wander;
 }
 function botThink(b) {
-  const r = rOf(b), look = 70 + r * 7 + speedOf(b) * 0.35;
+  const r = rOf(b), look = (70 + r * 7 + speedOf(b) * 0.35) * diffCfg().look;
   const goal = botGoal(b);
   let best = b.angle, bestS = -1e9;
   for (const da of [0, -0.4, 0.4, -0.85, 0.85, -1.4, 1.4, -2.1, 2.1]) {
@@ -891,7 +1005,7 @@ function render(time) {
       const sp = toScreen(w.x, w.y), hr = rOf(w) * 1.3 * s, down = Math.sin(w.angle) > 0.35;
       const ly = down ? sp.y + hr + 13 : sp.y - hr - 6;
       ctx.font = (w.isPlayer ? '700 ' : '500 ') + '10px Poppins, system-ui, sans-serif';
-      ctx.fillStyle = w.isPlayer ? '#6EF2B0' : 'rgba(238,242,255,0.88)';
+      ctx.fillStyle = w.isPlayer ? '#6EF2B0' : w.human ? '#9AD8FF' : 'rgba(238,242,255,0.88)';
       ctx.fillText(w.isPlayer ? t('you') : w.name, sp.x, ly);
       if (run.leader === w) { ctx.save(); ctx.translate(sp.x - 7, ly - 24); ctx.scale(0.6, 0.6); ctx.fillStyle = '#FFC857'; ctx.fill(CROWN); ctx.restore(); }
     }
@@ -937,6 +1051,14 @@ function drawMini() {
   mctx.setLineDash([]);
   mctx.fillStyle = '#FF6B7A'; for (const m of W.meteors) { mctx.beginPath(); mctx.arc(X(m.x), Y(m.y), 3.2, 0, TAU); mctx.fill(); }
   for (const b of W.bodies) { if (!b.alive) continue; mctx.fillStyle = b.type === 'moon' ? '#C9CEDD' : '#FF9A4D'; mctx.beginPath(); mctx.arc(X(b.x), Y(b.y), 2.8, 0, TAU); mctx.fill(); }
+  if (NET.mode === 'client') {
+    // Worms far away arrive only as dots from the host.
+    for (const [id, x, y] of NET.mm) {
+      if (id === NET.myId || NET.remotes.has(id)) continue;
+      const mt = NET.meta.get(id); mctx.fillStyle = mt ? mt.base : '#7D88AB'; mctx.beginPath(); mctx.arc(X(x * 10), Y(y * 10), 3.4, 0, TAU); mctx.fill();
+      if (id === NET.leaderId) { mctx.save(); mctx.translate(X(x * 10) - 9, Y(y * 10) - 24); mctx.scale(0.75, 0.75); mctx.fillStyle = '#FFC857'; mctx.fill(CROWN); mctx.restore(); }
+    }
+  }
   mctx.lineCap = 'round'; mctx.lineJoin = 'round';
   for (const w of W.worms) {
     if (!w.alive) continue;
@@ -992,22 +1114,31 @@ function updateHud() {
   boostBtn.classList.toggle('off', player.score <= MIN_BOOST);
 }
 function updateBoard() {
-  const alive = W.worms.filter(w => w.alive).sort((a, b) => b.score - a.score);
-  let html = '';
-  const row = (w, i, me) => '<div class="brow' + (me ? ' me' : '') + '"><span class="rk">' + (i + 1) + '</span><span class="nm">' + esc(w.isPlayer ? t('you') : w.name) + (i === 0 ? CROWN_SVG : '') + '</span><span class="sc">' + fmt(w.score) + '</span></div>';
-  for (let i = 0; i < Math.min(3, alive.length); i++) html += row(alive[i], i, alive[i] === player);
-  const pi = player ? alive.indexOf(player) : -1;
-  if (pi >= 3) html += row(player, pi, true);
+  let top = [], pi = -1;
+  if (NET.mode === 'client') {
+    top = NET.lb.slice(0, 3).map(([id, s]) => { const mt = NET.meta.get(id); return { name: id === NET.myId ? t('you') : (mt ? mt.name : '?'), score: s, me: id === NET.myId, human: mt && mt.human }; });
+    pi = player && player.alive ? NET.myRank - 1 : -1;
+  } else {
+    const alive = W.worms.filter(w => w.alive).sort((a, b) => b.score - a.score);
+    top = alive.slice(0, 3).map(w => ({ name: w.isPlayer ? t('you') : w.name, score: w.score, me: w === player, human: w.human }));
+    pi = player ? alive.indexOf(player) : -1;
+  }
+  const row = (e, i) => '<div class="brow' + (e.me ? ' me' : '') + (e.human ? ' human' : '') + '"><span class="rk">' + (i + 1) + '</span><span class="nm">' + esc(e.name) + (i === 0 ? CROWN_SVG : '') + '</span><span class="sc">' + fmt(e.score) + '</span></div>';
+  let html = ''; top.forEach((e, i) => { html += row(e, i); });
+  if (pi >= 3 && player) html += row({ name: t('you'), score: player.score, me: true }, pi);
   if (html !== lastBoard) { boardRows.innerHTML = html; lastBoard = html; }
-  if (player) { rankVal.innerHTML = (pi === 0 ? CROWN_SVG : '') + esc(t('rank', { n: pi + 1 })); rankVal.classList.toggle('lead', pi === 0); }
+  if (player) { rankVal.innerHTML = (pi === 0 ? CROWN_SVG : '') + esc(t('rank', { n: Math.max(1, pi + 1) })); rankVal.classList.toggle('lead', pi === 0); }
+  updateRoomPill();
 }
 
 /* ---------------- Main step ---------------- */
 let boardAt = 0, miniAt = 0, leaderAt = 0;
+function moveMeteors() { for (const m of W.meteors) { m.a = m.a0 + m.av * W.t; m.rot = m.spin * W.t; m.x = m.ax + Math.cos(m.a) * m.orbit; m.y = m.ay + Math.sin(m.a) * m.orbit * 0.8; } }
 function step(dt) {
+  if (NET.mode === 'client') { clientStep(dt); return; }
   W.t += dt;
   if (state === 'play') run.time += dt;
-  for (const m of W.meteors) { m.a += m.av * dt; m.rot += m.spin * dt; m.x = m.ax + Math.cos(m.a) * m.orbit; m.y = m.ay + Math.sin(m.a) * m.orbit * 0.8; }
+  moveMeteors();
   for (const h of W.holes) h.rot += dt * 1.4;
   for (const b of W.bodies) {
     if (!b.alive) { if (W.t > b.back) { const p = randInArena(ARENA_R - 300); b.x = p.x; b.y = p.y; b.alive = true; } continue; }
@@ -1017,7 +1148,8 @@ function step(dt) {
   for (const w of W.worms) { if (!w.alive) continue; const pts = w.pts; for (let i = 0; i < pts.length; i += 2) segGrid.add(pts[i].x, pts[i].y, w, i); }
   foodGrid.clear();
   for (const f of W.food) if (f.alive) foodGrid.add(f.x, f.y, f);
-  for (const w of W.worms) { if (!w.alive || w.isPlayer) continue; w.think -= dt; if (w.think <= 0) { w.think = 0.08 + Math.random() * 0.05; botThink(w); } }
+  const thinkT = diffCfg().think;
+  for (const w of W.worms) { if (!w.alive || w.isPlayer || w.remote) continue; w.think -= dt; if (w.think <= 0) { w.think = thinkT + Math.random() * thinkT * 0.6; botThink(w); } }
   if (state === 'play') applyInput(dt);
   for (const w of W.worms) if (w.alive) moveWorm(w, dt);
   for (const w of W.worms) if (w.alive) eat(w, dt);
@@ -1045,7 +1177,12 @@ function step(dt) {
     }
     if (state === 'play' && run.leader === player) run.crownTime += 0.5;
   }
-  // camera
+  if (NET.mode === 'host') netHostTick(dt);
+  afterStep(dt);
+}
+
+// Camera, HUD, leaderboard and map: shared by solo, host and online client.
+function afterStep(dt) {
   let target = cam.follow;
   if (state === 'play' || state === 'dead' || state === 'pause') target = player;
   else if (!target || !target.alive) { target = run.leader; cam.follow = target; }
@@ -1060,8 +1197,415 @@ function step(dt) {
   miniAt -= dt; if (miniAt <= 0 && !$('hud').hidden) { miniAt = 0.15; drawMini(); }
 }
 
+/* ---------------- Online play ----------------
+   Phones talk through a free public MQTT broker (a message relay). One player hosts the room:
+   their phone runs the bots, food and hazards and sends each guest what is around them.
+   Guests steer their own worm locally and report where it is. */
+const NET_V = 1;
+const TOPIC = 'hunys/vstelar/v' + NET_V;
+const BROKERS = (() => {
+  const m = /[?&]broker=([^&]+)/.exec(location.search);
+  return m ? [decodeURIComponent(m[1])] : ['wss://broker.hivemq.com:8884/mqtt', 'wss://broker.emqx.io:8084/mqtt', 'wss://test.mosquitto.org:8081/mqtt'];
+})();
+const r1 = v => Math.round(v * 10) / 10, r3 = v => Math.round(v * 1000) / 1000;
+const T = s => TOPIC + '/' + s;
+const te = new TextEncoder(), td = new TextDecoder();
+const wait = ms => new Promise(res => setTimeout(res, ms));
+function rid(n) { const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s = ''; for (let i = 0; i < n; i++) s += A[(Math.random() * A.length) | 0]; return s; }
+function mqStr(s) { const b = te.encode(s), o = new Uint8Array(b.length + 2); o[0] = b.length >> 8; o[1] = b.length & 255; o.set(b, 2); return o; }
+function mqPkt(type, flags, parts) {
+  let len = 0; for (const p of parts) len += p.length;
+  const hdr = [(type << 4) | flags]; let x = len;
+  do { let d = x % 128; x = Math.floor(x / 128); if (x > 0) d |= 128; hdr.push(d); } while (x > 0);
+  const out = new Uint8Array(hdr.length + len); out.set(hdr, 0); let o = hdr.length;
+  for (const p of parts) { out.set(p, o); o += p.length; }
+  return out;
+}
+// Minimal MQTT 3.1.1 client over WebSocket (QoS 0 only).
+class Mqtt {
+  constructor(url, id, will) { this.url = url; this.id = id; this.will = will; this.pid = 1; this.buf = new Uint8Array(0); this.open = false; this.onmessage = null; this.onclose = null; }
+  connect() {
+    return new Promise((resolve, reject) => {
+      let ws = null, done = false;
+      const fail = err => { if (done) return; done = true; clearTimeout(to); try { ws && ws.close(); } catch (e) { /* ignore */ } reject(err); };
+      const to = setTimeout(() => fail(new Error('timeout')), 7000);
+      try { ws = new WebSocket(this.url, ['mqtt']); } catch (e) { fail(e); return; }
+      this.ws = ws; ws.binaryType = 'arraybuffer';
+      ws.onopen = () => {
+        const parts = [Uint8Array.of(0, 4, 77, 81, 84, 84, 4, 0x02 | (this.will ? 0x04 : 0), 0, 60), mqStr(this.id)];
+        if (this.will) parts.push(mqStr(this.will.topic), mqStr(this.will.msg));
+        ws.send(mqPkt(1, 0, parts));
+      };
+      ws.onmessage = ev => this.feed(new Uint8Array(ev.data), () => { if (!done) { done = true; clearTimeout(to); resolve(this); } }, fail);
+      ws.onerror = () => { if (!this.open) fail(new Error('socket')); };
+      ws.onclose = () => { const was = this.open; this.open = false; clearInterval(this.ping); if (!was) fail(new Error('closed')); else if (this.onclose) this.onclose(); };
+    });
+  }
+  feed(chunk, ok, fail) {
+    const b = new Uint8Array(this.buf.length + chunk.length); b.set(this.buf); b.set(chunk, this.buf.length); this.buf = b;
+    for (;;) {
+      if (this.buf.length < 2) return;
+      let mult = 1, len = 0, i = 1, byte;
+      do { if (i >= this.buf.length) return; byte = this.buf[i++]; len += (byte & 127) * mult; mult *= 128; } while (byte & 128);
+      if (this.buf.length < i + len) return;
+      const type = this.buf[0] >> 4, flags = this.buf[0] & 15, data = this.buf.slice(i, i + len);
+      this.buf = this.buf.slice(i + len);
+      if (type === 2) { if (data[1] === 0) { this.open = true; this.ping = setInterval(() => this.send(Uint8Array.of(0xC0, 0)), 25000); ok(); } else fail(new Error('refused')); }
+      else if (type === 3 && this.onmessage) {
+        const tl = (data[0] << 8) | data[1]; let o = 2 + tl; if ((flags >> 1) & 3) o += 2;
+        try { this.onmessage(td.decode(data.subarray(2, 2 + tl)), td.decode(data.subarray(o))); } catch (e) { console.warn(e); }
+      }
+    }
+  }
+  send(bytes) { if (this.ws && this.ws.readyState === 1) this.ws.send(bytes); }
+  sub(filter) { const id = (this.pid++ & 0xffff) || 1; this.send(mqPkt(8, 2, [Uint8Array.of(id >> 8, id & 255), mqStr(filter), Uint8Array.of(0)])); }
+  unsub(filter) { const id = (this.pid++ & 0xffff) || 1; this.send(mqPkt(10, 2, [Uint8Array.of(id >> 8, id & 255), mqStr(filter)])); }
+  pub(topic, text) { this.send(mqPkt(3, 0, [mqStr(topic), te.encode(text)])); }
+  close() { this.open = false; clearInterval(this.ping); try { this.send(Uint8Array.of(0xE0, 0)); this.ws.close(); } catch (e) { /* ignore */ } }
+}
+
+const NET = {
+  mode: 'solo', mq: null, cid: '', room: '', isPublic: false, hostCid: '', clients: new Map(), lobby: null, busy: false,
+  myId: 0, speed: 1, lb: [], myRank: 1, humans: 1, mm: [], meta: new Map(), leaderId: 0, foods: new Map(), remotes: new Map(),
+  lastPkt: 0, timeOff: 0, sendAcc: 0, annAcc: 0, inAcc: 0, lbAcc: 0, mmAcc: 0, bodyAcc: 0, myScore: 10, joinResolve: null, joinTimer: 0
+};
+const inFrame = (() => { try { return window.top !== window; } catch (e) { return true; } })();
+
+async function netConnect() {
+  if (NET.mq && NET.mq.open) return true;
+  NET.cid = 'vs' + rid(10).toLowerCase();
+  for (const url of BROKERS) {
+    const mq = new Mqtt(url, NET.cid, { topic: T('gone/' + NET.cid), msg: NET.cid });
+    try { await mq.connect(); NET.mq = mq; mq.onmessage = netOnMessage; mq.onclose = () => netLost('net'); return true; }
+    catch (e) { /* try the next broker */ }
+  }
+  return false;
+}
+function netOnMessage(topic, text) {
+  let m; try { m = JSON.parse(text); } catch (e) { return; }
+  const rest = topic.slice(TOPIC.length + 1);
+  if (rest.startsWith('lobby/')) { if (NET.lobby && m && m.room) NET.lobby.set(m.room, Object.assign(m, { seen: performance.now() })); return; }
+  if (rest.startsWith('gone/')) { const who = rest.slice(5); if (NET.mode === 'host') hostDropClient(who); else if (NET.mode === 'client' && who === NET.hostCid) netLost('host'); return; }
+  const p = rest.split('/');
+  if (p[0] !== 'r' || p[1] !== NET.room) return;
+  if (NET.mode === 'host') {
+    if (p[2] === 'join') hostOnJoin(m);
+    else if (p[2] === 'in') hostOnInput(p[3], m);
+    else if (p[2] === 'leave' && m) hostDropClient(m.cid);
+  } else if (p[2] === 'c' && p[3] === NET.cid) clientOnMsg(m);
+  else if (p[2] === 'end' && NET.mode === 'client') netLost('host');
+}
+function netLeave() {
+  if (NET.mode === 'solo' && !NET.mq) return;
+  const mq = NET.mq;
+  try {
+    if (mq && NET.room) {
+      if (NET.mode === 'host') mq.pub(T(`r/${NET.room}/end`), '{}');
+      else if (NET.mode === 'client') mq.pub(T(`r/${NET.room}/leave`), JSON.stringify({ cid: NET.cid }));
+    }
+  } catch (e) { /* ignore */ }
+  if (mq) { mq.onclose = null; setTimeout(() => mq.close(), 150); }
+  Object.assign(NET, { mode: 'solo', mq: null, room: '', hostCid: '', lobby: null, joinResolve: null });
+  NET.clients = new Map(); NET.remotes = new Map(); NET.foods = new Map(); NET.meta = new Map();
+  clearTimeout(NET.joinTimer); updateRoomPill();
+}
+function netLost(why) {
+  if (NET.mode === 'host') { netLeave(); notifyPill(t('hostOffline')); return; }
+  if (NET.mode !== 'client' && NET.mode !== 'joining') return;
+  netLeave();
+  showMsg(t('lostT'), why === 'host' ? t('lostHost') : t('lostNet'));
+}
+
+/* -- guest: find or join a room -- */
+async function netQuick() {
+  if (NET.busy) return; NET.busy = true; setOnlineBusy(true);
+  try {
+    setNetStatus(t('stConnecting'));
+    if (!(await netConnect())) { setNetStatus(t(inFrame ? 'errBlocked' : 'errConnect'), true); return; }
+    setNetStatus(t('stSearching'));
+    NET.lobby = new Map(); NET.mq.sub(T('lobby/+'));
+    await wait(2600);
+    const now = performance.now();
+    const rooms = [...NET.lobby.values()].filter(r => r.v === NET_V && r.open && r.n < 4 && now - r.seen < 5000).sort((a, b) => b.n - a.n);
+    NET.lobby = null; NET.mq.unsub(T('lobby/+'));
+    for (const r of rooms.slice(0, 3)) if ((await netJoin(r.room)) === 'ok') return;
+    netHost(true);
+  } finally { NET.busy = false; setOnlineBusy(false); }
+}
+async function netJoinCode(code) {
+  code = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4);
+  if (code.length !== 4 || NET.busy) return;
+  NET.busy = true; setOnlineBusy(true);
+  try {
+    setNetStatus(t('stConnecting'));
+    if (!(await netConnect())) { setNetStatus(t(inFrame ? 'errBlocked' : 'errConnect'), true); return; }
+    const res = await netJoin(code);
+    if (res !== 'ok') { setNetStatus(t(res === 'version' ? 'errVersion' : 'errNoRoom', { code }), true); netLeave(); }
+  } finally { NET.busy = false; setOnlineBusy(false); }
+}
+async function netCreate() {
+  if (NET.busy) return; NET.busy = true; setOnlineBusy(true);
+  try {
+    setNetStatus(t('stConnecting'));
+    if (!(await netConnect())) { setNetStatus(t(inFrame ? 'errBlocked' : 'errConnect'), true); return; }
+    netHost(false);
+  } finally { NET.busy = false; setOnlineBusy(false); }
+}
+function sendJoin(code) {
+  const sk = SKINS.find(s => s.id === save.skin) || SKINS[0];
+  NET.mq.pub(T(`r/${code}/join`), JSON.stringify({ cid: NET.cid, v: NET_V, name: (save.name.trim() || t('you')).slice(0, 14), base: sk.base, band: sk.band, stars: sk.stars ? 1 : 0 }));
+}
+function netJoin(code) {
+  return new Promise(resolve => {
+    NET.room = code; NET.mode = 'joining';
+    NET.mq.sub(T(`r/${code}/c/${NET.cid}`)); NET.mq.sub(T(`r/${code}/end`));
+    setNetStatus(t('stJoining', { code }));
+    NET.joinResolve = r => { clearTimeout(NET.joinTimer); NET.joinResolve = null; if (r !== 'ok') { NET.mode = 'solo'; NET.mq.unsub(T(`r/${code}/c/${NET.cid}`)); NET.mq.unsub(T(`r/${code}/end`)); NET.room = ''; } resolve(r); };
+    NET.joinTimer = setTimeout(() => NET.joinResolve && NET.joinResolve('timeout'), 5000);
+    setTimeout(() => sendJoin(code), 200);
+  });
+}
+
+/* -- host -- */
+function netHost(isPublic) {
+  NET.mode = 'host'; NET.isPublic = isPublic; NET.room = rid(4); NET.clients = new Map(); NET.hostCid = NET.cid; NET.annAcc = 0;
+  for (const k of ['join', 'in/+', 'leave']) NET.mq.sub(T(`r/${NET.room}/${k}`));
+  startGame();
+  notifyPill(t('hostTip', { code: NET.room }), 'gold');
+}
+const okColor = c => (/^#[0-9a-fA-F]{6}$/.test(c) ? c : '#6EF2B0');
+function hostOnJoin(m) {
+  if (!m || typeof m.cid !== 'string') return;
+  const reply = o => NET.mq.pub(T(`r/${NET.room}/c/${m.cid}`), JSON.stringify(o));
+  if (m.v !== NET_V) { reply({ t: 'err' }); return; }
+  let c = NET.clients.get(m.cid);
+  if (!c) {
+    if (NET.clients.size >= 3) { reply({ t: 'full' }); return; }
+    c = { cid: m.cid, name: String(m.name || '?').slice(0, 14), base: okColor(m.base), band: okColor(m.band), stars: !!m.stars, worm: null, known: new Map(), meta: new Set(), bodies: new Set(), events: [], last: performance.now(), rx: 0, ry: 0, ra: 0, rta: 0, rb: 0, rt: 0, vw: 560, vh: 1000, ignoreUntil: 0 };
+    NET.clients.set(m.cid, c); NET.mq.sub(T('gone/' + m.cid));
+    notifyPill(t('joinedNote', { name: esc(c.name) }));
+  }
+  c.last = performance.now();
+  if (!c.worm || !c.worm.alive) {
+    const p = safeSpot(160, null);
+    const w = makeWorm({ name: c.name, base: c.base, band: c.band, stars: c.stars, x: p.x, y: p.y, score: 10 });
+    w.remote = c.cid; w.human = true; w.invuln = 2.5; W.worms.push(w);
+    Object.assign(c, { worm: w, rx: w.x, ry: w.y, ra: w.angle, rta: w.angle, rb: 0, rt: performance.now(), ignoreUntil: performance.now() + 1200, events: [] });
+    c.known.clear(); c.bodies.clear(); c.meta.clear();
+  }
+  const w = c.worm;
+  reply({
+    t: 'w', tm: r3(W.t), you: w.id, x: r1(w.x), y: r1(w.y), a: r3(w.angle), sp: save.speed, room: NET.room, hc: NET.cid,
+    holes: W.holes.map(h => [r1(h.x), r1(h.y), r1(h.R), h.core]),
+    met: W.meteors.map(q => [r1(q.ax), r1(q.ay), r1(q.ring), r1(q.rock), r1(q.orbit), r3(q.a0), r3(q.av), r3(q.spin), q.poly.map(r3)]),
+    bt: W.bodies.map(b => (b.type === 'moon' ? 0 : 1))
+  });
+  NET.sendAcc = 0; updateRoomPill();
+}
+function hostOnInput(cid, m) {
+  const c = NET.clients.get(cid); if (!c || !c.worm || !m) return;
+  c.last = performance.now();
+  if (m.vw) { c.vw = clamp(+m.vw, 200, 1400); c.vh = clamp(+m.vh, 200, 1400); }
+  const x = +m.x, y = +m.y; if (!isFinite(x) || !isFinite(y)) return;
+  if (c.last < c.ignoreUntil && dist2(x, y, c.worm.x, c.worm.y) > 300 * 300) return; // still at the spot before a black hole moved it
+  c.rx = x; c.ry = y; c.ra = +m.a || 0; c.rta = isFinite(+m.ta) ? +m.ta : c.ra; c.rb = m.b ? 1 : 0; c.rt = c.last;
+}
+function hostDropClient(cid) {
+  const c = NET.clients.get(cid); if (!c) return;
+  NET.clients.delete(cid);
+  if (c.worm && c.worm.alive) killWorm(c.worm, 'left', null);
+  notifyPill(t('leftNote', { name: esc(c.name) }));
+  updateRoomPill();
+}
+function netQueue(w, ev) { const c = NET.clients.get(w.remote); if (c) c.events.push(ev); }
+function netTeleported(w) {
+  for (const c of NET.clients.values()) c.bodies.delete(w.id);
+  if (w.remote) { const c = NET.clients.get(w.remote); if (c) { c.rx = w.x; c.ry = w.y; c.rt = performance.now(); c.ignoreUntil = performance.now() + 1500; } }
+}
+// Host side: a guest's worm follows what the guest reports, smoothed and extrapolated.
+function netApplyRemote(w, dt) {
+  const c = NET.clients.get(w.remote); if (!c) return;
+  const age = Math.min(0.25, (performance.now() - c.rt) / 1000), sp = speedOf(w);
+  const tx = c.rx + Math.cos(c.ra) * sp * age, ty = c.ry + Math.sin(c.ra) * sp * age;
+  if (dist2(tx, ty, w.x, w.y) > 250 * 250) { w.x = tx; w.y = ty; }
+  else { const k = Math.min(1, dt * 14); w.x += (tx - w.x) * k; w.y += (ty - w.y) * k; }
+  w.angle = c.ra; w.targetAngle = c.rta; w.boosting = !!c.rb && w.score > MIN_BOOST;
+}
+function netHostTick(dt) {
+  if (!NET.mq) return;
+  NET.annAcc -= dt;
+  if (NET.annAcc <= 0) { NET.annAcc = 2; if (NET.isPublic) NET.mq.pub(T('lobby/' + NET.room), JSON.stringify({ room: NET.room, n: 1 + NET.clients.size, v: NET_V, open: true })); }
+  NET.sendAcc -= dt; if (NET.sendAcc > 0) return;
+  NET.sendAcc = 0.1; NET.lbAcc -= 0.1; NET.mmAcc -= 0.1; NET.bodyAcc -= 0.1;
+  let alive = null, ranks = null, mm = null; const doB = NET.bodyAcc <= 0;
+  if (NET.lbAcc <= 0) { NET.lbAcc = 0.5; alive = W.worms.filter(w => w.alive).sort((a, b) => b.score - a.score); ranks = new Map(alive.map((w, i) => [w, i + 1])); }
+  if (NET.mmAcc <= 0) { NET.mmAcc = 1; mm = W.worms.filter(w => w.alive).map(w => [w.id, Math.round(w.x / 10), Math.round(w.y / 10)]); }
+  if (doB) NET.bodyAcc = 1;
+  const now = performance.now();
+  for (const c of [...NET.clients.values()]) {
+    if (now - c.last > 9000) { hostDropClient(c.cid); continue; }
+    hostSendTo(c, alive, ranks, mm, doB);
+  }
+}
+function hostSendTo(c, alive, ranks, mm, doB) {
+  const me = c.worm; if (!me) return;
+  const cx = me.x, cy = me.y, rx = c.vw + 160, ry = c.vh + 160;
+  const m = { t: 's', tm: r3(W.t), me: [r1(me.score), me.kills, Math.max(0, Math.ceil(me.magnetT)), me.shield, me.invuln > 0 ? 1 : 0, me.alive ? 1 : 0, me.moons, me.planets] };
+  const ws = [], nb = [], meta = [], seen = new Set();
+  const needMeta = w => { if (w !== me && !c.meta.has(w.id)) { c.meta.add(w.id); meta.push([w.id, w.name, w.base, w.band, w.stars ? 1 : 0, (w.human || w.isPlayer) ? 1 : 0]); } };
+  for (const w of W.worms) {
+    if (!w.alive || w === me) continue;
+    const bx = wormBox(w);
+    if (bx[2] < cx - rx || bx[0] > cx + rx || bx[3] < cy - ry || bx[1] > cy + ry) continue;
+    seen.add(w.id); needMeta(w);
+    ws.push([w.id, r1(w.x), r1(w.y), r3(w.angle), Math.round(w.score), w.boosting ? 1 : 0]);
+    if (!c.bodies.has(w.id)) { c.bodies.add(w.id); const flat = []; for (let i = 0; i < w.pts.length; i += 2) flat.push(Math.round(w.pts[i].x), Math.round(w.pts[i].y)); nb.push([w.id, flat]); }
+  }
+  const gone = []; for (const id of c.bodies) if (!seen.has(id)) { c.bodies.delete(id); gone.push(id); }
+  const fa = [], fr = [], near = new Set();
+  foodGrid.each(cx, cy, Math.max(rx, ry), f => {
+    if (!f.alive || Math.abs(f.x - cx) > rx || Math.abs(f.y - cy) > ry) return;
+    near.add(f.id);
+    if (!c.known.has(f.id)) { c.known.set(f.id, f); const ci = FOOD_COLORS.indexOf(f.c); fa.push([f.id, Math.round(f.x), Math.round(f.y), Math.round(f.r * 10), ci >= 0 ? ci : f.c]); }
+  });
+  for (const [id, f] of c.known) if (!f.alive || !near.has(id)) { c.known.delete(id); fr.push(id); }
+  if (doB) m.b = W.bodies.map(b => [Math.round(b.x), Math.round(b.y), b.alive ? 1 : 0]);
+  if (c.events.length) { m.ev = c.events; c.events = []; }
+  if (alive) { const top = alive.slice(0, 5); top.forEach(needMeta); m.lb = top.map(w => [w.id, Math.round(w.score)]); m.rk = ranks.get(me) || 0; m.hn = 1 + NET.clients.size; m.ld = run.leader ? run.leader.id : 0; }
+  if (mm) m.mm = mm;
+  if (meta.length) m.meta = meta; if (ws.length) m.w = ws; if (nb.length) m.nb = nb; if (gone.length) m.wg = gone; if (fa.length) m.fa = fa; if (fr.length) m.fr = fr;
+  NET.mq.pub(T(`r/${NET.room}/c/${c.cid}`), JSON.stringify(m));
+}
+
+/* -- guest -- */
+function clientStart(m) {
+  NET.mode = 'client'; NET.myId = m.you; NET.speed = clamp(m.sp | 0, 0, 3); NET.hostCid = m.hc; NET.room = m.room;
+  NET.mq.sub(T('gone/' + m.hc));
+  NET.timeOff = m.tm - performance.now() / 1000;
+  W = { worms: [], food: [], meteors: [], holes: [], bodies: [], natFood: 0, deadFood: 0, respawns: [], t: m.tm, deaths: {}, foodSeq: 0 };
+  W.holes = m.holes.map(([x, y, R, core]) => ({ x, y, R, core, rot: rand(0, TAU) }));
+  W.meteors = m.met.map(([ax, ay, ring, rock, orbit, a0, av, spin, poly]) => ({ ax, ay, ring, rock, orbit, a0, av, spin, poly, a: a0, rot: 0, x: ax, y: ay }));
+  W.bodies = m.bt.map(tp => ({ type: tp ? 'planet' : 'moon', x: 0, y: 0, tx: 0, ty: 0, r: tp ? 15 : 11, need: tp ? PLANET_NEED : MOON_NEED, alive: false }));
+  moveMeteors();
+  Object.assign(NET, { foods: new Map(), remotes: new Map(), meta: new Map(), lb: [], mm: [], leaderId: 0, lastPkt: performance.now(), myScore: 10, myRank: 1, humans: 1, inAcc: 0 });
+  const sk = SKINS.find(s => s.id === save.skin) || SKINS[0];
+  player = makeWorm({ name: save.name.trim() || t('you'), isPlayer: true, base: sk.base, band: sk.band, stars: sk.stars, x: m.x, y: m.y, angle: m.a, score: 10 });
+  player.id = m.you; W.worms.push(player);
+  beginPlay();
+}
+function densify(flat) {
+  const pts = [];
+  for (let i = 0; i < flat.length; i += 2) {
+    const p = { x: flat[i], y: flat[i + 1] };
+    if (pts.length) { const q = pts[pts.length - 1]; pts.push({ x: (q.x + p.x) / 2, y: (q.y + p.y) / 2 }); }
+    pts.push(p);
+  }
+  return pts;
+}
+function clientOnMsg(m) {
+  if (!m) return;
+  if (m.t === 'w') { clientStart(m); if (NET.joinResolve) NET.joinResolve('ok'); return; }
+  if (m.t === 'full' || m.t === 'err') { if (NET.joinResolve) NET.joinResolve(m.t === 'full' ? 'full' : 'version'); return; }
+  if (m.t !== 's' || NET.mode !== 'client') return;
+  NET.lastPkt = performance.now();
+  const off = m.tm - performance.now() / 1000;
+  NET.timeOff = off > NET.timeOff ? off : NET.timeOff + (off - NET.timeOff) * 0.05;
+  if (m.meta) for (const [id, name, base, band, stars, human] of m.meta) NET.meta.set(id, { name, base, band, stars: !!stars, human: !!human });
+  if (m.me && player) {
+    const [s, k, mg, sh, inv, alive, moons, planets] = m.me, gain = s - NET.myScore;
+    if (player.alive && alive) {
+      if (gain >= 0.9) { run.gains.push({ t: run.time, v: gain }); run.combo = run.time - run.lastEat < 1.1 ? run.combo + 1 : 1; run.lastEat = run.time; run.maxCombo = Math.max(run.maxCombo, run.combo); }
+      player.score = s; player.magnetT = mg; player.shield = sh; player.invuln = inv ? Math.max(player.invuln, 0.25) : 0;
+      if (s > player.maxScore) player.maxScore = s;
+    }
+    player.kills = k; player.moons = moons; player.planets = planets; NET.myScore = s;
+  }
+  if (m.wg) for (const id of m.wg) { const w = NET.remotes.get(id); if (w) { NET.remotes.delete(id); const i = W.worms.indexOf(w); if (i >= 0) W.worms.splice(i, 1); } }
+  if (m.w) for (const [id, x, y, a, s, b] of m.w) {
+    let w = NET.remotes.get(id);
+    if (!w) {
+      const mt = NET.meta.get(id) || { name: '?', base: '#7D88AB', band: '#E9EEF8' };
+      w = { id, name: mt.name, base: mt.base, band: mt.band, stars: mt.stars, human: mt.human, x, y, angle: a, targetAngle: a, score: s, pts: [], alive: true, boosting: false, trimmed: 0, shield: 0, invuln: 0, magnetT: 0, net: { x, y, a, t: m.tm } };
+      NET.remotes.set(id, w); W.worms.push(w);
+    }
+    if (Math.hypot(x - w.net.x, y - w.net.y) > 220) { w.x = x; w.y = y; w.pts = []; }
+    w.net = { x, y, a, t: m.tm }; w.score = s; w.boosting = !!b; w.targetAngle = a;
+  }
+  if (m.nb) for (const [id, flat] of m.nb) { const w = NET.remotes.get(id); if (w) { w.pts = densify(flat); w.trimmed = 0; } }
+  if (m.fa) for (const [id, x, y, r10, c] of m.fa) NET.foods.set(id, { id, x, y, r: r10 / 10, c: typeof c === 'number' ? FOOD_COLORS[c] : okColor(c), alive: true, nat: true, life: 1e9, ph: rand(0, TAU) });
+  if (m.fr) for (const id of m.fr) NET.foods.delete(id);
+  if (m.fa || m.fr) W.food = [...NET.foods.values()];
+  if (m.b) m.b.forEach(([x, y, al], i) => { const b = W.bodies[i]; if (!b) return; if (!b.alive && al) { b.x = x; b.y = y; } b.tx = x; b.ty = y; b.alive = !!al; });
+  if (m.lb) {
+    NET.lb = m.lb; NET.myRank = m.rk || NET.myRank; NET.humans = m.hn || 1;
+    if (m.ld !== NET.leaderId) {
+      const prev = NET.leaderId; NET.leaderId = m.ld;
+      if (state === 'play' && prev && m.ld) {
+        if (m.ld === NET.myId) { save.crowns = (save.crowns || 0) + 1; notifyPill(CROWN_SVG.replace(/10/g, '13') + '<span>' + t('crownYou') + '</span>', 'gold'); run.crownNoticeAt = run.time; }
+        else if (run.time - run.crownNoticeAt > 4) { const mt = NET.meta.get(m.ld); run.crownNoticeAt = run.time; notifyPill(CROWN_SVG.replace(/10/g, '13') + '<span>' + t('crownOther', { name: esc(mt ? mt.name : '?') }) + '</span>', 'gold'); }
+      }
+    }
+  }
+  if (m.mm) NET.mm = m.mm;
+  if (m.ev) for (const ev of m.ev) clientEvent(ev);
+}
+function clientEvent(ev) {
+  if (ev.e === 'die') {
+    if (!player || !player.alive) return;
+    player.alive = false; run.reason = ev.r === 'left' ? 'worm' : ev.r; run.killer = ev.k || ''; state = 'dead'; vibrate(220);
+    setTimeout(showGameOver, 1300); return;
+  }
+  if (ev.e === 'hole' && player) { const dx = ev.x - player.x, dy = ev.y - player.y; player.x += dx; player.y += dy; for (const q of player.pts) { q.x += dx; q.y += dy; } }
+  if (ev.e === 'shield' && player) { player.angle += Math.PI; player.targetAngle = player.angle; }
+  showEvent(ev);
+}
+function clientStep(dt) {
+  W.t = performance.now() / 1000 + NET.timeOff;
+  if (state === 'play') run.time += dt;
+  moveMeteors();
+  for (const h of W.holes) h.rot += dt * 1.4;
+  for (const b of W.bodies) if (b.alive) { const k = Math.min(1, dt * 2); b.x += (b.tx - b.x) * k; b.y += (b.ty - b.y) * k; }
+  if (state === 'play') applyInput(dt);
+  if (player && player.alive) {
+    moveWorm(player, dt);
+    const hr = rOf(player) * 1.3;
+    for (const f of W.food) if (f.alive && Math.abs(f.x - player.x) < hr + 9 && Math.abs(f.y - player.y) < hr + 9 && dist2(f.x, f.y, player.x, player.y) < (hr + f.r) ** 2) f.alive = false;
+  }
+  for (const w of NET.remotes.values()) {
+    const n = w.net, age = clamp(W.t - n.t, 0, 0.3), sp = speedOf(w), k = Math.min(1, dt * 12);
+    w.x += (n.x + Math.cos(n.a) * sp * age - w.x) * k; w.y += (n.y + Math.sin(n.a) * sp * age - w.y) * k;
+    w.angle += angDiff(n.a, w.angle) * k;
+    advanceTrail(w);
+  }
+  run.leader = NET.leaderId === NET.myId ? player : (NET.remotes.get(NET.leaderId) || null);
+  if (state === 'play' && NET.leaderId === NET.myId) run.crownTime += dt;
+  NET.inAcc -= dt;
+  if (NET.inAcc <= 0 && player && NET.mq) {
+    NET.inAcc = 1 / 15; const s = viewScale();
+    NET.mq.pub(T(`r/${NET.room}/in/${NET.cid}`), JSON.stringify({ x: r1(player.x), y: r1(player.y), a: r3(player.angle), ta: r3(player.targetAngle), b: player.boosting ? 1 : 0, vw: Math.round(CW / s / 2), vh: Math.round(CH / s / 2) }));
+  }
+  if (performance.now() - NET.lastPkt > 7000) { netLost('net'); return; }
+  afterStep(dt);
+}
+function netRespawn() {
+  if (NET.mode === 'host') {
+    const sk = SKINS.find(s => s.id === save.skin) || SKINS[0], p = safeSpot(160, null);
+    player = makeWorm({ name: save.name.trim() || t('you'), isPlayer: true, base: sk.base, band: sk.band, stars: sk.stars, x: p.x, y: p.y, score: 10 });
+    W.worms.push(player); beginPlay();
+  } else if (NET.mode === 'client' && NET.mq) sendJoin(NET.room);
+}
+function updateRoomPill() {
+  const el = $('roomPill'); if (!el) return;
+  const on = NET.mode === 'host' || NET.mode === 'client';
+  el.hidden = !on;
+  if (on) el.textContent = t('room', { code: NET.room, n: NET.mode === 'host' ? 1 + NET.clients.size : NET.humans });
+}
+function setNetStatus(text, isError) { const el = $('netStatus'); el.textContent = text; el.classList.toggle('err', !!isError); }
+function setOnlineBusy(b) { for (const id of ['quickBtn', 'createBtn', 'joinCodeBtn']) $(id).disabled = b; }
+function showMsg(title, text) { $('msgTitle').textContent = title; $('msgText').textContent = text; $('hud').hidden = true; $('over').hidden = true; $('pause').hidden = true; $('msg').hidden = false; state = 'over'; }
+
 /* ---------------- Screens ---------------- */
-const screens = ['menu', 'skins', 'settings'];
+const screens = ['menu', 'skins', 'settings', 'online'];
 let skinsReturn = 'menu';
 function showScreen(id) { for (const s of screens) $(s).hidden = s !== id; if (id === 'menu') refreshMenu(); if (id === 'skins') buildSkins(); }
 function refreshMenu() { document.querySelectorAll('[data-dust]').forEach(e => { e.textContent = fmt(save.dust); }); $('recordVal').textContent = fmt(save.record); }
@@ -1071,7 +1615,8 @@ function applyI18n() {
   document.querySelectorAll('[data-i18n-html]').forEach(e => { e.innerHTML = t(e.dataset.i18nHtml); });
   document.querySelectorAll('[data-i18n-aria]').forEach(e => { e.setAttribute('aria-label', t(e.dataset.i18nAria)); });
   document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
-  $('nameInput').placeholder = t('namePh');
+  $('nameInput').placeholder = t('namePh'); $('codeInput').placeholder = t('codePh');
+  updateRoomPill();
   document.title = lang === 'ro' ? 'Viermele Stelar' : 'Star Worm';
   buildSpeeds(); refreshMenu();
   if (!$('skins').hidden) buildSkins();
@@ -1088,6 +1633,17 @@ function buildSpeeds() {
       el.appendChild(b);
     });
   }
+  // Difficulty uses the same look: one, two or three bars.
+  const BARS = ['M4 10V7', 'M4 10V7M10 10V4', 'M4 10V7M10 10V4M16 10V1'];
+  for (const id of ['diffsMenu', 'diffsSettings']) {
+    const el = $(id); el.innerHTML = '';
+    t('diffs').forEach((name, i) => {
+      const b = document.createElement('button'); b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(save.diff === i)); if (i === 2) b.className = 'x';
+      b.innerHTML = '<svg width="20" height="12" viewBox="0 0 20 12" fill="none" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="' + BARS[i] + '"></path></svg>' + esc(name);
+      b.addEventListener('click', () => { save.diff = i; persist(); buildSpeeds(); });
+      el.appendChild(b);
+    });
+  }
 }
 document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => { lang = b.dataset.lang; save.lang = lang; persist(); applyI18n(); }));
 $('nameInput').value = save.name;
@@ -1095,7 +1651,11 @@ $('nameInput').addEventListener('input', e => { save.name = e.target.value.slice
 $('playBtn').addEventListener('click', startGame);
 $('skinsBtn').addEventListener('click', () => { skinsReturn = 'menu'; showScreen('skins'); });
 $('settingsBtn').addEventListener('click', () => showScreen('settings'));
-document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', () => { if (skinsReturn === 'over' && !$('skins').hidden) { $('skins').hidden = true; $('over').hidden = false; skinsReturn = 'menu'; } else showScreen('menu'); }));
+document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', () => {
+  if (skinsReturn === 'over' && !$('skins').hidden) { $('skins').hidden = true; $('over').hidden = false; skinsReturn = 'menu'; return; }
+  if (!$('online').hidden && NET.mode !== 'host' && NET.mode !== 'client') netLeave();
+  showScreen('menu');
+}));
 function setSwitch(el, on) { el.setAttribute('aria-pressed', String(on)); }
 setSwitch($('namesSw'), save.names); setSwitch($('vibSw'), save.vibrate);
 $('namesSw').addEventListener('click', () => { save.names = !save.names; setSwitch($('namesSw'), save.names); persist(); });
@@ -1151,9 +1711,12 @@ $('tabOwned').addEventListener('click', () => { skinTab = 'owned'; buildSkins();
 /* game flow */
 let wakeLock = null;
 function startGame() {
-  for (const s of screens) $(s).hidden = true;
-  $('over').hidden = true; $('pause').hidden = true;
   newWorld(true);
+  beginPlay();
+}
+function beginPlay() {
+  for (const s of screens) $(s).hidden = true;
+  $('over').hidden = true; $('pause').hidden = true; $('msg').hidden = true;
   Object.assign(run, { time: 0, combo: 0, lastEat: -9, maxCombo: 0, gains: [], crownTime: 0, leader: null, crownNoticeAt: -9, reason: null, killer: '', hintAt: -9, boostHintAt: -9 });
   cam.x = player.x; cam.y = player.y; cam.z = 1; cam.follow = player;
   notices.innerHTML = ''; biteEl.hidden = true; lastBoard = ''; lastChips = '';
@@ -1162,14 +1725,21 @@ function startGame() {
   try { if (navigator.wakeLock) navigator.wakeLock.request('screen').then(l => { wakeLock = l; }).catch(() => {}); } catch (e) { /* ignore */ }
 }
 function togglePause() {
+  // Online the world never stops: the menu just opens on top while the room keeps playing.
+  if (NET.mode !== 'solo') {
+    const opening = $('pause').hidden; $('pause').hidden = !opening; $('pauseNote').hidden = false;
+    if (opening) { input.boostBtn = false; input.joyActive = false; joyRest(); }
+    return;
+  }
+  $('pauseNote').hidden = true;
   if (state === 'play') { state = 'pause'; $('pause').hidden = false; input.boostBtn = false; input.joyActive = false; joyRest(); }
   else if (state === 'pause') { state = 'play'; $('pause').hidden = true; }
 }
 $('pauseBtn').addEventListener('click', togglePause);
-$('resumeBtn').addEventListener('click', togglePause);
+$('resumeBtn').addEventListener('click', () => { if (NET.mode !== 'solo') $('pause').hidden = true; else togglePause(); });
 $('quitBtn').addEventListener('click', () => { $('pause').hidden = true; toMenu(); });
-document.addEventListener('visibilitychange', () => { if (document.hidden && state === 'play') togglePause(); });
-function toMenu() { state = 'menu'; $('hud').hidden = true; $('over').hidden = true; player = null; newWorld(false); cam.follow = null; showScreen('menu'); try { wakeLock && wakeLock.release(); } catch (e) { /* ignore */ } }
+document.addEventListener('visibilitychange', () => { if (document.hidden && state === 'play' && NET.mode === 'solo') togglePause(); });
+function toMenu() { netLeave(); state = 'menu'; $('hud').hidden = true; $('over').hidden = true; $('msg').hidden = true; $('pause').hidden = true; player = null; newWorld(false); cam.follow = null; showScreen('menu'); try { wakeLock && wakeLock.release(); } catch (e) { /* ignore */ } }
 function showGameOver() {
   if (state !== 'dead') return;
   state = 'over';
@@ -1187,7 +1757,14 @@ function showGameOver() {
   $('overMoons').textContent = t('moons', { n: p.moons }); $('overPlanets').textContent = t('planets', { n: p.planets });
   $('hud').hidden = true; $('over').hidden = false;
 }
-$('againBtn').addEventListener('click', startGame);
+$('againBtn').addEventListener('click', () => { if (NET.mode === 'solo') startGame(); else netRespawn(); });
+$('msgBtn').addEventListener('click', toMenu);
+$('onlineBtn').addEventListener('click', () => { setNetStatus(''); showScreen('online'); });
+$('quickBtn').addEventListener('click', netQuick);
+$('createBtn').addEventListener('click', netCreate);
+$('joinCodeBtn').addEventListener('click', () => netJoinCode($('codeInput').value));
+$('codeInput').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4); });
+$('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') netJoinCode(e.target.value); });
 $('overMenu').addEventListener('click', toMenu);
 $('overSkins').addEventListener('click', () => { skinsReturn = 'over'; $('over').hidden = true; for (const s of screens) $(s).hidden = s !== 'skins'; buildSkins(); });
 
@@ -1202,13 +1779,14 @@ function frame(now) {
 resize(); makePatterns(); newWorld(false); applyI18n(); showScreen('menu');
 // Android back button (used by the app wrapper): returns true when the game handled it.
 window.__androidBack = () => {
-  const open = ['skins', 'settings'].find(id => !$(id).hidden);
+  if (!$('msg').hidden) { toMenu(); return true; }
+  const open = ['skins', 'settings', 'online'].find(id => !$(id).hidden);
   if (open && (state === 'menu' || state === 'over')) { $(open).querySelector('[data-back]').click(); return true; }
   if (state === 'play' || state === 'pause') { togglePause(); return true; }
   if (state === 'over' || state === 'dead') { toMenu(); return true; }
   return false;
 };
-window.__game = { get state() { return state; }, get player() { return player; }, get world() { return W; }, startGame, killPlayer: r => player && killWorm(player, r || 'meteor', null) };
+window.__game = { get net() { return NET; }, killWorm, get state() { return state; }, get player() { return player; }, get world() { return W; }, startGame, killPlayer: r => player && killWorm(player, r || 'meteor', null) };
 requestAnimationFrame(frame);
 })();
 </script>

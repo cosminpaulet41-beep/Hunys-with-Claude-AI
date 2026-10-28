@@ -36,6 +36,7 @@ Un joc cu viermi în spațiu, pentru telefon și calculator. Mănânci scântei 
 - Liderul poartă coroana și primește praf de stele în plus.
 - Cu praful de stele cumperi skin-uri. Galaxie se deblochează după ce câștigi coroana de 3 ori.
 - Din meniu alegi viteza jocului (Lentă, Normală, Rapidă sau Extremă), dificultatea și limba (română sau engleză).
+- Toate setările din meniu sunt și în meniul de pauză: limba, numele, viteza, dificultatea, numele viermilor pe hartă, vibrațiile și skin-urile. Se schimbă pe loc, în timpul jocului. Online, viteza și dificultatea le alege gazda, iar numele și skin-ul tău noi le văd imediat și ceilalți.
 
 **Obiecte din arenă**
 
@@ -80,6 +81,7 @@ A space worm game for phones and computers. Eat sparks to grow (big ones are wor
 - The leader wears the crown and earns bonus stardust.
 - Stardust buys skins. Galaxy unlocks after you win the crown 3 times.
 - The menu lets you pick the game speed (Slow, Normal, Fast or Extreme), the difficulty and the language (Romanian or English).
+- Every menu setting is also in the pause menu: language, name, speed, difficulty, worm names on the map, vibration and skins. They apply on the spot, mid-game. Online, the host picks the speed and difficulty, and everyone else sees your new name and skin right away.
 
 **Pickups**
 

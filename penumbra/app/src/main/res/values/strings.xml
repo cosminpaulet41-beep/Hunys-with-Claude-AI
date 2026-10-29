@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Penumbra</string>
+    <string name="full_cover_desc">Lets Penumbra also dim the status bar, the navigation bar and the notification panel, and go down to 90%. It only draws a dark layer: it does not read the screen, your taps or what you type.</string>
+</resources>

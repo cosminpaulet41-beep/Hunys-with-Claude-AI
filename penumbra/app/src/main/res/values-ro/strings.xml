@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Penumbra</string>
+    <string name="full_cover_desc">Îi permite aplicației Penumbra să întunece și bara de stare, bara de navigare și panoul de notificări, până la 90%. Doar desenează un strat întunecat: nu citește ecranul, atingerile sau ce scrii.</string>
+</resources>

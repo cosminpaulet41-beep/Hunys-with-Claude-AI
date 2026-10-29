@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Penumbra — Hunys with Claude AI — MIT
+  Nu ascultă niciun eveniment și nu citește conținutul ferestrelor: serviciul doar desenează stratul.
+  Listens to no events and reads no window content: the service only draws the layer.
+-->
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/full_cover_desc"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:canRetrieveWindowContent="false"
+    android:notificationTimeout="1000" />

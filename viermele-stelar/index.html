@@ -229,19 +229,38 @@ h1.title span{color:var(--mint)}
 .menucard .input.mycode{width:86px;height:38px;padding:0 4px;border-radius:10px;font-size:16px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;text-align:center}
 .stepper .bv{min-width:34px;text-align:center;font-size:17px;font-weight:700}
 #pauseBots{display:flex;flex-direction:column;gap:6px}
-.psets{display:flex;flex-direction:column;gap:7px;text-align:left;margin-top:2px}
-.psets>.lbl{margin:2px 0 -1px 2px}
-.prow{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px;box-sizing:border-box;padding:4px 5px 4px 12px;border-radius:12px;background:var(--inset);border:1px solid var(--line2);font-size:13px;font-weight:500}
-.prow.stack{flex-direction:column;align-items:stretch;padding:8px 6px 6px;gap:6px}
+.psets{display:flex;flex-direction:column;gap:5px;text-align:left}
+.prow{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:36px;box-sizing:border-box;padding:3px 4px 3px 10px;border-radius:10px;background:var(--inset);border:1px solid var(--line2);font-size:12px;font-weight:500}
+.prow.stack{flex-direction:column;align-items:stretch;padding:5px 4px 4px;gap:4px}
 .prow.stack>span{padding-left:6px}
-.prow .seg button{height:30px;min-width:40px;padding:0 10px;font-size:12px}
-.prow .speeds{gap:5px}
-.prow .speeds button{height:42px;font-size:11px;gap:1px;border-radius:10px}
+.prow .seg{padding:2px}
+.prow .seg button{height:26px;min-width:36px;padding:0 9px;font-size:11px}
+.prow .speeds{gap:4px}
+.prow .speeds button{height:30px;font-size:11px;border-radius:8px}
+.prow .speeds button svg{display:none}
 .prow .speeds button[disabled]{opacity:.5;cursor:default}
-.prow .input{width:150px;height:36px;padding:0 10px;font-size:14px;border-radius:10px}
-.prow .switch{flex:none}
-.psets .tip{font-size:11px;line-height:1.35;padding:0 4px}
+.prow .input{width:140px;height:30px;padding:0 9px;font-size:13px;border-radius:8px}
+.prow .switch{flex:none;width:40px;height:24px}
+.prow .switch::after{left:3px;top:3px;width:18px;height:18px}
+.prow .switch[aria-pressed="true"]::after{left:19px}
+.prow.two .half{flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:6px}
+.prow.two .half+.half{border-left:1px solid var(--line2);padding-left:8px}
+.prow.two .half>span{white-space:nowrap}
+.prow.two .half:first-child{flex-grow:1.25}
+.psets .tip{font-size:10px;line-height:1.3;padding:0 4px}
 .psets .tip:empty{display:none}
+#pause .mcard{max-width:330px;padding:12px;gap:6px}
+#pause .mcard h2{font-size:18px;line-height:1.2}
+#pause #pauseNote{font-size:11px;line-height:1.3;margin-top:-3px}
+#pause .btn.again{height:40px;font-size:15px;border-radius:12px}
+#pause .row2{gap:5px}
+#pause .row2 .btn{height:34px;font-size:12px;border-radius:10px;gap:5px}
+#pause .row2 .btn svg{width:16px;height:16px}
+#pause .botsrow{min-height:36px;padding:3px 4px 3px 10px;border-radius:10px}
+#pause .botsrow .bl{font-size:12px}
+#pause .stepper button{width:30px;height:28px;font-size:17px;border-radius:8px}
+#pause .stepper .bv{min-width:28px;font-size:15px}
+#pauseBots{gap:3px}
 #pauseBots .tip{font-size:11px;line-height:1.35}
 @media (prefers-reduced-motion: reduce){.notice,#bite.show,#fireBtn.fresh{animation:none}}
 @media (min-width:700px) and (min-height:500px){.board{width:190px;font-size:12px}.brow{height:17px}}
@@ -332,6 +351,7 @@ h1.title span{color:var(--mint)}
       <div class="set"><span data-i18n="language"></span><div class="seg"><button data-lang="ro" aria-pressed="true">RO</button><button data-lang="en" aria-pressed="false">EN</button></div></div>
       <div class="set col2"><span id="speedLbl2" data-i18n="speedName"></span><div class="speeds" role="radiogroup" aria-labelledby="speedLbl2" id="speedsSettings"></div></div>
       <div class="set col2"><span id="diffLbl2" data-i18n="diff"></span><div class="speeds diffs" role="radiogroup" aria-labelledby="diffLbl2" id="diffsSettings"></div></div>
+      <div class="set"><span data-i18n="botsSoloLbl2"></span><div class="stepper"><button data-bots="solo" data-dir="-1" data-i18n-aria="botsLess">−</button><span class="bv num" id="botsSolo">34</span><button data-bots="solo" data-dir="1" data-i18n-aria="botsMore">+</button></div></div>
       <div class="set"><span id="namesLbl" data-i18n="names"></span><button class="switch" id="namesSw" data-sw="names" aria-labelledby="namesLbl" aria-pressed="true"></button></div>
       <div class="set"><span id="vibLbl" data-i18n="vibration"></span><button class="switch" id="vibSw" data-sw="vibrate" aria-labelledby="vibLbl" aria-pressed="true"></button></div>
     </div>
@@ -370,20 +390,17 @@ h1.title span{color:var(--mint)}
     <p class="tip" id="pauseNote" data-i18n="onlineGoesOn" hidden></p>
     <button class="btn again" id="resumeBtn"><span data-i18n="resume"></span></button>
     <div class="psets">
-      <div class="lbl" data-i18n="settings"></div>
       <div class="prow"><span data-i18n="language"></span><div class="seg"><button data-lang="ro" aria-pressed="true">RO</button><button data-lang="en" aria-pressed="false">EN</button></div></div>
       <div class="prow"><label for="pauseName" data-i18n="yourName"></label><input id="pauseName" class="input" type="text" maxlength="14" autocomplete="off" spellcheck="false"></div>
       <div class="prow stack"><span id="speedLbl3" data-i18n="speedName"></span><div class="speeds" role="radiogroup" aria-labelledby="speedLbl3" id="speedsPause"></div></div>
       <div class="prow stack"><span id="diffLbl3" data-i18n="diff"></span><div class="speeds diffs" role="radiogroup" aria-labelledby="diffLbl3" id="diffsPause"></div><p class="tip" id="diffPauseNote"></p></div>
-      <div id="pauseBots" hidden>
-        <div class="botsrow"><span class="bl" data-i18n="botsLbl"></span><div class="stepper"><button data-bots="room" data-dir="-1" data-i18n-aria="botsLess">−</button><span class="bv num" id="botsRoom">20</span><button data-bots="room" data-dir="1" data-i18n-aria="botsMore">+</button></div></div>
-        <p class="tip" data-i18n="botsNote"></p>
+      <div id="pauseBots">
+        <div class="botsrow"><span class="bl" id="pauseBotsLbl"></span><div class="stepper"><button data-bots="room" data-dir="-1" data-i18n-aria="botsLess">−</button><span class="bv num" id="botsRoom">20</span><button data-bots="room" data-dir="1" data-i18n-aria="botsMore">+</button></div></div>
+        <p class="tip" id="pauseBotsNote" data-i18n="botsNote"></p>
       </div>
-      <div class="prow"><span id="namesLbl3" data-i18n="names"></span><button class="switch" data-sw="names" aria-labelledby="namesLbl3" aria-pressed="true"></button></div>
-      <div class="prow"><span id="vibLbl3" data-i18n="vibration"></span><button class="switch" data-sw="vibrate" aria-labelledby="vibLbl3" aria-pressed="true"></button></div>
-      <button class="btn" id="pauseSkinsBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EEF2FF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.7-.8 1.7-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.8-1.7 1.7-1.7H16a5 5 0 0 0 5-5c0-4-4-7.2-9-7.2z"></path><circle cx="7.5" cy="11" r="1.2" fill="#EEF2FF"></circle><circle cx="10" cy="7" r="1.2" fill="#EEF2FF"></circle><circle cx="15" cy="7.5" r="1.2" fill="#EEF2FF"></circle></svg><span data-i18n="skins"></span></button>
+      <div class="prow two"><span class="half"><span id="namesLbl3" data-i18n="namesShort"></span><button class="switch" data-sw="names" aria-labelledby="namesLbl3" aria-pressed="true"></button></span><span class="half"><span id="vibLbl3" data-i18n="vibration"></span><button class="switch" data-sw="vibrate" aria-labelledby="vibLbl3" aria-pressed="true"></button></span></div>
+      <div class="row2"><button class="btn" id="pauseSkinsBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EEF2FF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.7-.8 1.7-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.8-1.7 1.7-1.7H16a5 5 0 0 0 5-5c0-4-4-7.2-9-7.2z"></path><circle cx="7.5" cy="11" r="1.2" fill="#EEF2FF"></circle><circle cx="10" cy="7" r="1.2" fill="#EEF2FF"></circle><circle cx="15" cy="7.5" r="1.2" fill="#EEF2FF"></circle></svg><span data-i18n="skins"></span></button><button class="btn" id="quitBtn"><span data-i18n="mainMenu"></span></button></div>
     </div>
-    <button class="btn" id="quitBtn"><span data-i18n="mainMenu"></span></button>
   </div>
 </div>
 
@@ -442,6 +459,7 @@ const STR = {
     pk_turboT: 'Turbo gratuit!', pk_turboD: '8 secunde mai rapid, fără să pierzi lungime',
     pk_ghostT: 'Fantomă!', pk_ghostD: '8 secunde nu te poate mânca nimeni',
     pk_x2T: 'Energie dublă!', pk_x2D: '20 de secunde, tot ce mănânci valorează dublu',
+    pk_magnetT: 'Magnet!', pk_magnetD: '20 de secunde aduni mâncarea și obiectele de la o distanță dublă', magnet2: 'Magnet ×2',
     stunnedT: 'Ai fost paralizat!', stunnedD: '{name} te-a lovit. Stai pe loc 30 de secunde.',
     pushedT: 'Ai fost respins!', pushedD: '{name} te-a alungat',
     hitStun: '<span class="hl">{name}</span> stă pe loc 30 de secunde', hitRepel: '<span class="hl">{name}</span> a fost alungat',
@@ -462,7 +480,7 @@ const STR = {
     controlsHint: 'Pe telefon: trage cu degetul în stânga ecranului ca să conduci, ține apăsat fulgerul pentru turbo. Când iei o armă apare butonul de foc deasupra fulgerului. Pe calculator: mouse-ul conduce, click sau Space pentru turbo, F sau click dreapta pentru foc.',
     diff: 'Dificultate', diffs: ['Ușor', 'Normal', 'Greu'],
     online: 'Joacă online', onlineSub: 'Până la 4 jucători, plus boți. Gazda alege viteza și dificultatea. Numărul de boți îl poate schimba oricine din cameră, și în timpul jocului, din pauză.',
-    savedBy: 'Scutul lui {name} l-a salvat', hostChanged: 'Gazda a schimbat jocul: {speed} · {diff}', diffNextGame: 'Boții se schimbă acum. Meteoriții și numărul de obiecte se schimbă de la jocul următor.', hostPicks: 'Viteza și dificultatea le alege gazda camerei.',
+    savedBy: 'Scutul lui {name} l-a salvat', hostChanged: 'Gazda a schimbat jocul: {speed} · {diff}', diffNextGame: 'Boții se schimbă acum; meteoriții și obiectele, de la jocul următor.', botsSoloLbl: 'Boți', botsSoloLbl2: 'Boți când joci singur', namesShort: 'Nume pe hartă', hostPicks: 'Viteza și dificultatea le alege gazda camerei.',
     myCodeLbl: 'Codul camerei tale', newCode: 'Cod nou', errTaken: 'Codul {code} e folosit acum de altă cameră. Alege alt cod.',
     botsLbl: 'Boți în cameră', botsHostLbl: 'Boți în camera ta', botsNote: 'Se schimbă pentru toți cei din cameră.', botsLess: 'Mai puțini boți', botsMore: 'Mai mulți boți',
     botsSet: 'Boți în cameră: <span class="hl">{n}</span> · schimbat de {name}',
@@ -492,6 +510,7 @@ const STR = {
     pk_turboT: 'Free boost!', pk_turboD: 'Faster for 8 seconds without losing length',
     pk_ghostT: 'Ghost!', pk_ghostD: 'Nothing can eat you for 8 seconds',
     pk_x2T: 'Double energy!', pk_x2D: 'Everything you eat counts double for 20 seconds',
+    pk_magnetT: 'Magnet!', pk_magnetD: 'For 20 seconds you pull in food and pickups from twice as far', magnet2: 'Magnet ×2',
     stunnedT: 'You’ve been stunned!', stunnedD: '{name} hit you. You can’t move for 30 seconds.',
     pushedT: 'You were pushed away!', pushedD: '{name} drove you off',
     hitStun: '<span class="hl">{name}</span> can’t move for 30 seconds', hitRepel: '<span class="hl">{name}</span> was driven off',
@@ -512,7 +531,7 @@ const STR = {
     controlsHint: 'On a phone: drag on the left side of the screen to steer, hold the lightning button to boost. When you pick up a weapon, a fire button appears above the lightning button. On a computer: the mouse steers, click or Space to boost, F or right-click to fire.',
     diff: 'Difficulty', diffs: ['Easy', 'Normal', 'Hard'],
     online: 'Play online', onlineSub: 'Up to 4 players, plus bots. The host picks the speed and difficulty. Anyone in the room can change the number of bots, even mid-game from the pause menu.',
-    savedBy: '{name}’s shield saved it', hostChanged: 'The host changed the game: {speed} · {diff}', diffNextGame: 'Bots change right away. Meteors and the number of pickups change from the next game.', hostPicks: 'The room host picks the speed and difficulty.',
+    savedBy: '{name}’s shield saved it', hostChanged: 'The host changed the game: {speed} · {diff}', diffNextGame: 'Bots change now; meteors and pickups from the next game.', botsSoloLbl: 'Bots', botsSoloLbl2: 'Bots when playing alone', namesShort: 'Names on map', hostPicks: 'The room host picks the speed and difficulty.',
     myCodeLbl: 'Your room code', newCode: 'New code', errTaken: 'Code {code} is being used by another room right now. Pick another code.',
     botsLbl: 'Bots in the room', botsHostLbl: 'Bots in your room', botsNote: 'Changes it for everyone in the room.', botsLess: 'Fewer bots', botsMore: 'More bots',
     botsSet: 'Bots in the room: <span class="hl">{n}</span> · changed by {name}',
@@ -537,7 +556,7 @@ const fmt = n => String(Math.max(0, Math.floor(n))).replace(/\B(?=(\d{3})+(?!\d)
 
 /* ---------------- Saved progress (this browser only) ---------------- */
 const SAVE_KEY = 'viermele-stelar-v1';
-const save = { lang: '', name: '', speed: 1, diff: 1, dust: 0, record: 0, owned: ['aurora', 'cometa'], skin: 'aurora', crowns: 0, names: true, vibrate: true, netBots: 20, roomCode: '', lastCode: '' };
+const save = { lang: '', name: '', speed: 1, diff: 1, dust: 0, record: 0, owned: ['aurora', 'cometa'], skin: 'aurora', crowns: 0, names: true, vibrate: true, netBots: 20, soloBots: -1, roomCode: '', lastCode: '' };
 try { const s = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); if (s && typeof s === 'object') Object.assign(save, s); } catch (e) { /* storage unavailable */ }
 function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) { /* ignore */ } }
 if (!save.lang) save.lang = 'ro';
@@ -576,11 +595,11 @@ const MOON_NEED = 25, PLANET_NEED = 60;
 // Pickups scattered around the arena. Weapons are only for humans; bots leave them lying.
 const PICKUPS = {
   shield: { color: '#B49CFF', w: 3 }, stun: { color: '#FFC857', w: 2, weapon: true }, repel: { color: '#FF8A96', w: 2, weapon: true },
-  turbo: { color: '#6EF2B0', w: 2 }, ghost: { color: '#E3E8FF', w: 1.3 }, x2: { color: '#6FC8FF', w: 1.4 }
+  turbo: { color: '#6EF2B0', w: 2 }, ghost: { color: '#E3E8FF', w: 1.3 }, x2: { color: '#6FC8FF', w: 1.4 }, magnet: { color: '#FF9A4D', w: 1.6 }
 };
 const PK_TYPES = Object.keys(PICKUPS);
 const STUN_TIME = 30, AMMO_PER = 3, AMMO_MAX = 6, SHOT_SPEED = 620, SHOT_LIFE = 1.05, PK_R = 14;
-const TURBO_TIME = 8, GHOST_TIME = 8, X2_TIME = 20, TURBO_MUL = 1.5;
+const TURBO_TIME = 8, GHOST_TIME = 8, X2_TIME = 20, TURBO_MUL = 1.5, MAGNET_TIME = 20;
 function randomPickupType() { let s = 0; for (const k of PK_TYPES) s += PICKUPS[k].w; let r = Math.random() * s; for (const k of PK_TYPES) { r -= PICKUPS[k].w; if (r <= 0) return k; } return 'shield'; }
 // Pickup icons on a 24-unit grid, shared by the arena and the HUD.
 const PK_ICON = {
@@ -589,7 +608,8 @@ const PK_ICON = {
   repel: { d: 'M7.5 8.5A5 5 0 0 1 7.5 15.5M11.1 4.9A10 10 0 0 1 11.1 19.1M15.5 2.4A15 15 0 0 1 15.5 21.6M3.2 12h1.6', fill: false },
   turbo: { d: 'M5 6l6 6-6 6M12 6l6 6-6 6', fill: false },
   ghost: { d: 'M5 21V11a7 7 0 0 1 14 0v10l-2.4-2-2.3 2-2.3-2-2.3 2-2.3-2z', fill: true, eyes: true },
-  x2: { text: '×2' }
+  x2: { text: '×2' },
+  magnet: { d: 'M6 3v8a6 6 0 0 0 12 0V3h-4v8a2 2 0 0 1-4 0V3zM6 7h4M14 7h4', fill: false }
 };
 function pkSvg(type, size, color) {
   const ic = PK_ICON[type], c = color || PICKUPS[type].color;
@@ -651,7 +671,7 @@ function makeWorm(o) {
     x: o.x, y: o.y, angle: o.angle ?? rand(0, TAU), targetAngle: 0, score: o.score ?? 10, pts: [], alive: true, boosting: false,
     trimmed: 0, kills: 0, moons: 0, planets: 0, magnetT: 0, shield: 0, invuln: o.isPlayer ? 2.5 : 1.2,
     think: rand(0, 0.15), wander: rand(0, TAU), boostAcc: 0, maxScore: o.score ?? 10, wantBoost: false, hunter: Math.random() < diffCfg().hunter,
-    weapon: null, ammo: 0, fireCd: 0, stunT: 0, turboT: 0, ghostT: 0, x2T: 0, pushT: 0, pvx: 0, pvy: 0
+    weapon: null, ammo: 0, fireCd: 0, stunT: 0, turboT: 0, ghostT: 0, x2T: 0, magnet2T: 0, pushT: 0, pvx: 0, pvy: 0
   };
   w.targetAngle = w.angle;
   const n = targetN(w.score), sp = spacingOf(w), r = rOf(w);
@@ -673,7 +693,9 @@ function spawnBot(first) {
 }
 
 // How many bots the arena keeps: the room's choice online, the difficulty's otherwise.
-function botTarget() { return NET.mode === 'host' ? NET.bots : diffCfg().bots; }
+// Solo: the player's own choice, or the difficulty's number until they pick one.
+function soloBots() { return save.soloBots >= 0 ? save.soloBots : (DIFF[save.diff] || DIFF[1]).bots; }
+function botTarget() { return NET.mode === 'host' ? NET.bots : NET.mode === 'solo' ? soloBots() : diffCfg().bots; }
 let balAt = 0;
 function balanceBots(dt) {
   balAt -= dt; if (balAt > 0) return; balAt = 0.25;
@@ -761,6 +783,7 @@ function moveWorm(w, dt) {
   if (w.turboT > 0) w.turboT -= dt;
   if (w.ghostT > 0) w.ghostT -= dt;
   if (w.x2T > 0) w.x2T -= dt;
+  if (w.magnet2T > 0) w.magnet2T -= dt;
   if (w.fleeT > 0) w.fleeT -= dt;
   if (w.fireCd > 0) w.fireCd -= dt;
   // boosting costs length (an online client gets its length from the host); turbo from a pickup is free
@@ -793,9 +816,11 @@ function grow(w, v) {
   if (!w.isPlayer && !w.human) { const cap = diffCfg().maxBot; if (w.score > cap) w.score = cap; }
   if (w.isPlayer) { run.gains.push({ t: run.time, v }); if (run.time - run.lastEat < 1.1) run.combo++; else run.combo = 1; run.lastEat = run.time; if (run.combo > run.maxCombo) run.maxCombo = run.combo; } }
 
+// Magnet pickup: everything from twice as far. A moon's magnet: a quarter farther.
+const reachMul = w => (w.magnet2T > 0 ? 2 : w.magnetT > 0 ? 1.25 : 1);
 function eat(w, dt) {
   const r = rOf(w), hr = r * 1.3;
-  let R = r * 3.2 + 18; if (w.magnetT > 0) R *= 1.25;
+  let R = r * 3.2 + 18; R *= reachMul(w);
   const pull = (260 + speedOf(w)) * dt;
   // Easy mode feeds humans faster; the ×2 pickup doubles everything on top.
   const mul = (w.x2T > 0 ? 2 : 1) * (w.isPlayer || w.human ? diffCfg().foodMul : 1);
@@ -859,6 +884,20 @@ function showEvent(ev) {
 /* ---------------- Pickups & weapons ---------------- */
 // Bots never pick up weapons, and on Easy they leave every pickup for you.
 // Bots only grab boosts and double energy, never weapons, shields or ghosts; on Easy they take nothing.
+// Pickups glide to a head that comes close: no need to hit their centre.
+const pullRange = w => (rOf(w) * 1.3 + PK_R + 45) * (w.magnet2T > 0 ? 2 : 1);
+function pullPickups(dt) {
+  for (const w of W.worms) {
+    if (!w.alive) continue;
+    const R = pullRange(w), step = (220 + speedOf(w)) * dt;
+    for (const p of W.pickups) {
+      if (!p.alive || Math.abs(p.x - w.x) > R || Math.abs(p.y - w.y) > R || !canTake(w, p)) continue;
+      const dx = w.x - p.x, dy = w.y - p.y, d = Math.hypot(dx, dy);
+      if (d > R || d < 0.01) continue;
+      const k = Math.min(d, step) / d; p.x += dx * k; p.y += dy * k; W.pkDirty = true;
+    }
+  }
+}
 function canTake(w, p) { if (w.isPlayer || w.human) return true; return diffCfg().botPick && (p.type === 'turbo' || p.type === 'x2'); }
 function takePickup(w, p) {
   p.alive = false; p.back = W.t + rand(12, 20); W.pkVer++;
@@ -868,6 +907,7 @@ function takePickup(w, p) {
   else if (k === 'turbo') w.turboT = TURBO_TIME;
   else if (k === 'ghost') { w.ghostT = GHOST_TIME; w.invuln = Math.max(w.invuln, GHOST_TIME); }
   else if (k === 'x2') w.x2T = X2_TIME;
+  else if (k === 'magnet') w.magnet2T = MAGNET_TIME;
   addFx(p.x, p.y, k, 0.6);
   tell(w, { e: 'pk', k });
 }
@@ -983,14 +1023,14 @@ function collide(w) {
   if (w.x * w.x + w.y * w.y > (ARENA_R - r) ** 2) { killWorm(w, 'edge', null); return; }
   for (const h of W.holes) if (dist2(w.x, w.y, h.x, h.y) < (h.core + r * 0.4) ** 2) { teleport(w); return; }
   for (const b of W.bodies) {
-    if (!b.alive || dist2(w.x, w.y, b.x, b.y) > (b.r + r * 1.3) ** 2) continue;
+    if (!b.alive || dist2(w.x, w.y, b.x, b.y) > ((b.r + r * 1.3) * (w.magnet2T > 0 ? 2 : 1)) ** 2) continue;
     if (w.score >= b.need) {
       b.alive = false; b.back = W.t + 25;
       if (b.type === 'moon') { w.moons++; w.magnetT = Math.max(0, w.magnetT) + 30; grow(w, 15); tell(w, { e: 'moon' }); }
       else { w.planets++; w.shield = Math.min(3, w.shield + 1); grow(w, 30); tell(w, { e: 'planet' }); }
     } else if ((w.isPlayer || w.remote) && W.t - (w.hintAt ?? -9) > 3) { w.hintAt = W.t; tell(w, { e: 'small', n: b.need }); }
   }
-  for (const p of W.pickups) if (p.alive && dist2(w.x, w.y, p.x, p.y) < (PK_R + r * 1.3) ** 2 && canTake(w, p)) takePickup(w, p);
+  for (const p of W.pickups) if (p.alive && dist2(w.x, w.y, p.x, p.y) < (PK_R + r * 1.3 + 4) ** 2 && canTake(w, p)) takePickup(w, p);
   if (w.invuln > 0) return;
   for (const m of W.meteors) {
     if (dist2(w.x, w.y, m.x, m.y) < (m.rock + hr) ** 2) {
@@ -1188,6 +1228,7 @@ function drawWorm(w, time) {
   ctx.globalAlpha = blink;
   ctx.lineCap = 'round'; ctx.lineJoin = 'round';
   ctx.save(); ctx.translate(0, r * 0.36); ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = r * 2.4; ctx.stroke(path); ctx.restore();
+  if (w.magnet2T > 0) { const mr = pullRange(w); ctx.strokeStyle = 'rgba(255,154,77,0.65)'; ctx.lineWidth = 2; ctx.setLineDash([6, 6]); ctx.beginPath(); ctx.arc(w.x, w.y, mr, 0, TAU); ctx.stroke(); ctx.setLineDash([]); }
   if (w.turboT > 0 && !w.boosting) { ctx.strokeStyle = rgba(PICKUPS.turbo.color, 0.2); ctx.lineWidth = r * 3.4; ctx.stroke(path); }
   if (w.boosting) { ctx.strokeStyle = rgba(w.band, 0.22); ctx.lineWidth = r * 3.2; ctx.stroke(path); }
   ctx.strokeStyle = w.base; ctx.lineWidth = r * 2; ctx.stroke(path);
@@ -1439,7 +1480,7 @@ function updateHud() {
   if (player.magnetT > 0) ch += '<div class="chip">' + ICONS.magnet + '<span>' + t('magnet') + '</span><span class="v">' + Math.ceil(player.magnetT) + 's</span></div>';
   if (player.shield > 0) ch += '<div class="chip">' + ICONS.shield + '<span>' + t('shield') + '</span><span class="v">' + player.shield + '×</span></div>';
   const timed = (k, v, label) => { if (v > 0) ch += '<div class="chip">' + pkSvg(k, 12) + '<span>' + t(label) + '</span><span class="v">' + Math.ceil(v) + 's</span></div>'; };
-  timed('turbo', player.turboT, 'turbo'); timed('ghost', player.ghostT, 'ghost'); timed('x2', player.x2T, 'x2');
+  timed('turbo', player.turboT, 'turbo'); timed('ghost', player.ghostT, 'ghost'); timed('x2', player.x2T, 'x2'); timed('magnet', player.magnet2T, 'magnet2');
   if (player.stunT > 0) ch += '<div class="chip warn">' + pkSvg('stun', 12) + '<span>' + t('stun') + '</span><span class="v">' + Math.ceil(player.stunT) + 's</span></div>';
   if (ch !== lastChips) { chips.innerHTML = ch; lastChips = ch; }
   boostBtn.classList.toggle('on', player.boosting);
@@ -1491,6 +1532,7 @@ function step(dt) {
   if (state === 'play') applyInput(dt);
   for (const w of W.worms) if (w.alive) moveWorm(w, dt);
   for (const w of W.worms) if (w.alive) eat(w, dt);
+  pullPickups(dt);
   for (const w of W.worms) collide(w);
   moveShots(dt);
   for (const p of W.pickups) if (!p.alive && W.t > p.back) { placePickup(p); p.alive = true; W.pkVer++; }
@@ -1544,7 +1586,7 @@ function afterStep(dt) {
    Phones talk through a free public MQTT broker (a message relay). One player hosts the room:
    their phone runs the bots, food and hazards and sends each guest what is around them.
    Guests steer their own worm locally and report where it is. */
-const NET_V = 2; // v2: pickups and weapons
+const NET_V = 3; // v3: magnet pickup, pickups that glide
 const TOPIC = 'hunys/vstelar/v' + NET_V;
 const BROKERS = (() => {
   const m = /[?&]broker=([^&]+)/.exec(location.search);
@@ -1817,6 +1859,7 @@ function netHostTick(dt) {
   if (NET.annAcc <= 0) { NET.annAcc = 2; if (NET.isPublic) NET.mq.pub(T('lobby/' + NET.room), JSON.stringify({ room: NET.room, n: 1 + NET.clients.size, v: NET_V, open: true })); }
   NET.sendAcc -= dt; if (NET.sendAcc > 0) return;
   NET.sendAcc = 0.1; NET.lbAcc -= 0.1; NET.mmAcc -= 0.1; NET.bodyAcc -= 0.1;
+  if (W.pkDirty) { W.pkDirty = false; W.pkVer++; } // pickups moved towards someone
   let alive = null, ranks = null, mm = null; const doB = NET.bodyAcc <= 0;
   if (NET.lbAcc <= 0) { NET.lbAcc = 0.5; alive = W.worms.filter(w => w.alive).sort((a, b) => b.score - a.score); ranks = new Map(alive.map((w, i) => [w, i + 1])); }
   if (NET.mmAcc <= 0) { NET.mmAcc = 1; mm = W.worms.filter(w => w.alive).map(w => [w.id, Math.round(w.x / 10), Math.round(w.y / 10)]); }
@@ -1832,7 +1875,7 @@ function hostSendTo(c, alive, ranks, mm, doB) {
   const me = c.worm; if (!me) return;
   const cx = me.x, cy = me.y, rx = c.vw + 160, ry = c.vh + 160;
   const m = { t: 's', tm: r3(W.t), me: [r1(me.score), me.kills, Math.max(0, Math.ceil(me.magnetT)), me.shield, me.invuln > 0 ? 1 : 0, me.alive ? 1 : 0, me.moons, me.planets,
-    r1(Math.max(0, me.stunT)), me.weapon ? PK_TYPES.indexOf(me.weapon) : -1, me.ammo, r1(Math.max(0, me.turboT)), r1(Math.max(0, me.ghostT)), r1(Math.max(0, me.x2T))] };
+    r1(Math.max(0, me.stunT)), me.weapon ? PK_TYPES.indexOf(me.weapon) : -1, me.ammo, r1(Math.max(0, me.turboT)), r1(Math.max(0, me.ghostT)), r1(Math.max(0, me.x2T)), r1(Math.max(0, me.magnet2T))] };
   const ws = [], nb = [], meta = [], seen = new Set();
   const needMeta = w => { if (w !== me && !c.meta.has(w.id)) { c.meta.add(w.id); meta.push([w.id, w.name, w.base, w.band, w.stars ? 1 : 0, (w.human || w.isPlayer) ? 1 : 0]); } };
   for (const w of W.worms) {
@@ -1903,11 +1946,11 @@ function clientOnMsg(m) {
   NET.timeOff = off > NET.timeOff ? off : NET.timeOff + (off - NET.timeOff) * 0.05;
   if (m.meta) for (const [id, name, base, band, stars, human] of m.meta) { NET.meta.set(id, { name, base, band, stars: !!stars, human: !!human }); const w = NET.remotes.get(id); if (w) Object.assign(w, { name, base, band, stars: !!stars, human: !!human }); }
   if (m.me && player) {
-    const [s, k, mg, sh, inv, alive, moons, planets, st = 0, wi = -1, am = 0, tu = 0, gh = 0, x2 = 0] = m.me, gain = s - NET.myScore;
+    const [s, k, mg, sh, inv, alive, moons, planets, st = 0, wi = -1, am = 0, tu = 0, gh = 0, x2 = 0, mg2 = 0] = m.me, gain = s - NET.myScore;
     if (player.alive && alive) {
       if (gain >= 0.9) { run.gains.push({ t: run.time, v: gain }); run.combo = run.time - run.lastEat < 1.1 ? run.combo + 1 : 1; run.lastEat = run.time; run.maxCombo = Math.max(run.maxCombo, run.combo); }
       player.score = s; player.magnetT = mg; player.shield = sh; player.invuln = inv ? Math.max(player.invuln, 0.25) : 0;
-      player.stunT = st; player.weapon = wi >= 0 ? PK_TYPES[wi] : null; player.ammo = am; player.turboT = tu; player.ghostT = gh; player.x2T = x2;
+      player.stunT = st; player.weapon = wi >= 0 ? PK_TYPES[wi] : null; player.ammo = am; player.turboT = tu; player.ghostT = gh; player.x2T = x2; player.magnet2T = mg2;
       if (s > player.maxScore) player.maxScore = s;
     }
     player.kills = k; player.moons = moons; player.planets = planets; NET.myScore = s;
@@ -1929,7 +1972,7 @@ function clientOnMsg(m) {
   if (m.fr) for (const id of m.fr) NET.foods.delete(id);
   if (m.fa || m.fr) W.food = [...NET.foods.values()];
   if (m.b) m.b.forEach(([x, y, al], i) => { const b = W.bodies[i]; if (!b) return; if (!b.alive && al) { b.x = x; b.y = y; } b.tx = x; b.ty = y; b.alive = !!al; });
-  if (m.pk) m.pk.forEach((v, i) => { const p = W.pickups[i]; if (!p) return; p.srv = !!v; if (v) { if (p.x !== v[0] || p.y !== v[1]) p.hideUntil = 0; p.x = v[0]; p.y = v[1]; } });
+  if (m.pk) m.pk.forEach((v, i) => { const p = W.pickups[i]; if (!p) return; const was = p.srv; p.srv = !!v; if (v) { if (!was) p.hideUntil = 0; p.x = v[0]; p.y = v[1]; } });
   W.shots = (m.sh || []).map(([x, y, vx, vy, ti, life]) => ({ x, y, vx, vy, type: PK_TYPES[ti] || 'stun', life }));
   if (m.fx) for (const [x, y, ti, s10] of m.fx) W.fx.push({ x, y, type: PK_TYPES[ti] || 'stun', t0: W.t, s: s10 / 10 });
   if (m.lb) {
@@ -1976,7 +2019,13 @@ function clientStep(dt) {
     const hr = rOf(player) * 1.3;
     for (const f of W.food) if (f.alive && Math.abs(f.x - player.x) < hr + 9 && Math.abs(f.y - player.y) < hr + 9 && dist2(f.x, f.y, player.x, player.y) < (hr + f.r) ** 2) f.alive = false;
     // hide a pickup as soon as we touch it; the host confirms (or brings it back) shortly
-    for (const p of W.pickups) if (p.alive && dist2(p.x, p.y, player.x, player.y) < (PK_R + hr) ** 2) p.hideUntil = now + 1500;
+    const R = pullRange(player), step = (220 + speedOf(player)) * dt;
+    for (const p of W.pickups) {
+      if (!p.alive) continue;
+      const dx = player.x - p.x, dy = player.y - p.y, d = Math.hypot(dx, dy);
+      if (d < PK_R + hr + 4) p.hideUntil = now + 1500;
+      else if (d < R) { const k = Math.min(d, step) / d; p.x += dx * k; p.y += dy * k; }
+    }
   }
   for (const p of W.pickups) p.alive = p.srv && !(p.hideUntil > now);
   for (let i = W.shots.length - 1; i >= 0; i--) { const s = W.shots[i]; s.x += s.vx * dt; s.y += s.vy * dt; s.life -= dt; if (s.life <= 0) W.shots.splice(i, 1); }
@@ -2029,7 +2078,7 @@ function applyI18n() {
   $('nameInput').placeholder = t('namePh'); $('codeInput').placeholder = t('codePh');
   updateRoomPill();
   document.title = lang === 'ro' ? 'Viermele Stelar' : 'Star Worm';
-  buildSpeeds(); refreshMenu();
+  buildSpeeds(); refreshMenu(); refreshBotsUI();
   if (!$('skins').hidden) buildSkins();
   lastBoard = ''; lastChips = ''; lastFire = '-';
 }
@@ -2076,7 +2125,7 @@ $('pauseName').addEventListener('change', () => applyLook());
 $('pauseName').addEventListener('keydown', e => { if (e.key === 'Enter') e.target.blur(); });
 $('playBtn').addEventListener('click', startGame);
 $('skinsBtn').addEventListener('click', () => { skinsReturn = 'menu'; showScreen('skins'); });
-$('settingsBtn').addEventListener('click', () => showScreen('settings'));
+$('settingsBtn').addEventListener('click', () => { showScreen('settings'); refreshBotsUI(); });
 document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', () => {
   if (skinsReturn === 'over' && !$('skins').hidden) { $('skins').hidden = true; $('over').hidden = false; skinsReturn = 'menu'; return; }
   if (skinsReturn === 'pause' && !$('skins').hidden) { $('skins').hidden = true; $('pause').hidden = false; skinsReturn = 'menu'; applyLook(); return; }
@@ -2163,7 +2212,7 @@ function beginPlay() {
 // Fills the pause card with the current settings.
 function prepPause() {
   const online = NET.mode !== 'solo';
-  $('pauseNote').hidden = !online; $('pauseBots').hidden = !online;
+  $('pauseNote').hidden = !online; $('pauseBots').hidden = false;
   $('pauseName').value = save.name; buildSpeeds(); syncSwitches(); refreshBotsUI();
   $('pause').scrollTop = 0;
 }
@@ -2213,12 +2262,17 @@ function nextBots(cur, dir) {
   return 0;
 }
 function refreshBotsUI() {
-  const set = (scope, v) => { $(scope === 'online' ? 'botsOnline' : 'botsRoom').textContent = v; document.querySelectorAll('[data-bots="' + scope + '"]').forEach(b => { b.disabled = +b.dataset.dir < 0 ? v <= 0 : v >= 50; }); };
-  set('online', save.netBots ?? 20); set('room', NET.bots);
+  const ids = { online: 'botsOnline', room: 'botsRoom', solo: 'botsSolo' };
+  const set = (scope, v) => { $(ids[scope]).textContent = v; document.querySelectorAll('[data-bots="' + scope + '"]').forEach(b => { b.disabled = +b.dataset.dir < 0 ? v <= 0 : v >= 50; }); };
+  const solo = NET.mode === 'solo';
+  set('online', save.netBots ?? 20); set('solo', soloBots()); set('room', solo ? soloBots() : NET.bots);
+  // the pause menu's row is the room's count online and your own count alone
+  $('pauseBotsLbl').textContent = t(solo ? 'botsSoloLbl' : 'botsLbl'); $('pauseBotsNote').hidden = solo;
 }
 document.querySelectorAll('[data-bots]').forEach(b => b.addEventListener('click', () => {
   const dir = +b.dataset.dir;
   if (b.dataset.bots === 'online') { save.netBots = nextBots(save.netBots ?? 20, dir); persist(); refreshBotsUI(); return; }
+  if (b.dataset.bots === 'solo' || NET.mode === 'solo') { save.soloBots = nextBots(soloBots(), dir); persist(); refreshBotsUI(); return; }
   const n = nextBots(NET.bots, dir); save.netBots = n; persist();
   if (NET.mode === 'host') hostSetBots(n, NET.cid, save.name.trim() || t('you'));
   else if (NET.mode === 'client' && NET.mq) { NET.bots = n; NET.botsHold = performance.now() + 2000; NET.mq.pub(T(`r/${NET.room}/in/${NET.cid}`), JSON.stringify({ t: 'bots', n })); refreshBotsUI(); }

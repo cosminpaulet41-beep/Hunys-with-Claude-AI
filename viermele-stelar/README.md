@@ -36,17 +36,18 @@ Un joc cu viermi în spațiu, pentru telefon și calculator. Mănânci scântei 
 - Liderul poartă coroana și primește praf de stele în plus.
 - Cu praful de stele cumperi skin-uri. Galaxie se deblochează după ce câștigi coroana de 3 ori.
 - Din meniu alegi viteza jocului (Lentă, Normală, Rapidă sau Extremă), dificultatea și limba (română sau engleză).
-- Toate setările din meniu sunt și în meniul de pauză: limba, numele, viteza, dificultatea, numele viermilor pe hartă, vibrațiile și skin-urile. Se schimbă pe loc, în timpul jocului. Online, viteza și dificultatea le alege gazda, iar numele și skin-ul tău noi le văd imediat și ceilalți.
+- Toate setările din meniu sunt și în meniul de pauză: limba, numele, viteza, dificultatea, numărul de boți, numele viermilor pe hartă, vibrațiile și skin-urile. Numărul de boți când joci singur îl alegi din pauză sau din Setări (de la 0 la 50); până îl alegi, îl dă dificultatea. Se schimbă pe loc, în timpul jocului. Online, viteza și dificultatea le alege gazda, iar numele și skin-ul tău noi le văd imediat și ceilalți.
 
 **Obiecte din arenă**
 
-Prin arenă sunt împrăștiate obiecte care reapar la 12–20 de secunde după ce le ia cineva. Armele au formă de romb, celelalte sunt rotunde.
+Prin arenă sunt împrăștiate obiecte care reapar la 12–20 de secunde după ce le ia cineva. Armele au formă de romb, celelalte sunt rotunde. Când treci pe lângă un obiect, el vine singur spre capul tău, ca la un magnet, deci nu trebuie să-l nimerești exact pe mijloc.
 - **Scut** (violet): te salvează o dată, fie de o lovitură care te-ar omorî, fie de un foc de armă. Poți avea până la 3.
 - **Paralizator** (galben, armă): 3 focuri. Cine e lovit stă pe loc 30 de secunde și nu se poate mișca.
 - **Respingător** (roz, armă): 3 focuri. Cine e lovit e împins departe și fuge de tine câteva secunde.
 - **Turbo** (verde): 8 secunde mai rapid, fără să pierzi lungime.
 - **Fantomă** (alb): 8 secunde nu te poate mânca nimeni și treci prin orice.
 - **Energie ×2** (albastru): 20 de secunde, tot ce mănânci valorează dublu.
+- **Magnet** (portocaliu): 20 de secunde aduni mâncarea, obiectele, lunile și planetele de la o distanță dublă. Cercul portocaliu punctat din jurul capului arată până unde ajunge.
 
 Arma țintește singură: trage spre un vierme mai mare care te urmărește (chiar dacă e în spatele tău) sau spre cel din fața ta. Dacă iei aceeași armă din nou primești încă 3 focuri (maximum 6), iar o armă nouă o înlocuiește pe cea veche. Boții nu folosesc arme și nu iau scuturi sau fantome din arenă: pe Normal și Greu iau doar turbo și energie ×2. Dacă un vierme e salvat de scut, vezi un mesaj, iar scutul se vede ca un cerc violet în jurul capului.
 
@@ -81,17 +82,18 @@ A space worm game for phones and computers. Eat sparks to grow (big ones are wor
 - The leader wears the crown and earns bonus stardust.
 - Stardust buys skins. Galaxy unlocks after you win the crown 3 times.
 - The menu lets you pick the game speed (Slow, Normal, Fast or Extreme), the difficulty and the language (Romanian or English).
-- Every menu setting is also in the pause menu: language, name, speed, difficulty, worm names on the map, vibration and skins. They apply on the spot, mid-game. Online, the host picks the speed and difficulty, and everyone else sees your new name and skin right away.
+- Every menu setting is also in the pause menu: language, name, speed, difficulty, number of bots, worm names on the map, vibration and skins. You set the number of bots for solo play in the pause menu or in Settings (0 to 50); until you do, the difficulty decides it. They apply on the spot, mid-game. Online, the host picks the speed and difficulty, and everyone else sees your new name and skin right away.
 
 **Pickups**
 
-Pickups are scattered around the arena and come back 12–20 seconds after someone takes one. Weapons are diamond-shaped, everything else is round.
+Pickups are scattered around the arena and come back 12–20 seconds after someone takes one. Weapons are diamond-shaped, everything else is round. When you pass close to a pickup it glides to your head like a magnet, so you don’t have to hit its centre.
 - **Shield** (violet): saves you once, from a hit that would kill you or from a shot. You can hold up to 3.
 - **Stunner** (yellow, weapon): 3 shots. Whoever it hits can’t move for 30 seconds.
 - **Repeller** (pink, weapon): 3 shots. Whoever it hits is shoved away and keeps away from you for a few seconds.
 - **Boost** (green): faster for 8 seconds without losing length.
 - **Ghost** (white): nothing can eat you for 8 seconds and you pass through everything.
 - **Energy ×2** (blue): everything you eat counts double for 20 seconds.
+- **Magnet** (orange): for 20 seconds you pull in food, pickups, moons and planets from twice as far. The dashed orange ring around your head shows the reach.
 
 Weapons aim by themselves: at a bigger worm chasing you (even from behind) or at the worm in front of you. Picking up the same weapon again adds 3 shots (up to 6), and a different weapon replaces the old one. Bots don’t use weapons and don’t take shields or ghosts from the arena: on Normal and Hard they only take boosts and double energy. When a shield saves a worm you get a message, and a shield shows as a violet ring around the head.
 

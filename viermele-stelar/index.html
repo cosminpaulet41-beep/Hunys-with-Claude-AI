@@ -264,6 +264,21 @@ h1.title span{color:var(--mint)}
 #pauseBots .tip{font-size:11px;line-height:1.35}
 @media (prefers-reduced-motion: reduce){.notice,#bite.show,#fireBtn.fresh{animation:none}}
 @media (min-width:700px) and (min-height:500px){.board{width:190px;font-size:12px}.brow{height:17px}}
+/* top HUD that always fits: the left column scales a little with the screen, the leaderboard gives way, the pause button keeps its full size */
+:root{--hudL:clamp(88px,27vw,120px)}
+.hud-top{left:calc(6px + var(--sl));right:calc(6px + var(--sr));gap:5px}
+.hud-left{width:var(--hudL);gap:5px}
+#mini{width:var(--hudL);height:var(--hudL)}
+.board-col{flex:0 1 178px;min-width:0}
+.board{width:auto;min-width:0;box-sizing:border-box;padding:5px 8px 6px}
+#pauseBtn{flex:none;width:38px;height:38px}
+#notices{left:calc(var(--hudL) + 14px + var(--sl))}
+/* notes wrap onto a second line instead of spilling out of the pill; online they start below the room label */
+.notice.pill{height:auto;min-height:24px;box-sizing:border-box;padding:4px 10px;border-radius:12px;line-height:1.3;text-align:center}
+#hud.online #notices{top:calc(136px + var(--st))}
+/* the combo counter lives in the left column, under the minimap, clear of the notes */
+#combo{left:calc(6px + var(--sl));right:auto;width:var(--hudL);top:calc(var(--hudL) + 86px + var(--st))}
+@media (min-width:700px) and (min-height:500px){.board-col{flex-basis:200px}.board{width:auto}}
 </style>
 
 <div id="app">
@@ -1461,7 +1476,8 @@ function pushNotice(el, ms) {
   while (notices.children.length > 3) notices.firstElementChild.remove();
   setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 320); }, ms || 2600);
 }
-function notifyPill(html, extra) { const el = document.createElement('div'); el.className = 'notice pill' + (extra ? ' ' + extra : ''); el.innerHTML = html; pushNotice(el); }
+// An optional icon first, then the text as one piece so it wraps as a sentence.
+function notifyPill(html, extra) { const el = document.createElement('div'); el.className = 'notice pill' + (extra ? ' ' + extra : ''); const m = /^(<svg[\s\S]*?<\/svg>)?([\s\S]*)$/.exec(html); el.innerHTML = (m[1] || '') + '<span>' + m[2] + '</span>'; pushNotice(el); }
 function notifyCard(icon, title, desc) { const el = document.createElement('div'); el.className = 'notice card'; el.innerHTML = (ICONS[icon] || icon) + '<div><div class="t">' + title + '</div><div class="d">' + desc + '</div></div>'; pushNotice(el, 3000); }
 let biteTimer = 0;
 function showBite(title, desc) { $('biteT').innerHTML = title; $('biteD').innerHTML = desc; biteEl.hidden = false; biteEl.classList.remove('show'); void biteEl.offsetWidth; biteEl.classList.add('show'); clearTimeout(biteTimer); biteTimer = setTimeout(() => { biteEl.hidden = true; }, 1500); }
@@ -2057,7 +2073,7 @@ function netRespawn() {
 function updateRoomPill() {
   const el = $('roomPill'); if (!el) return;
   const on = NET.mode === 'host' || NET.mode === 'client';
-  el.hidden = !on;
+  el.hidden = !on; $('hud').classList.toggle('online', on);
   if (on) el.textContent = t('room', { code: NET.room, n: NET.mode === 'host' ? 1 + NET.clients.size : NET.humans });
 }
 function setNetStatus(text, isError) { const el = $('netStatus'); el.textContent = text; el.classList.toggle('err', !!isError); }

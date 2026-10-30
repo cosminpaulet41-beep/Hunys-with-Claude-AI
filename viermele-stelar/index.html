@@ -229,39 +229,41 @@ h1.title span{color:var(--mint)}
 .menucard .input.mycode{width:86px;height:38px;padding:0 4px;border-radius:10px;font-size:16px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;text-align:center}
 .stepper .bv{min-width:34px;text-align:center;font-size:17px;font-weight:700}
 #pauseBots{display:flex;flex-direction:column;gap:6px}
-.psets{display:flex;flex-direction:column;gap:5px;text-align:left}
-.prow{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:36px;box-sizing:border-box;padding:3px 4px 3px 10px;border-radius:10px;background:var(--inset);border:1px solid var(--line2);font-size:12px;font-weight:500}
-.prow.stack{flex-direction:column;align-items:stretch;padding:5px 4px 4px;gap:4px}
-.prow.stack>span{padding-left:6px}
+/* pause menu: sizes follow the screen height, roomy on tall phones and compact on short ones, so the card always fits */
+#pause{--ph:clamp(36px,5.6vh,48px);--pf:clamp(12px,1.85vh,15px);--pb:clamp(30px,4.8vh,40px)}
+.psets{display:flex;flex-direction:column;gap:clamp(5px,0.9vh,8px);text-align:left}
+.prow{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:var(--ph);box-sizing:border-box;padding:3px 5px 3px 12px;border-radius:12px;background:var(--inset);border:1px solid var(--line2);font-size:var(--pf);font-weight:500}
+.prow.stack{flex-direction:column;align-items:stretch;padding:6px 5px 5px;gap:5px}
+.prow.stack>span{padding-left:7px}
 .prow .seg{padding:2px}
-.prow .seg button{height:26px;min-width:36px;padding:0 9px;font-size:11px}
-.prow .speeds{gap:4px}
-.prow .speeds button{height:30px;font-size:11px;border-radius:8px}
+.prow .seg button{height:calc(var(--ph) - 12px);min-width:42px;padding:0 11px;font-size:calc(var(--pf) - 1px)}
+.prow .speeds{gap:5px}
+.prow .speeds button{height:var(--pb);font-size:calc(var(--pf) - 1px);border-radius:10px}
 .prow .speeds button svg{display:none}
 .prow .speeds button[disabled]{opacity:.5;cursor:default}
-.prow .input{width:140px;height:30px;padding:0 9px;font-size:13px;border-radius:8px}
-.prow .switch{flex:none;width:40px;height:24px}
-.prow .switch::after{left:3px;top:3px;width:18px;height:18px}
-.prow .switch[aria-pressed="true"]::after{left:19px}
+.prow .input{width:150px;height:calc(var(--ph) - 8px);padding:0 10px;font-size:var(--pf);border-radius:10px}
+.prow .switch{flex:none;width:46px;height:28px}
+.prow .switch::after{left:3px;top:3px;width:22px;height:22px}
+.prow .switch[aria-pressed="true"]::after{left:21px}
 .prow.two .half{flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:6px}
-.prow.two .half+.half{border-left:1px solid var(--line2);padding-left:8px}
+.prow.two .half+.half{border-left:1px solid var(--line2);padding-left:10px}
 .prow.two .half>span{white-space:nowrap}
 .prow.two .half:first-child{flex-grow:1.25}
-.psets .tip{font-size:10px;line-height:1.3;padding:0 4px}
+.psets .tip{font-size:calc(var(--pf) - 2px);line-height:1.3;padding:0 5px}
 .psets .tip:empty{display:none}
-#pause .mcard{max-width:330px;padding:12px;gap:6px}
-#pause .mcard h2{font-size:18px;line-height:1.2}
-#pause #pauseNote{font-size:11px;line-height:1.3;margin-top:-3px}
-#pause .btn.again{height:40px;font-size:15px;border-radius:12px}
-#pause .row2{gap:5px}
-#pause .row2 .btn{height:34px;font-size:12px;border-radius:10px;gap:5px}
-#pause .row2 .btn svg{width:16px;height:16px}
-#pause .botsrow{min-height:36px;padding:3px 4px 3px 10px;border-radius:10px}
-#pause .botsrow .bl{font-size:12px}
-#pause .stepper button{width:30px;height:28px;font-size:17px;border-radius:8px}
-#pause .stepper .bv{min-width:28px;font-size:15px}
+#pause .mcard{max-width:360px;padding:clamp(12px,1.8vh,16px);gap:clamp(6px,1vh,9px)}
+#pause .mcard h2{font-size:clamp(18px,2.7vh,23px);line-height:1.2}
+#pause #pauseNote{font-size:calc(var(--pf) - 1px);line-height:1.3;margin-top:-3px}
+#pause .btn.again{height:calc(var(--ph) + 4px);font-size:calc(var(--pf) + 3px);border-radius:14px}
+#pause .row2{gap:6px}
+#pause .row2 .btn{height:var(--ph);font-size:var(--pf);border-radius:12px;gap:6px}
+#pause .row2 .btn svg{width:18px;height:18px}
+#pause .botsrow{min-height:var(--ph);padding:3px 5px 3px 12px;border-radius:12px}
+#pause .botsrow .bl{font-size:var(--pf)}
+#pause .stepper button{width:38px;height:calc(var(--ph) - 8px);font-size:20px;border-radius:10px}
+#pause .stepper .bv{min-width:34px;font-size:calc(var(--pf) + 3px)}
 #pauseBots{gap:3px}
-#pauseBots .tip{font-size:11px;line-height:1.35}
+#pauseBots .tip{font-size:calc(var(--pf) - 2px);line-height:1.35}
 @media (prefers-reduced-motion: reduce){.notice,#bite.show,#fireBtn.fresh{animation:none}}
 @media (min-width:700px) and (min-height:500px){.board{width:190px;font-size:12px}.brow{height:17px}}
 /* top HUD that always fits: the left column scales a little with the screen, the leaderboard gives way, the pause button keeps its full size */
@@ -413,7 +415,8 @@ h1.title span{color:var(--mint)}
         <div class="botsrow"><span class="bl" id="pauseBotsLbl"></span><div class="stepper"><button data-bots="room" data-dir="-1" data-i18n-aria="botsLess">−</button><span class="bv num" id="botsRoom">20</span><button data-bots="room" data-dir="1" data-i18n-aria="botsMore">+</button></div></div>
         <p class="tip" id="pauseBotsNote" data-i18n="botsNote"></p>
       </div>
-      <div class="prow two"><span class="half"><span id="namesLbl3" data-i18n="namesShort"></span><button class="switch" data-sw="names" aria-labelledby="namesLbl3" aria-pressed="true"></button></span><span class="half"><span id="vibLbl3" data-i18n="vibration"></span><button class="switch" data-sw="vibrate" aria-labelledby="vibLbl3" aria-pressed="true"></button></span></div>
+      <div class="prow"><span id="namesLbl3" data-i18n="names"></span><button class="switch" data-sw="names" aria-labelledby="namesLbl3" aria-pressed="true"></button></div>
+      <div class="prow"><span id="vibLbl3" data-i18n="vibration"></span><button class="switch" data-sw="vibrate" aria-labelledby="vibLbl3" aria-pressed="true"></button></div>
       <div class="row2"><button class="btn" id="pauseSkinsBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EEF2FF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.7-.8 1.7-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.8-1.7 1.7-1.7H16a5 5 0 0 0 5-5c0-4-4-7.2-9-7.2z"></path><circle cx="7.5" cy="11" r="1.2" fill="#EEF2FF"></circle><circle cx="10" cy="7" r="1.2" fill="#EEF2FF"></circle><circle cx="15" cy="7.5" r="1.2" fill="#EEF2FF"></circle></svg><span data-i18n="skins"></span></button><button class="btn" id="quitBtn"><span data-i18n="mainMenu"></span></button></div>
     </div>
   </div>

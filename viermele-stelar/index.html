@@ -596,7 +596,7 @@ const BOT_SKINS = [['#6B4FE0', '#A993FF'], ['#E8604C', '#FFB199'], ['#E0A12E', '
 const BOT_NAMES = ['Nova', 'Orion', 'Vega', 'Lyra', 'Sirius', 'Pulsar', 'Quasar', 'Altair', 'Rigel', 'Deneb', 'Atlas', 'Castor', 'Polux', 'Mira', 'Antares', 'Electra', 'Titan', 'Zenit', 'Andromeda', 'Kepler', 'Halley', 'Draco', 'Phoenix', 'Cassiopeia', 'Aldebaran', 'Bellatrix', 'Betelgeuse', 'Capella', 'Procyon', 'Spica', 'Regulus', 'Fomalhaut', 'Arcturus', 'Achernar', 'Hadar', 'Mimosa', 'Shaula', 'Alnilam', 'Mintaka', 'Saiph', 'Elnath', 'Nashira', 'Talitha', 'Meteor'];
 const FOOD_COLORS = ['#FFC857', '#6FC8FF', '#FF7AC6', '#6EF2B0', '#B49CFF', '#FFFFFF'];
 const FOOD_WEIGHTS = [3, 3, 3, 3, 2, 1];
-const SPEED_MUL = [0.6, 1, 1.3, 1.6];
+const SPEED_MUL = [0.8, 1, 1.45, 2.1]; // Slow, Normal, Fast, Extreme
 
 const ARENA_R = 2200, FOOD_TARGET = 5000;
 // Difficulty: how many bots, how many of them hunt, how fast they react and look ahead.
@@ -782,7 +782,8 @@ function speedOf(w) {
   const r = rOf(w), mul = w.boosting ? BOOST_MUL : w.turboT > 0 ? TURBO_MUL : 1, bot = w.isPlayer || w.human ? 1 : diffCfg().botSpeed;
   return BASE_SPEED * SPEED_MUL[curSpeed()] * mul * bot * (1 - Math.min(0.22, (r - 4.5) * 0.015));
 }
-function turnOf(w) { return 3.8 / (1 + (rOf(w) - 4.5) * 0.07); }
+// Faster game speeds also turn faster, so the worm stays as easy to steer.
+function turnOf(w) { return 3.8 * Math.sqrt(SPEED_MUL[curSpeed()]) / (1 + (rOf(w) - 4.5) * 0.07); }
 
 function moveWorm(w, dt) {
   if (w.remote) netApplyRemote(w, dt);
@@ -1592,7 +1593,8 @@ function afterStep(dt) {
   else if (!target || !target.alive) { target = run.leader; cam.follow = target; }
   if (target) {
     const k = Math.min(1, dt * 6); cam.x += (target.x - cam.x) * k; cam.y += (target.y - cam.y) * k;
-    const zt = clamp(1 / (1 + (rOf(target) - 5.7) * 0.045), 0.6, 1); cam.z += (zt - cam.z) * Math.min(1, dt * 2);
+    // big worms and fast speeds zoom out a little, so you see what's coming
+    const zt = clamp(1 / (1 + (rOf(target) - 5.7) * 0.045), 0.6, 1) * Math.min(1, 1 / (1 + (SPEED_MUL[curSpeed()] - 1) * 0.18)); cam.z += (zt - cam.z) * Math.min(1, dt * 2);
   }
   if (state === 'play') {
     updateHud();
@@ -1605,7 +1607,7 @@ function afterStep(dt) {
    Phones talk through a free public MQTT broker (a message relay). One player hosts the room:
    their phone runs the bots, food and hazards and sends each guest what is around them.
    Guests steer their own worm locally and report where it is. */
-const NET_V = 3; // v3: magnet pickup, pickups that glide
+const NET_V = 4; // v4: new speed table (both phones must agree)
 const TOPIC = 'hunys/vstelar/v' + NET_V;
 const BROKERS = (() => {
   const m = /[?&]broker=([^&]+)/.exec(location.search);

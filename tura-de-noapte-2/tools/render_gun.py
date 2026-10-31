@@ -123,21 +123,28 @@ def scene(p, want_mat=False):
     palm = sd_round_box((p - np.array([0.008, -0.041, -0.024])) @ RG, [0.0185, 0.033, 0.0135], 0.010)
     thenar = sd_capsule_tapered(p, [-0.007, -0.052, -0.029], [-0.009, -0.020, -0.025], 0.0125, 0.0105)
     hand = smin(palm, thenar, 0.006)
-    web = sd_capsule(p, [-0.004, -0.006, -0.027], [0.015, -0.011, -0.027], 0.0105)
-    hand = smin(hand, web, 0.006)
-    for k, (yk, r0) in enumerate([(-0.030, 0.0085), (-0.047, 0.0083), (-0.063, 0.0076)]):
+    web = sd_capsule(p, [-0.003, -0.007, -0.027], [0.014, -0.011, -0.027], 0.0095)
+    hand = smin(hand, web, 0.008)
+    nails = None
+    for k, (yk, r0) in enumerate([(-0.031, 0.0080), (-0.0475, 0.0078), (-0.0635, 0.0071)]):
         zb = -0.004 + 0.30 * yk
+        # încheieturile: baza (dreapta), îndoit prin fața mânerului, vârful culcat înapoi pe stânga
         f = finger(p, [0.020, yk, zb - 0.013],
-                   [[0.0205, yk - 0.001, zb + 0.015], [0.005, yk - 0.002, zb + 0.030], [-0.0115, yk - 0.003, zb + 0.020]],
-                   [r0, r0 * 0.97, r0 * 0.9, r0 * 0.8])
-        hand = smin(hand, f, 0.003)
+                   [[0.0205, yk - 0.001, zb + 0.014], [0.006, yk - 0.002, zb + 0.029], [-0.0135, yk - 0.003, zb + 0.022],
+                    [-0.0190, yk - 0.003, zb + 0.004]],
+                   [r0, r0 * 0.97, r0 * 0.92, r0 * 0.86, r0 * 0.78])
+        hand = smin(hand, f, 0.0025)
+        # unghia, pe dosul ultimei falange (spre exterior, adică spre stânga)
+        nl = sd_round_box(p - np.array([-0.0190 - r0 * 0.80, yk - 0.003, zb + 0.008]),
+                          [0.0010, r0 * 0.56, r0 * 0.78], 0.0009)
+        nails = nl if nails is None else np.minimum(nails, nl)
     idx = finger(p, [0.018, -0.012, -0.012], [[0.0185, -0.010, 0.022], [0.0165, -0.011, 0.048], [0.0148, -0.012, 0.067]],
                  [0.0086, 0.0080, 0.0074, 0.0065])
     hand = smin(hand, idx, 0.003)
     th = finger(p, [-0.010, -0.017, -0.024], [[-0.0155, -0.006, 0.000], [-0.0165, -0.002, 0.022], [-0.0158, 0.000, 0.040]],
                 [0.0106, 0.0094, 0.0084, 0.0073])
     hand = smin(hand, th, 0.005)
-    nail = sd_round_box(p - np.array([-0.0226, 0.0020, 0.0340]), [0.0011, 0.0046, 0.0062], 0.0010)
+    nail = np.minimum(sd_round_box(p - np.array([-0.0226, 0.0020, 0.0340]), [0.0011, 0.0046, 0.0062], 0.0010), nails)
     wrist = sd_capsule_tapered(p, [0.008, -0.068, -0.044], [0.040, -0.170, -0.160], 0.0235, 0.029)
     hand = smin(hand, wrist, 0.010)
 
@@ -280,14 +287,24 @@ def render(W, H):
     light = 0.12 * ao + 1.15 * diff + 0.22 * ndf * ao
     spec = spec_k * ndh ** shin * sh * 1.4
     c = base * light[:, None] + spec[:, None] * np.array([1.0, 0.97, 0.9]) + base * rim[:, None] * 0.35
-    # ușor „subsurface” pe piele: umbrele spre roșiatic
+    # piele: variații mici de culoare, mai roșiatică spre degete
     skin = mat == M_SKIN
+    q = p[skin] * 900.0
+    nz = (np.sin(q[:, 0] * 1.7 + q[:, 1] * 0.9) * np.sin(q[:, 1] * 1.3 - q[:, 2] * 1.1) * np.sin(q[:, 2] * 0.8 + q[:, 0])) * 0.035
+    c[skin] *= (1.0 + nz)[:, None]
+    redden = np.clip((p[skin][:, 2] + 0.01) * 18.0, 0, 1) * 0.05
+    c[skin] += np.stack([redden, -redden * 0.4, -redden * 0.5], axis=-1)
+    # ușor „subsurface” pe piele: umbrele spre roșiatic
     c[skin] += (1 - light[skin])[:, None] * np.array([0.10, 0.02, 0.0]) * 0.6
     dots = mat == M_DOT
     c[dots] = [0.6, 1.0, 0.7]
     col[idx] = np.clip(c, 0, 1)
     img = np.concatenate([col, alpha[:, None]], axis=-1).reshape(H, W, 4)
-    return img
+    tip_cam = R @ np.array([0.0, 0.017, 0.186]) + origin
+    tu, tv = tip_cam[0] / tip_cam[2], tip_cam[1] / tip_cam[2]
+    tx = ((tu - SHIFT_X) / (tf * aspect * SCALE) + 1) / 2 * W - 0.5
+    ty = (1 - (tv - SHIFT_Y) / (tf * SCALE)) / 2 * H - 0.5
+    return img, (tx, ty)
 
 
 def main():
@@ -295,7 +312,7 @@ def main():
     W = int(sys.argv[2]) if len(sys.argv) > 2 else 640
     H = int(sys.argv[3]) if len(sys.argv) > 3 else 480
     ss = 2
-    img = render(W * ss, H * ss)
+    img, tip = render(W * ss, H * ss)
     # supraeșantionare: media pe blocuri ss x ss (culoarea ponderată cu alfa)
     a = img[..., 3:4]
     rgb = img[..., :3] * a
@@ -306,8 +323,14 @@ def main():
     rgb = np.clip(rgb, 0, 1) ** (1 / 2.2)
     im = np.concatenate([rgb, al], axis=-1)
     im = (np.clip(im, 0, 1) * 255 + 0.5).astype(np.uint8)
-    Image.fromarray(im, "RGBA").save(out + "/hand_pistol.png")
-    print("hand_pistol.png %dx%d" % (W, H))
+    pil = Image.fromarray(im, "RGBA")
+    bb = pil.getbbox()
+    pil = pil.crop(bb)
+    pil.save(out + "/hand_pistol.png")
+    tx, ty = tip[0] / ss - bb[0], tip[1] / ss - bb[1]
+    with open(out + "/hand_pistol.txt", "w") as f:
+        f.write("teava %.1f %.1f\n" % (tx, ty))
+    print("hand_pistol.png %dx%d, teava la %.1f %.1f" % (pil.width, pil.height, tx, ty))
 
 
 if __name__ == "__main__":

@@ -2275,8 +2275,10 @@ public final class World {
             Img f = Art.flash[0];
             float k = H / 180f;
             int fw = (int) (f.w * k * 0.72f), fh = (int) (f.h * k * 0.72f);
-            int tipX = x0 + (int) (g.w * 0.12f), tipY = y0 + (int) (g.h * 0.02f);
-            blit(buf, f, tipX - fw / 2, tipY - fh / 2 - fh / 4, fw, fh, 256, 256, 256);
+            // centrul flăcării chiar în fața gurii țevii (calculată din modelul 3D)
+            int tipX = x0 + (int) (Art.handTipX * g.w / Art.handPistol.w);
+            int tipY = y0 + (int) (Art.handTipY * g.h / Art.handPistol.h);
+            blit(buf, f, tipX - fw / 2 - fw / 10, tipY - fh / 2 - fh / 8, fw, fh, 256, 256, 256);
         }
         for (int y = 0; y < g.h; y++) {
             int yy = y0 + y;

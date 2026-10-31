@@ -35,6 +35,8 @@ public final class Art {
     public static Img[] gun, flash;
     /** Mâna cu pistolul, randată 3D (alfa parțial, ARGB). */
     public static Img handPistol;
+    /** Gura țevii pe imaginea mâinii (pixeli ai imaginii), ca flacăra să pornească de acolo. */
+    public static float handTipX, handTipY;
     public static Img acid;
     public static Img[] decor;
     public static String[] decorName;
@@ -86,6 +88,17 @@ public final class Art {
             flash[w] = f.cut(0, 0, f.w, f.h);
         }
         handPistol = crop(p.image("hand_pistol.png"));
+        handTipX = handPistol.w * 0.07f;
+        handTipY = handPistol.h * 0.08f;
+        try {
+            BufferedReader tr = new BufferedReader(new InputStreamReader(p.open("hand_pistol.txt"), "UTF-8"));
+            String[] tf = split(tr.readLine().trim());
+            tr.close();
+            handTipX = Float.parseFloat(tf[1]);
+            handTipY = Float.parseFloat(tf[2]);
+        } catch (Exception e) {
+            // rămâne poziția aproximativă
+        }
         Img a = p.image("acid.png");
         acid = a.cut(0, 0, a.w, a.h);
 

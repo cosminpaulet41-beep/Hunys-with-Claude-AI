@@ -785,12 +785,17 @@ function placePickup(p) {
 // In an online room everyone uses the host's speed setting.
 const curSpeed = () => (NET.mode === 'client' ? NET.speed : save.speed);
 // Bots get the difficulty's speed factor; humans always move at the plain speed.
+// How far the camera pulls back as a worm grows (1 = not at all).
+const sizeZoom = r => clamp(1 / (1 + (r - 5.7) * 0.03), 0.8, 1);
 function speedOf(w) {
-  const r = rOf(w), mul = w.boosting ? BOOST_MUL : w.turboT > 0 ? TURBO_MUL : 1, bot = w.isPlayer || w.human ? 1 : diffCfg().botSpeed;
-  return BASE_SPEED * SPEED_MUL[curSpeed()] * mul * bot * (1 - Math.min(0.22, (r - 4.5) * 0.015));
+  const r = rOf(w), human = w.isPlayer || w.human, mul = w.boosting ? BOOST_MUL : w.turboT > 0 ? TURBO_MUL : 1, bot = human ? 1 : diffCfg().botSpeed;
+  // People keep the same speed on screen as they grow: the camera pulls back a little, so they move that much faster in the arena.
+  // Bots still slow down a bit when big.
+  const size = human ? 1 / sizeZoom(r) : 1 - Math.min(0.22, (r - 4.5) * 0.015);
+  return BASE_SPEED * SPEED_MUL[curSpeed()] * mul * bot * size;
 }
 // Faster game speeds also turn faster: people a bit (so steering stays calm), bots in step with their speed (so they can still dodge).
-function turnOf(w) { const m = SPEED_MUL[curSpeed()]; return 3.8 * (w.isPlayer || w.human ? Math.sqrt(m) : m) / (1 + (rOf(w) - 4.5) * 0.07); }
+function turnOf(w) { const m = SPEED_MUL[curSpeed()], human = w.isPlayer || w.human; return 3.8 * (human ? Math.sqrt(m) : m) / (1 + (rOf(w) - 4.5) * (human ? 0.03 : 0.07)); }
 
 function moveWorm(w, dt) {
   if (w.remote) netApplyRemote(w, dt);
@@ -1243,8 +1248,10 @@ function drawStar(x, y, r) { ctx.save(); ctx.translate(x - r, y - r); ctx.scale(
 function wormPath(w) {
   const p = new Path2D(), pts = w.pts, n = pts.length;
   if (!n) { p.moveTo(w.x - 0.1, w.y); p.lineTo(w.x, w.y); return p; }
+  const step = n > 400 ? 2 : 1;
   p.moveTo(pts[n - 1].x, pts[n - 1].y);
-  for (let i = n - 2; i >= 0; i--) p.lineTo(pts[i].x, pts[i].y);
+  for (let i = n - 1 - step; i >= 0; i -= step) p.lineTo(pts[i].x, pts[i].y);
+  if (pts[0]) p.lineTo(pts[0].x, pts[0].y);
   p.lineTo(w.x, w.y);
   return p;
 }
@@ -1601,7 +1608,7 @@ function afterStep(dt) {
   if (target) {
     const k = Math.min(1, dt * 6); cam.x += (target.x - cam.x) * k; cam.y += (target.y - cam.y) * k;
     // big worms and fast speeds zoom out a little, so you see what's coming
-    const zt = Math.max(0.5, clamp(1 / (1 + (rOf(target) - 5.7) * 0.045), 0.6, 1) * Math.min(1, 1 / (1 + (SPEED_MUL[curSpeed()] - 1) * 0.18))); cam.z += (zt - cam.z) * Math.min(1, dt * 2);
+    const zt = Math.max(0.5, sizeZoom(rOf(target)) * Math.min(1, 1 / (1 + (SPEED_MUL[curSpeed()] - 1) * 0.18))); cam.z += (zt - cam.z) * Math.min(1, dt * 2);
   }
   if (state === 'play') {
     updateHud();
@@ -1614,7 +1621,7 @@ function afterStep(dt) {
    Phones talk through a free public MQTT broker (a message relay). One player hosts the room:
    their phone runs the bots, food and hazards and sends each guest what is around them.
    Guests steer their own worm locally and report where it is. */
-const NET_V = 5; // v5: faster Fast and Extreme (both phones must agree)
+const NET_V = 6; // v6: big human worms keep their speed (both phones must agree)
 const TOPIC = 'hunys/vstelar/v' + NET_V;
 const BROKERS = (() => {
   const m = /[?&]broker=([^&]+)/.exec(location.search);

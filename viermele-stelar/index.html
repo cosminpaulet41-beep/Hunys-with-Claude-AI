@@ -229,41 +229,32 @@ h1.title span{color:var(--mint)}
 .menucard .input.mycode{width:86px;height:38px;padding:0 4px;border-radius:10px;font-size:16px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;text-align:center}
 .stepper .bv{min-width:34px;text-align:center;font-size:17px;font-weight:700}
 #pauseBots{display:flex;flex-direction:column;gap:6px}
-/* pause menu: sizes follow the screen height, roomy on tall phones and compact on short ones, so the card always fits */
-#pause{--ph:clamp(36px,5.6vh,48px);--pf:clamp(12px,1.85vh,15px);--pb:clamp(30px,4.8vh,40px)}
-.psets{display:flex;flex-direction:column;gap:clamp(5px,0.9vh,8px);text-align:left}
-.prow{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:var(--ph);box-sizing:border-box;padding:3px 5px 3px 12px;border-radius:12px;background:var(--inset);border:1px solid var(--line2);font-size:var(--pf);font-weight:500}
-.prow.stack{flex-direction:column;align-items:stretch;padding:6px 5px 5px;gap:5px}
-.prow.stack>span{padding-left:7px}
-.prow .seg{padding:2px}
-.prow .seg button{height:calc(var(--ph) - 12px);min-width:42px;padding:0 11px;font-size:calc(var(--pf) - 1px)}
-.prow .speeds{gap:5px}
-.prow .speeds button{height:var(--pb);font-size:calc(var(--pf) - 1px);border-radius:10px}
-.prow .speeds button svg{display:none}
-.prow .speeds button[disabled]{opacity:.5;cursor:default}
-.prow .input{width:150px;height:calc(var(--ph) - 8px);padding:0 10px;font-size:var(--pf);border-radius:10px}
-.prow .switch{flex:none;width:46px;height:28px}
-.prow .switch::after{left:3px;top:3px;width:22px;height:22px}
-.prow .switch[aria-pressed="true"]::after{left:21px}
-.prow.two .half{flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:6px}
-.prow.two .half+.half{border-left:1px solid var(--line2);padding-left:10px}
-.prow.two .half>span{white-space:nowrap}
-.prow.two .half:first-child{flex-grow:1.25}
-.psets .tip{font-size:calc(var(--pf) - 2px);line-height:1.3;padding:0 5px}
-.psets .tip:empty{display:none}
-#pause .mcard{max-width:360px;padding:clamp(12px,1.8vh,16px);gap:clamp(6px,1vh,9px)}
-#pause .mcard h2{font-size:clamp(18px,2.7vh,23px);line-height:1.2}
-#pause #pauseNote{font-size:calc(var(--pf) - 1px);line-height:1.3;margin-top:-3px}
-#pause .btn.again{height:calc(var(--ph) + 4px);font-size:calc(var(--pf) + 3px);border-radius:14px}
-#pause .row2{gap:6px}
-#pause .row2 .btn{height:var(--ph);font-size:var(--pf);border-radius:12px;gap:6px}
-#pause .row2 .btn svg{width:18px;height:18px}
-#pause .botsrow{min-height:var(--ph);padding:3px 5px 3px 12px;border-radius:12px}
-#pause .botsrow .bl{font-size:var(--pf)}
-#pause .stepper button{width:38px;height:calc(var(--ph) - 8px);font-size:20px;border-radius:10px}
-#pause .stepper .bv{min-width:34px;font-size:calc(var(--pf) + 3px)}
-#pauseBots{gap:3px}
-#pauseBots .tip{font-size:calc(var(--pf) - 2px);line-height:1.35}
+/* pause menu: the home menu's card, with sizes that follow the screen height so it always fits */
+.pausecard{margin:auto;max-width:340px;--bh:clamp(34px,5.4vh,44px);gap:clamp(7px,1.3vh,12px)}
+.pausecard .form{gap:clamp(4px,0.8vh,6px)}
+.pausecard .plogo{width:clamp(44px,7vh,66px)}
+.pausecard h2.title{margin:0;font-size:clamp(21px,3.1vh,25px);line-height:1.05;text-align:left;font-weight:700}
+.pausecard .sub{font-size:12px;text-align:left;margin:4px 0 0}
+.pausecard .sub:empty{display:none}
+.pausecard .flbl{margin-top:clamp(2px,0.6vh,5px)}
+.pausecard .input{height:var(--bh)}
+.pausecard .speeds button{height:var(--bh)}
+.pausecard .speeds button[disabled]{opacity:.5;cursor:default}
+.pausecard .btn{height:var(--bh)}
+.pausecard .btn.primary{height:calc(var(--bh) + 6px);margin-top:clamp(2px,0.6vh,6px)}
+.pausecard .row2{gap:8px;margin-top:2px}
+.pnote{margin:0 0 0 2px;font-size:11px;line-height:1.35;color:var(--muted)}
+.pnote:empty,.pnote[hidden]{display:none}
+#pauseBots{display:flex;flex-direction:column;gap:3px}
+.botsline{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:var(--bh)}
+.botsline .flbl{margin:0}
+.pausecard .stepper button{width:var(--bh);height:var(--bh);border-radius:12px;font-size:20px}
+.pausecard .stepper .bv{min-width:36px;font-size:18px}
+.btn.tog{justify-content:flex-start;padding:0 12px;gap:8px;color:var(--muted);font-size:13px}
+.btn.tog .dot{flex:none;width:12px;height:12px;border-radius:50%;background:#3A4472}
+.btn.tog[aria-pressed="true"]{color:var(--text);border-color:#2F6E58}
+.btn.tog[aria-pressed="true"] .dot{background:var(--mint);box-shadow:0 0 0 3px rgba(110,242,176,.18)}
+@media (max-height:620px){.pausecard .plogo{display:none}}
 @media (prefers-reduced-motion: reduce){.notice,#bite.show,#fireBtn.fresh{animation:none}}
 @media (min-width:700px) and (min-height:500px){.board{width:190px;font-size:12px}.brow{height:17px}}
 /* top HUD that always fits: the left column scales a little with the screen, the leaderboard gives way, the pause button keeps its full size */
@@ -402,22 +393,38 @@ h1.title span{color:var(--mint)}
 </div>
 
 <div id="pause" class="modal" hidden>
-  <div class="mcard">
-    <h2 data-i18n="paused"></h2>
-    <p class="tip" id="pauseNote" data-i18n="onlineGoesOn" hidden></p>
-    <button class="btn again" id="resumeBtn"><span data-i18n="resume"></span></button>
-    <div class="psets">
-      <div class="prow"><span data-i18n="language"></span><div class="seg"><button data-lang="ro" aria-pressed="true">RO</button><button data-lang="en" aria-pressed="false">EN</button></div></div>
-      <div class="prow"><label for="pauseName" data-i18n="yourName"></label><input id="pauseName" class="input" type="text" maxlength="14" autocomplete="off" spellcheck="false"></div>
-      <div class="prow stack"><span id="speedLbl3" data-i18n="speedName"></span><div class="speeds" role="radiogroup" aria-labelledby="speedLbl3" id="speedsPause"></div></div>
-      <div class="prow stack"><span id="diffLbl3" data-i18n="diff"></span><div class="speeds diffs" role="radiogroup" aria-labelledby="diffLbl3" id="diffsPause"></div><p class="tip" id="diffPauseNote"></p></div>
+  <div class="menucard pausecard">
+    <div class="toprow">
+      <div class="dust"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z" fill="#FFC857"></path></svg><span class="num" data-dust>0</span></div>
+      <div class="seg"><button data-lang="ro" aria-pressed="true">RO</button><button data-lang="en" aria-pressed="false">EN</button></div>
+    </div>
+    <div class="brand"><svg class="logo plogo" viewBox="10 20 335 280" aria-hidden="true">
+      <g stroke-opacity=".25" stroke-width="5"><circle cx="40" cy="40" r="3" fill="#FFC857" stroke="#FFC857"></circle><circle cx="122" cy="28" r="2.5" fill="#6FC8FF" stroke="#6FC8FF"></circle><circle cx="318" cy="42" r="3" fill="#FF7AC6" stroke="#FF7AC6"></circle><circle cx="334" cy="236" r="3" fill="#FFC857" stroke="#FFC857"></circle><circle cx="20" cy="150" r="2.5" fill="#6EF2B0" stroke="#6EF2B0"></circle><circle cx="100" cy="214" r="2.5" fill="#6FC8FF" stroke="#6FC8FF"></circle></g>
+      <circle cx="70" cy="70" r="11" fill="#C9CEDD"></circle><circle cx="66" cy="67" r="2.6" fill="#A9AFC2"></circle><circle cx="74" cy="74" r="2" fill="#A9AFC2"></circle>
+      <ellipse cx="175" cy="150" rx="120" ry="26" transform="rotate(-18 175 150)" fill="none" stroke="#9C84FF" stroke-opacity=".5" stroke-width="3"></ellipse>
+      <circle cx="175" cy="150" r="78" fill="#2E2770"></circle><circle cx="155" cy="128" r="58" fill="#FFFFFF" fill-opacity=".05"></circle><circle cx="140" cy="118" r="12" fill="#3B338A"></circle><circle cx="200" cy="182" r="17" fill="#3B338A"></circle><circle cx="216" cy="116" r="7" fill="#3B338A"></circle>
+      <path d="M 60.9 187.1 A 120 26 -18 0 0 289.1 112.9" fill="none" stroke="#9C84FF" stroke-width="3"></path>
+      <g fill="none"><path d="M 28 236 C 80 292, 214 300, 272 236 C 318 186, 312 112, 262 86" stroke="#000" stroke-opacity=".35" stroke-width="30" stroke-linecap="round" transform="translate(0 5)"></path><path d="M 28 236 C 80 292, 214 300, 272 236 C 318 186, 312 112, 262 86" stroke="#3ED39A" stroke-width="26" stroke-linecap="round"></path><path d="M 28 236 C 80 292, 214 300, 272 236 C 318 186, 312 112, 262 86" stroke="#8CF7C4" stroke-width="26" stroke-dasharray="10 12"></path><path d="M 28 236 C 80 292, 214 300, 272 236 C 318 186, 312 112, 262 86" stroke="#FFFFFF" stroke-opacity=".3" stroke-width="7" stroke-linecap="round" transform="translate(-2 -5)"></path></g>
+      <circle cx="262" cy="86" r="17" fill="#8CF7C4" stroke="#3ED39A" stroke-width="3"></circle><circle cx="259.9" cy="77" r="5.5" fill="#fff"></circle><circle cx="253.5" cy="89.4" r="5.5" fill="#fff"></circle><circle cx="258.3" cy="76.2" r="2.8" fill="#0A0F1F"></circle><circle cx="251.9" cy="88.6" r="2.8" fill="#0A0F1F"></circle>
+    </svg><div><h2 class="title" data-i18n="paused"></h2><p class="sub" id="pauseNote"></p></div></div>
+    <div class="form">
+      <label class="flbl" for="pauseName" data-i18n="yourName"></label>
+      <input id="pauseName" class="input" type="text" maxlength="14" autocomplete="off" spellcheck="false">
+      <span class="flbl" id="speedLbl3" data-i18n="speed"></span>
+      <div class="speeds" role="radiogroup" aria-labelledby="speedLbl3" id="speedsPause"></div>
+      <span class="flbl" id="diffLbl3" data-i18n="diff"></span>
+      <div class="speeds diffs" role="radiogroup" aria-labelledby="diffLbl3" id="diffsPause"></div>
+      <p class="pnote" id="diffPauseNote"></p>
       <div id="pauseBots">
-        <div class="botsrow"><span class="bl" id="pauseBotsLbl"></span><div class="stepper"><button data-bots="room" data-dir="-1" data-i18n-aria="botsLess">−</button><span class="bv num" id="botsRoom">20</span><button data-bots="room" data-dir="1" data-i18n-aria="botsMore">+</button></div></div>
-        <p class="tip" id="pauseBotsNote" data-i18n="botsNote"></p>
+        <div class="botsline"><span class="flbl" id="pauseBotsLbl"></span><div class="stepper"><button data-bots="room" data-dir="-1" data-i18n-aria="botsLess">−</button><span class="bv num" id="botsRoom">20</span><button data-bots="room" data-dir="1" data-i18n-aria="botsMore">+</button></div></div>
+        <p class="pnote" id="pauseBotsNote" data-i18n="botsNote"></p>
       </div>
-      <div class="prow"><span id="namesLbl3" data-i18n="names"></span><button class="switch" data-sw="names" aria-labelledby="namesLbl3" aria-pressed="true"></button></div>
-      <div class="prow"><span id="vibLbl3" data-i18n="vibration"></span><button class="switch" data-sw="vibrate" aria-labelledby="vibLbl3" aria-pressed="true"></button></div>
+      <div class="row2">
+        <button class="btn tog" data-sw="names" aria-pressed="true"><span class="dot" aria-hidden="true"></span><span data-i18n="namesShort"></span></button>
+        <button class="btn tog" data-sw="vibrate" aria-pressed="true"><span class="dot" aria-hidden="true"></span><span data-i18n="vibration"></span></button>
+      </div>
       <div class="row2"><button class="btn" id="pauseSkinsBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EEF2FF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.7-.8 1.7-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.8-1.7 1.7-1.7H16a5 5 0 0 0 5-5c0-4-4-7.2-9-7.2z"></path><circle cx="7.5" cy="11" r="1.2" fill="#EEF2FF"></circle><circle cx="10" cy="7" r="1.2" fill="#EEF2FF"></circle><circle cx="15" cy="7.5" r="1.2" fill="#EEF2FF"></circle></svg><span data-i18n="skins"></span></button><button class="btn" id="quitBtn"><span data-i18n="mainMenu"></span></button></div>
+      <button class="btn primary" id="resumeBtn"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="#062014"></path></svg><span data-i18n="resume"></span></button>
     </div>
   </div>
 </div>
@@ -498,7 +505,7 @@ const STR = {
     controlsHint: 'Pe telefon: trage cu degetul în stânga ecranului ca să conduci, ține apăsat fulgerul pentru turbo. Când iei o armă apare butonul de foc deasupra fulgerului. Pe calculator: mouse-ul conduce, click sau Space pentru turbo, F sau click dreapta pentru foc.',
     diff: 'Dificultate', diffs: ['Ușor', 'Normal', 'Greu'],
     online: 'Joacă online', onlineSub: 'Până la 4 jucători, plus boți. Gazda alege viteza și dificultatea. Numărul de boți îl poate schimba oricine din cameră, și în timpul jocului, din pauză.',
-    savedBy: 'Scutul lui {name} l-a salvat', hostChanged: 'Gazda a schimbat jocul: {speed} · {diff}', diffNextGame: 'Boții se schimbă acum; meteoriții și obiectele, de la jocul următor.', botsSoloLbl: 'Boți', botsSoloLbl2: 'Boți când joci singur', namesShort: 'Nume pe hartă', hostPicks: 'Viteza și dificultatea le alege gazda camerei.',
+    savedBy: 'Scutul lui {name} l-a salvat', hostChanged: 'Gazda a schimbat jocul: {speed} · {diff}', diffNextGame: 'Boții se schimbă acum; meteoriții și obiectele, de la jocul următor.', pausedSub: 'Jocul stă pe loc până apeși Continuă.', botsSoloLbl: 'Boți', botsSoloLbl2: 'Boți când joci singur', namesShort: 'Nume pe hartă', hostPicks: 'Viteza și dificultatea le alege gazda camerei.',
     myCodeLbl: 'Codul camerei tale', newCode: 'Cod nou', errTaken: 'Codul {code} e folosit acum de altă cameră. Alege alt cod.',
     botsLbl: 'Boți în cameră', botsHostLbl: 'Boți în camera ta', botsNote: 'Se schimbă pentru toți cei din cameră.', botsLess: 'Mai puțini boți', botsMore: 'Mai mulți boți',
     botsSet: 'Boți în cameră: <span class="hl">{n}</span> · schimbat de {name}',
@@ -549,7 +556,7 @@ const STR = {
     controlsHint: 'On a phone: drag on the left side of the screen to steer, hold the lightning button to boost. When you pick up a weapon, a fire button appears above the lightning button. On a computer: the mouse steers, click or Space to boost, F or right-click to fire.',
     diff: 'Difficulty', diffs: ['Easy', 'Normal', 'Hard'],
     online: 'Play online', onlineSub: 'Up to 4 players, plus bots. The host picks the speed and difficulty. Anyone in the room can change the number of bots, even mid-game from the pause menu.',
-    savedBy: '{name}’s shield saved it', hostChanged: 'The host changed the game: {speed} · {diff}', diffNextGame: 'Bots change now; meteors and pickups from the next game.', botsSoloLbl: 'Bots', botsSoloLbl2: 'Bots when playing alone', namesShort: 'Names on map', hostPicks: 'The room host picks the speed and difficulty.',
+    savedBy: '{name}’s shield saved it', hostChanged: 'The host changed the game: {speed} · {diff}', diffNextGame: 'Bots change now; meteors and pickups from the next game.', pausedSub: 'The game waits until you tap Continue.', botsSoloLbl: 'Bots', botsSoloLbl2: 'Bots when playing alone', namesShort: 'Names on map', hostPicks: 'The room host picks the speed and difficulty.',
     myCodeLbl: 'Your room code', newCode: 'New code', errTaken: 'Code {code} is being used by another room right now. Pick another code.',
     botsLbl: 'Bots in the room', botsHostLbl: 'Bots in your room', botsNote: 'Changes it for everyone in the room.', botsLess: 'Fewer bots', botsMore: 'More bots',
     botsSet: 'Bots in the room: <span class="hl">{n}</span> · changed by {name}',
@@ -596,7 +603,7 @@ const BOT_SKINS = [['#6B4FE0', '#A993FF'], ['#E8604C', '#FFB199'], ['#E0A12E', '
 const BOT_NAMES = ['Nova', 'Orion', 'Vega', 'Lyra', 'Sirius', 'Pulsar', 'Quasar', 'Altair', 'Rigel', 'Deneb', 'Atlas', 'Castor', 'Polux', 'Mira', 'Antares', 'Electra', 'Titan', 'Zenit', 'Andromeda', 'Kepler', 'Halley', 'Draco', 'Phoenix', 'Cassiopeia', 'Aldebaran', 'Bellatrix', 'Betelgeuse', 'Capella', 'Procyon', 'Spica', 'Regulus', 'Fomalhaut', 'Arcturus', 'Achernar', 'Hadar', 'Mimosa', 'Shaula', 'Alnilam', 'Mintaka', 'Saiph', 'Elnath', 'Nashira', 'Talitha', 'Meteor'];
 const FOOD_COLORS = ['#FFC857', '#6FC8FF', '#FF7AC6', '#6EF2B0', '#B49CFF', '#FFFFFF'];
 const FOOD_WEIGHTS = [3, 3, 3, 3, 2, 1];
-const SPEED_MUL = [0.8, 1, 1.45, 2.1]; // Slow, Normal, Fast, Extreme
+const SPEED_MUL = [0.8, 1, 1.8, 2.8]; // Slow, Normal, Fast, Extreme
 
 const ARENA_R = 2200, FOOD_TARGET = 5000;
 // Difficulty: how many bots, how many of them hunt, how fast they react and look ahead.
@@ -782,8 +789,8 @@ function speedOf(w) {
   const r = rOf(w), mul = w.boosting ? BOOST_MUL : w.turboT > 0 ? TURBO_MUL : 1, bot = w.isPlayer || w.human ? 1 : diffCfg().botSpeed;
   return BASE_SPEED * SPEED_MUL[curSpeed()] * mul * bot * (1 - Math.min(0.22, (r - 4.5) * 0.015));
 }
-// Faster game speeds also turn faster, so the worm stays as easy to steer.
-function turnOf(w) { return 3.8 * Math.sqrt(SPEED_MUL[curSpeed()]) / (1 + (rOf(w) - 4.5) * 0.07); }
+// Faster game speeds also turn faster: people a bit (so steering stays calm), bots in step with their speed (so they can still dodge).
+function turnOf(w) { const m = SPEED_MUL[curSpeed()]; return 3.8 * (w.isPlayer || w.human ? Math.sqrt(m) : m) / (1 + (rOf(w) - 4.5) * 0.07); }
 
 function moveWorm(w, dt) {
   if (w.remote) netApplyRemote(w, dt);
@@ -1594,7 +1601,7 @@ function afterStep(dt) {
   if (target) {
     const k = Math.min(1, dt * 6); cam.x += (target.x - cam.x) * k; cam.y += (target.y - cam.y) * k;
     // big worms and fast speeds zoom out a little, so you see what's coming
-    const zt = clamp(1 / (1 + (rOf(target) - 5.7) * 0.045), 0.6, 1) * Math.min(1, 1 / (1 + (SPEED_MUL[curSpeed()] - 1) * 0.18)); cam.z += (zt - cam.z) * Math.min(1, dt * 2);
+    const zt = Math.max(0.5, clamp(1 / (1 + (rOf(target) - 5.7) * 0.045), 0.6, 1) * Math.min(1, 1 / (1 + (SPEED_MUL[curSpeed()] - 1) * 0.18))); cam.z += (zt - cam.z) * Math.min(1, dt * 2);
   }
   if (state === 'play') {
     updateHud();
@@ -1607,7 +1614,7 @@ function afterStep(dt) {
    Phones talk through a free public MQTT broker (a message relay). One player hosts the room:
    their phone runs the bots, food and hazards and sends each guest what is around them.
    Guests steer their own worm locally and report where it is. */
-const NET_V = 4; // v4: new speed table (both phones must agree)
+const NET_V = 5; // v5: faster Fast and Extreme (both phones must agree)
 const TOPIC = 'hunys/vstelar/v' + NET_V;
 const BROKERS = (() => {
   const m = /[?&]broker=([^&]+)/.exec(location.search);
@@ -2100,6 +2107,7 @@ function applyI18n() {
   updateRoomPill();
   document.title = lang === 'ro' ? 'Viermele Stelar' : 'Star Worm';
   buildSpeeds(); refreshMenu(); refreshBotsUI();
+  if (!$('pause').hidden) $('pauseNote').textContent = NET.mode !== 'solo' ? t('onlineGoesOn') : t('pausedSub');
   if (!$('skins').hidden) buildSkins();
   lastBoard = ''; lastChips = ''; lastFire = '-';
 }
@@ -2233,7 +2241,7 @@ function beginPlay() {
 // Fills the pause card with the current settings.
 function prepPause() {
   const online = NET.mode !== 'solo';
-  $('pauseNote').hidden = !online; $('pauseBots').hidden = false;
+  $('pauseNote').textContent = online ? t('onlineGoesOn') : t('pausedSub'); $('pauseBots').hidden = false; refreshMenu();
   $('pauseName').value = save.name; buildSpeeds(); syncSwitches(); refreshBotsUI();
   $('pause').scrollTop = 0;
 }
@@ -2316,7 +2324,8 @@ $('overSkins').addEventListener('click', () => { skinsReturn = 'over'; $('over')
 let last = performance.now();
 function frame(now) {
   const dt = Math.min(0.05, (now - last) / 1000); last = now;
-  if (state !== 'pause') step(dt);
+  // On Fast and Extreme a slow frame is split in smaller steps, so a quick head can't skip over a thin body.
+  if (state !== 'pause') { const n = NET.mode !== 'client' && SPEED_MUL[curSpeed()] >= 1.8 ? Math.min(3, Math.ceil(dt * 45)) : 1; for (let i = 0; i < n; i++) step(dt / n); }
   render(now / 1000);
   requestAnimationFrame(frame);
 }

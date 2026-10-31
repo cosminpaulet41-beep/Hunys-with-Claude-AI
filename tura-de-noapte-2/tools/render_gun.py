@@ -121,7 +121,7 @@ def scene(p, want_mat=False):
 
     # ---------------- mâna dreaptă: palma pe spatele mânerului, degetele îl cuprind prin față
     palm = sd_round_box((p - np.array([0.008, -0.041, -0.024])) @ RG, [0.0185, 0.033, 0.0135], 0.010)
-    thenar = sd_capsule_tapered(p, [-0.007, -0.052, -0.029], [-0.009, -0.020, -0.025], 0.0125, 0.0105)
+    thenar = sd_capsule_tapered(p, [-0.007, -0.050, -0.029], [-0.009, -0.026, -0.026], 0.0135, 0.0115)
     hand = smin(palm, thenar, 0.006)
     web = sd_capsule(p, [-0.003, -0.007, -0.027], [0.014, -0.011, -0.027], 0.0095)
     hand = smin(hand, web, 0.008)
@@ -141,10 +141,11 @@ def scene(p, want_mat=False):
     idx = finger(p, [0.018, -0.012, -0.012], [[0.0185, -0.010, 0.022], [0.0165, -0.011, 0.048], [0.0148, -0.012, 0.067]],
                  [0.0086, 0.0080, 0.0074, 0.0065])
     hand = smin(hand, idx, 0.003)
-    th = finger(p, [-0.010, -0.017, -0.024], [[-0.0155, -0.006, 0.000], [-0.0165, -0.002, 0.022], [-0.0158, 0.000, 0.040]],
-                [0.0106, 0.0094, 0.0084, 0.0073])
+    # degetul mare: scurt și gros, ca la un om (cam 5 cm de la încheietură la vârf)
+    th = finger(p, [-0.011, -0.015, -0.022], [[-0.0150, -0.008, -0.010], [-0.0160, -0.005, 0.000], [-0.0157, -0.003, 0.010]],
+                [0.0118, 0.0108, 0.0097, 0.0086])
     hand = smin(hand, th, 0.005)
-    nail = np.minimum(sd_round_box(p - np.array([-0.0226, 0.0020, 0.0340]), [0.0011, 0.0046, 0.0062], 0.0010), nails)
+    nail = np.minimum(sd_round_box(p - np.array([-0.0238, -0.0010, 0.0055]), [0.0011, 0.0050, 0.0058], 0.0010), nails)
     wrist = sd_capsule_tapered(p, [0.008, -0.068, -0.044], [0.040, -0.170, -0.160], 0.0235, 0.029)
     hand = smin(hand, wrist, 0.010)
 

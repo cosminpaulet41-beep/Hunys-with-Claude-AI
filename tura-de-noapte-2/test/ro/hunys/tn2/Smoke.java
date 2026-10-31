@@ -16,7 +16,7 @@ public final class Smoke {
         int fails = 0;
         for (int diff = 0; diff < 3; diff++) {
             g.difficulty = diff;
-            g.newGame();
+            g.startEpisode(diff, null);
             for (int k = 0; k < 10; k++) {
                 g.tapScreen();
             }
@@ -37,8 +37,7 @@ public final class Smoke {
                     } else if (g.state == Game.ST_STORY) {
                         g.tapScreen();
                     } else if (g.state == Game.ST_STATS) {
-                        g.menuAction(Game.A_STATS_DONE);
-                        g.newGame();
+                        g.menuAction(Game.A_NEXT);
                     } else {
                         g.tapScreen();
                     }
@@ -92,10 +91,15 @@ public final class Smoke {
                     + ", notite " + notes + ", statie " + radios + ", viata " + g.world.health + ", sunete " + p.sounds.size());
         }
         // limba engleză: toate textele există
-        Texts.set(true);
-        check(Texts.STORY.length == 5 && Texts.NOTES.length == 12 && Texts.NOTE_TITLES.length == 12, "texte en");
+        for (int lang = 0; lang < 2; lang++) {
+            Texts.set(lang == 1);
+            check(Texts.STORY.length == 3 && Texts.WIN.length == 3 && Texts.OBJ.length == 3, "texte episoade");
+            for (int e = 0; e < 3; e++) {
+                check(Texts.NOTES[e].length == Texts.NOTE_TITLES[e].length, "notite " + e);
+                check(Texts.OBJ[e].length == 4, "obiective " + e);
+            }
+        }
         Texts.set(false);
-        check(Texts.STORY.length == 5 && Texts.NOTES.length == 12 && Texts.RADIO.length == 7, "texte ro");
         System.out.println(fails == 0 ? "SMOKE OK" : "SMOKE GRESIT");
         if (fails > 0) {
             System.exit(1);

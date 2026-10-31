@@ -125,13 +125,18 @@ TYPES = [
     dict(name="prezentatoare", top=(168, 36, 48), bottom=(28, 28, 32), shoe=(20, 20, 22), hair=(196, 164, 104)),
     dict(name="bucatar", top=(222, 222, 214), bottom=(96, 96, 104), shoe=(30, 30, 32), hair=(240, 240, 236)),
     dict(name="mara", top=(176, 150, 106), bottom=(46, 50, 64), shoe=(40, 30, 26), hair=(34, 28, 26)),
+    # Spitalul Universitar (Tura de Noapte 2)
+    dict(name="chirurg", top=(84, 140, 126), bottom=(78, 132, 118), shoe=(222, 222, 216), hair=(64, 124, 150)),
+    dict(name="elena", top=(236, 236, 230), bottom=(70, 100, 152), shoe=(238, 238, 232), hair=(54, 34, 24)),
+    dict(name="cristi", top=(54, 62, 84), bottom=(50, 58, 80), shoe=(30, 30, 30), hair=(44, 32, 24)),
 ]
-ALIVE = ("ioana", "mara")
+ALIVE = ("ioana", "mara", "elena", "cristi")
+SKIN_ALIVE = {"mara": (214, 168, 136), "cristi": (206, 160, 128)}
 
 
 def humanoid(t, frame, ioana=False):
     s = Spr(48, 64)
-    skin = ((214, 168, 136) if t["name"] == "mara" else (226, 178, 144)) if ioana else SKIN
+    skin = SKIN_ALIVE.get(t["name"], (226, 178, 144)) if ioana else SKIN
     top, shoe = t["top"], t["shoe"]
     bottom = t["bottom"] if t["bottom"] else skin
     sway = 0 if frame == 0 else 1
@@ -161,7 +166,7 @@ def humanoid(t, frame, ioana=False):
     torso = [(12, ls), (24, 16 + hunch), (36, rs), (35, 28), (34, 40), (14, 40), (13, 28)]
     if t["name"] == "pacient":
         torso = [(12, ls), (24, 16 + hunch), (36, rs), (35, 28), (35, 47), (13, 47), (13, 28)]
-    if t["name"] == "medic":
+    if t["name"] in ("medic", "elena"):
         torso = [(11, ls), (24, 16 + hunch), (37, rs), (37, 30), (37, 52), (11, 52), (11, 30)]
     torso = [(x + sway, y) for x, y in torso]
     s.poly(torso, top, shade=4, hi=1)
@@ -178,6 +183,32 @@ def humanoid(t, frame, ioana=False):
         s.rect(29 + sway, 27, 4, 4, mul(top, 0.78))
         if n == "ioana":
             s.rect(14 + sway, 26, 5, 2, (230, 230, 230))  # ecuson
+    if n == "chirurg":
+        s.poly([(20 + sway, 18 + hunch), (28 + sway, 18 + hunch), (24 + sway, 25)], mul(skin, 0.9))
+        s.rect(29 + sway, 27, 4, 4, mul(top, 0.78))
+        s.poly([(15 + sway, 26), (33 + sway, 26), (34 + sway, 41), (14 + sway, 41)], (120, 160, 176), shade=2)  # șorț
+        for (x, y) in [(19, 30), (24, 33), (28, 29), (21, 37), (30, 36)]:
+            s.rect(x + sway, y, 2, 2, BLOOD)
+    if n == "elena":
+        scrub = (70, 100, 152)
+        s.poly([(19 + sway, 18), (29 + sway, 18), (28 + sway, 40), (20 + sway, 40)], scrub, shade=1)
+        s.poly([(21 + sway, 18), (27 + sway, 18), (24 + sway, 24)], mul(skin, 0.92))
+        s.rect(19 + sway, 20, 1, 32, mul(top, 0.72))
+        s.rect(28 + sway, 20, 1, 32, mul(top, 0.72))
+        s.rect(13 + sway, 31, 4, 5, mul(top, 0.86))
+        # stetoscopul
+        for (x, y) in [(20, 19), (19, 21), (19, 23), (20, 25), (21, 27), (27, 19), (28, 21), (28, 23), (27, 25), (26, 27)]:
+            s.set(x + sway, y, (50, 50, 56))
+        s.rect(22 + sway, 28, 4, 2, (190, 196, 204))
+        s.rect(30 + sway, 25, 4, 5, (230, 230, 226))                     # ecuson
+        s.rect(31 + sway, 26, 2, 2, (40, 90, 160))
+    if n == "cristi":
+        s.rect(24 + sway, 18, 1, 22, (30, 34, 46))                        # fermoarul combinezonului
+        s.rect(14 + sway, 24, 6, 4, (210, 110, 40))                       # ecusoane
+        s.rect(29 + sway, 24, 5, 3, (190, 190, 186))
+        s.rect(13 + sway, 33, 22, 2, (200, 200, 120))                     # bandă reflectorizantă
+        s.rect(16 + sway, 36, 5, 4, mul(top, 0.8))                        # buzunare
+        s.rect(27 + sway, 36, 5, 4, mul(top, 0.8))
     if n == "medic":
         shirt = (74, 106, 154)
         s.poly([(19 + sway, 18 + hunch), (29 + sway, 18 + hunch), (28 + sway, 40), (20 + sway, 40)], shirt, shade=1)
@@ -231,7 +262,7 @@ def humanoid(t, frame, ioana=False):
 
     # brate
     sleeve = top
-    bare = n in ("pacient", "asistenta", "ioana")
+    bare = n in ("pacient", "asistenta", "ioana", "chirurg")
     glove = (216, 180, 40) if n == "vectra" else skin
 
     def arm(side, reach):
@@ -276,6 +307,15 @@ def humanoid(t, frame, ioana=False):
         s.rect(29 + sway, rs + 2, 3, 9, (30, 30, 34))           # microfon
         s.ellipse(30.5 + sway, rs + 1, 2.4, 2.4, (90, 90, 96))
         s.rect(28 + sway, rs + 6, 5, 3, (220, 100, 40))         # cubul cu sigla
+    elif ioana and n == "elena":
+        arm("L", False)
+        arm("R", True)
+        s.rect(27 + sway, rs + 6, 7, 9, (180, 140, 90))                  # clipboard
+        s.rect(28 + sway, rs + 7, 5, 7, (240, 240, 236))
+    elif ioana and n == "cristi":
+        arm("L", False)
+        arm("R", False)
+        s.rect(35 + sway, rs + 18, 4, 7, (230, 200, 40))                  # lanterna
     elif ioana:
         arm("L", False)
         arm("R", False)
@@ -315,6 +355,30 @@ def humanoid(t, frame, ioana=False):
                 s.rect(ex + hx, ey, 2, 2, (40, 30, 26))
                 s.set(ex + hx, ey, (250, 250, 250))
             s.rect(22 + hx, ey + 6, 4, 1, (160, 84, 76))
+        elif ioana and n == "elena":
+            s.poly([(17 + hx, hy - 1), (31 + hx, hy - 1), (31 + hx, hy + 4), (24 + hx, hy + 2), (17 + hx, hy + 5)], t["hair"], shade=2)
+            s.ellipse(29 + hx, hy - 1, 3.0, 2.6, t["hair"], shade=1)          # coc
+            for ex in (20, 26):
+                s.rect(ex + hx, ey, 2, 2, (44, 32, 26))
+                s.set(ex + hx, ey, (250, 250, 250))
+            s.rect(19 + hx, ey - 1, 4, 1, (60, 60, 64))                       # ochelari subțiri
+            s.rect(25 + hx, ey - 1, 4, 1, (60, 60, 64))
+            s.rect(22 + hx, ey + 6, 4, 1, (170, 90, 80))
+        elif ioana and n == "cristi":
+            for x in range(18, 31):
+                s.set(x + hx, hy, t["hair"])
+                s.set(x + hx, hy + 1, t["hair"])
+            s.rect(18 + hx, hy + 2, 2, 3, t["hair"])
+            for ex in (20, 26):
+                s.rect(ex + hx, ey, 2, 2, (40, 30, 24))
+                s.set(ex + hx, ey, (250, 250, 250))
+            for x in range(20, 29):                                          # barbă nerasă
+                if x % 2 == 0:
+                    s.set(x + hx, ey + 7, mul(skin, 0.75))
+            s.rect(22 + hx, ey + 5, 4, 1, (150, 84, 70))
+            s.rect(16 + hx, hy + 13, 16, 2, (24, 24, 26))                    # căștile pe gât
+            s.ellipse(17 + hx, hy + 13, 2.2, 2.4, (36, 36, 40))
+            s.ellipse(31 + hx, hy + 13, 2.2, 2.4, (36, 36, 40))
         elif ioana:
             s.poly([(17 + hx, hy), (31 + hx, hy), (31 + hx, hy + 5), (17 + hx, hy + 6)], t["hair"], shade=2)
             s.poly([(29 + hx, hy + 3), (33 + hx, hy + 4), (33 + hx, hy + 14), (30 + hx, hy + 12)], t["hair"], shade=1)
@@ -332,6 +396,10 @@ def humanoid(t, frame, ioana=False):
                 s.ellipse(24 + hx, hy - 1, 3.6, 2.0, t["hair"])
             elif n == "medic":
                 s.poly([(18 + hx, hy), (30 + hx, hy), (30 + hx, hy + 3), (24 + hx, hy + 2), (18 + hx, hy + 4)], t["hair"], shade=1)
+            elif n == "chirurg":
+                s.poly([(17 + hx, hy - 1), (31 + hx, hy - 1), (31 + hx, hy + 5), (17 + hx, hy + 5)], t["hair"], shade=2, hi=1)
+                for x in range(18, 31, 3):
+                    s.set(x + hx, hy + 1, mul(t["hair"], 0.8))
             elif n == "reporter":
                 s.poly([(18 + hx, hy), (30 + hx, hy), (30 + hx, hy + 3), (20 + hx, hy + 3), (18 + hx, hy + 5)], t["hair"], shade=1)
             elif n == "cameraman":
@@ -371,6 +439,11 @@ def humanoid(t, frame, ioana=False):
                 s.set(x + hx, ey + 6, (214, 204, 176))
             s.rect(25 + hx, ey + 9, 1, 3, BLOOD)
             s.rect(19 + hx, ey + 3, 2, 2, BLOOD2)
+            if n == "chirurg":
+                s.poly([(19 + hx, ey + 8), (29 + hx, ey + 8), (28 + hx, ey + 11), (20 + hx, ey + 11)], (150, 190, 214), shade=1)
+                s.rect(18 + hx, ey + 7, 1, 2, (200, 210, 220))
+                s.rect(29 + hx, ey + 7, 1, 2, (200, 210, 220))
+                s.rect(23 + hx, ey + 9, 3, 2, BLOOD)
     s.outline()
     return s
 
@@ -1354,33 +1427,8 @@ def decor_sheet(out):
         f.write("\n".join(lines) + "\n")
 
 if __name__ == "__main__":
+    # Tura de Noapte 2: personajele, bossii și decorul spitalului
     import os
-    os.makedirs(OUT, exist_ok=True)
-    zs = []
-    for t in TYPES:
-        if t["name"] in ("pacient", "asistenta", "medic"):
-            continue
-        if t["name"] in ALIVE:
-            zs += [humanoid(t, 0, True), humanoid(t, 1, True), None, None]
-        else:
-            zs += [humanoid(t, 0), humanoid(t, 1), humanoid_dead(t), None]
-    zs += [spitter(0), spitter(1), spitter_dead(), spitter(2)]
-    sheet(zs, 4, 48, 64).save(os.path.join(OUT, "z.png"), optimize=True)
-    sheet([boss2(0), boss2(1), boss2_dead()], 3).save(os.path.join(OUT, "boss2.png"), optimize=True)
-    sheet([barrel(), barrel(True)], 2).save(os.path.join(OUT, "barrel.png"), optimize=True)
-    sheet([explosion(0), explosion(1), explosion(2)], 3).save(os.path.join(OUT, "expl.png"), optimize=True)
-    acid().image().save(os.path.join(OUT, "acid.png"), optimize=True)
-    sheet([boss(0), boss(1), boss_dead()], 3).save(os.path.join(OUT, "boss.png"), optimize=True)
-    items = [item_ammo(), item_med(), item_card((40, 88, 216)), item_card((200, 36, 36)), item_note(),
-             item_shotgun(), item_shells(), item_key_yellow(), item_card((36, 160, 70)),
-             item_smg(), item_smg_ammo()]
-    sheet(items, 11).save(os.path.join(OUT, "items.png"), optimize=True)
-    # armele noi: pistolul desenat din nou, restul mărite cu Scale2x
-    gun_pistol2().image().save(os.path.join(OUT, "gun.png"), optimize=True)
-    scale2x(gun_shotgun()).image().save(os.path.join(OUT, "gun2.png"), optimize=True)
-    scale2x(gun_smg()).image().save(os.path.join(OUT, "gun3.png"), optimize=True)
-    scale2x(flash(24, 20)).image().save(os.path.join(OUT, "flash.png"), optimize=True)
-    scale2x(flash(32, 24)).image().save(os.path.join(OUT, "flash2.png"), optimize=True)
-    scale2x(flash(20, 16)).image().save(os.path.join(OUT, "flash3.png"), optimize=True)
-    decor_sheet(OUT)
-    print("ok")
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import sprites_spital
+    sprites_spital.main(OUT)

@@ -6,9 +6,10 @@ import java.io.IOException;
 import java.util.Random;
 
 /**
- * Lumea jocului: harta etajului, jucătorul, infectații, obiectele, ușile, lumina și randarea 3D
- * (raycasting, ca în jocurile 3D vechi). Logica vine din Tura de Noapte (E72); randarea e nouă:
- * texturi 64x64, lumini colorate calculate din hartă, lanternă, ceață și rezoluție internă la alegere.
+ * Lumea jocului: harta etajului, jucătorul, infectații, bossii, buteliile, obiectele, ușile, lumina și
+ * randarea 3D (raycasting, ca în jocurile 3D vechi). Logica vine din Tura de Noapte (E72); randarea e nouă:
+ * texturi 64x64, lumini colorate calculate din hartă, lanternă, ceață, cerul din zori pe acoperiș și
+ * rezoluție internă la alegere. Cele trei episoade (parterul, etajul, acoperișul) au fiecare harta lui.
  * Nu depinde de Android, ca să poată fi testată și pe calculator.
  */
 public final class World {
@@ -29,6 +30,8 @@ public final class World {
     static final int[] D_START = {24, 12, 8};
     static final int[] D_MED = {50, 40, 30};
     static final float[] D_SPITCD = {3.0f, 2.4f, 2.0f};
+    static final int[] D_BOSS9 = {14, 20, 28};
+    static final int[] D_CREATURE = {28, 38, 50};
 
     // arme: 0 pistol, 1 pușcă, 2 pistol-mitralieră
     public static final int[] W_MAG = {12, 5, 30};
@@ -44,8 +47,18 @@ public final class World {
 
     public static final int IT_AMMO = 0, IT_MED = 1, IT_BLUE = 2, IT_RED = 3, IT_NOTE = 4;
     public static final int IT_SHOTGUN = 5, IT_SHELLS = 6, IT_YELLOW = 7, IT_GREEN = 8, IT_SMG = 9, IT_SMGAMMO = 10;
-    static final int Z_IDLE = 0, Z_CHASE = 1, Z_DYING = 2, Z_DEAD = 3;
-    public static final int SCENE_IOANA = 100, SCENE_MARA = 101;
+    /** Z_HIDDEN: încă nu a apărut (creatura de pe acoperiș). */
+    static final int Z_IDLE = 0, Z_CHASE = 1, Z_DYING = 2, Z_DEAD = 3, Z_HIDDEN = 4;
+    /** Tipuri care nu sunt rânduri din z.png. */
+    public static final int T_BOSS9 = 20, T_CREATURE = 21, T_O2 = 22;
+    public static final int SCENE_IOANA = 100, SCENE_ELENA = 101, SCENE_CRISTI = 102, SCENE_CREATURE = 103;
+    public static final int SCENE_BOSS9 = 104;
+    /** Mesajele radio ale Ioanei (Texts.RADIO[episod][id]; unele episoade nu le au pe toate). */
+    public static final int R_START = 0, R_ROOM = 1, R_BLUE = 2, R_RED = 3, R_YELLOW = 4, R_GREEN = 5;
+    public static final int R_SHOTGUN = 6, R_SMG = 7, R_POWER = 8, R_NPC = 9, R_BOSS_SEEN = 10, R_BOSS_DEAD = 11;
+    public static final int R_ACID = 12, R_LIFT = 13, R_OUT = 14, R_O2 = 15;
+    /** Episoadele: hărțile, în ordine. */
+    public static final String[] LEVELS = {"parter", "etaj", "acoperis"};
 
     // ------------------------------------------------------------------ harta
     public final Platform plat;
@@ -79,9 +92,11 @@ public final class World {
     public boolean hasShotgun, hasSmg;
     public final int[] mag = new int[3], res = new int[3];
     public boolean keyBlue, keyRed, keyYellow, keyGreen;
-    public boolean power, metMara, foundIoana;
+    /** Episodul (0 parterul, 1 etajul, 2 acoperișul). */
+    public int ep;
+    public boolean power, metElena, foundIoana, metCristi, liftOn, bossDead;
     public boolean won, dead;
-    public float walkPhase, shootCd, reloadT, flashT, hurtT, playTime, pumpT;
+    public float walkPhase, shootCd, reloadT, flashT, hurtT, playTime, pumpT, boomT;
     public String msg;
     public float msgT;
     public int pendingNote = -1, pendingScene = -1;
@@ -104,7 +119,7 @@ public final class World {
     final float[] zspit = new float[MAXZ], zanim = new float[MAXZ];
     final int[] zhp = new int[MAXZ], zst = new int[MAXZ], zty = new int[MAXZ], zcarry = new int[MAXZ];
     final boolean[] zhas = new boolean[MAXZ], zsee = new boolean[MAXZ], zdecor = new boolean[MAXZ];
-    final float[] zgr = new float[MAXZ];
+    final float[] zgr = new float[MAXZ], zcharge = new float[MAXZ], zchargeCd = new float[MAXZ];
 
     // obiecte
     public int ni;
@@ -135,10 +150,23 @@ public final class World {
     private final int[] sOrder = new int[MAXZ + MAXI + MAXP + MAXD];
     private final float[] sDist = new float[MAXZ + MAXI + MAXP + MAXD];
     int curFlR, curFlG, curFlB, curMuzzle;
-    /** Pistolul HD micșorat pentru rezoluția curentă a lumii (alfa înmulțit). */
-    Img gunHd;
+    /** Armele HD micșorate pentru rezoluția curentă a lumii (alfa înmulțit) și cât au fost micșorate. */
+    final Img[] gunHd = new Img[3];
+    final float[] gunK = new float[3];
     /** Cât din înălțimea ecranului ocupă mâna cu pistolul. */
     public static float GUN_H = 0.40f;
+    /** Coloana din panorama cerului pentru fiecare coloană de pe ecran (calculată la fiecare cadru). */
+    int[] skyCol, skyRow;
+    /** Celulele de afară (acoperișul): tavanul e cerul. */
+    boolean[] outdoor;
+    boolean anyOutdoor;
+    /** Colțul heliportului (pentru bucățile texturii mari). */
+    int heliX = -1, heliY = -1;
+    /** Ceața: cât de repede se întunecă lumea cu distanța (afară mai puțin). */
+    float fogK = 0.010f;
+    /** Luminozitatea din setări (0 foarte întunecat ... 4 foarte luminos, 2 = normal) și tabelul ei. */
+    int bright = 2;
+    final int[] gammaLut = new int[256];
 
     public World(Platform p) {
         plat = p;
@@ -161,9 +189,60 @@ public final class World {
         lampCell = new boolean[cells];
         flow = new int[cells];
         flowQ = new int[cells];
+        outdoor = new boolean[cells];
+        wallC = null;
+        ep = 0;
+        for (int k = 0; k < LEVELS.length; k++) {
+            if (LEVELS[k].equals(lv.name)) {
+                ep = k;
+            }
+        }
+        anyOutdoor = false;
+        heliX = -1;
+        heliY = -1;
+        for (int i = 0; i < cells; i++) {
+            char z = lv.zones[i];
+            outdoor[i] = z == 'e' || z == 'h';
+            anyOutdoor |= outdoor[i];
+            if (z == 'h' && heliX < 0) {
+                heliX = i % mw;
+                heliY = i / mw;
+            }
+        }
         buildEmissive();
         reset();
         buildLights();
+    }
+
+    /** Echipamentul cu care începe un episod pornit direct din meniul de episoade. */
+    public void startGear() {
+        if (ep >= 1) {
+            hasShotgun = true;
+            mag[1] = W_MAG[1];
+            res[1] = 8;
+            res[0] = Math.max(res[0], 24);
+        }
+        if (ep >= 2) {
+            hasSmg = true;
+            mag[2] = W_MAG[2];
+            res[2] = 60;
+        }
+    }
+
+    /** Ce trece dintr-un episod în altul: viața, armele și muniția. */
+    public int[] carry() {
+        return new int[] {health, weapon, hasShotgun ? 1 : 0, hasSmg ? 1 : 0, mag[0], res[0], mag[1], res[1], mag[2], res[2]};
+    }
+
+    public void applyCarry(int[] c) {
+        health = Math.max(c[0], 70);
+        hasShotgun = c[2] != 0;
+        hasSmg = c[3] != 0;
+        for (int w = 0; w < 3; w++) {
+            mag[w] = c[4 + w * 2];
+            res[w] = c[5 + w * 2];
+        }
+        weapon = owned(c[1]) ? c[1] : 0;
     }
 
     /** Pornește etajul de la început, cu echipamentul de start. */
@@ -175,7 +254,12 @@ public final class World {
             door[i] = 0f;
             doorMoving[i] = false;
             seen[i] = false;
-            floorT[i] = (byte) floorTex(zone[i]);
+            int ft = floorTex(zone[i]);
+            if (zone[i] == 'h' && heliX >= 0) {
+                int hx = (i % mw - heliX) % 5, hy = (i / mw - heliY) % 5;
+                ft = Art.t("f_heli" + (hy * 5 + hx));
+            }
+            floorT[i] = (byte) ft;
             char l = lv.lights[i];
             int ct = ceilTex(zone[i], l);
             ceilT[i] = (byte) ct;
@@ -196,14 +280,33 @@ public final class World {
                 setAngle(lv.tang[k] < 0 ? 0f : (float) Math.toRadians(lv.tang[k]));
             } else if (c0 == 'z' && c.length() > 1) {
                 addZombie(x, y, ztype(c.charAt(1)));
+                // „za>2”: infectatul are asupra lui un obiect, care cade când moare
+                int gt = c.indexOf('>');
+                if (gt > 0 && gt + 1 < c.length()) {
+                    int t = "ah12nse34up".indexOf(c.charAt(gt + 1));
+                    if (t >= 0 && t != IT_NOTE) {
+                        addItem(x, y, t, 0);
+                        ion[ni - 1] = false;
+                        zcarry[nz - 1] = ni - 1;
+                    }
+                }
             } else if (c0 == 'd' && c.length() > 1) {
                 addZombie(x, y, ztype(c.charAt(1)));
                 zst[nz - 1] = Z_DEAD;
                 zdecor[nz - 1] = true;
             } else if (c0 == 'I') {
                 addZombie(x, y, Art.Z_IOANA);
-            } else if (c0 == 'M') {
-                addZombie(x, y, Art.Z_MARA);
+            } else if (c0 == 'E') {
+                addZombie(x, y, Art.Z_ELENA);
+            } else if (c0 == 'C') {
+                addZombie(x, y, Art.Z_CRISTI);
+            } else if (c0 == 'B') {
+                addZombie(x, y, T_BOSS9);
+            } else if (c0 == 'X') {
+                addZombie(x, y, T_CREATURE);
+                zst[nz - 1] = Z_HIDDEN;
+            } else if (c0 == 'O') {
+                addZombie(x, y, T_O2);
             } else if (c0 == 'n') {
                 addItem(x, y, IT_NOTE, Integer.parseInt(c.substring(1)));
             } else {
@@ -222,7 +325,7 @@ public final class World {
             dyp[nd] = lv.dy[k];
             dty[nd] = t;
             float wd = Art.decorH[t] * Art.decor[t].w / Art.decor[t].h;
-            drad[nd] = Art.decorSolid[t] ? Math.min(0.42f, wd * 0.42f) : 0f;
+            drad[nd] = Art.decorSolid[t] != 1 ? 0f : (Art.decorR[t] > 0f ? Art.decorR[t] : Math.min(0.42f, wd * 0.42f));
             nd++;
         }
         totalZ = 0;
@@ -246,8 +349,12 @@ public final class World {
         hurtCount = 0;
         keyBlue = keyRed = keyYellow = keyGreen = false;
         power = false;
-        metMara = false;
+        metElena = false;
         foundIoana = false;
+        metCristi = false;
+        liftOn = false;
+        bossDead = false;
+        boomT = 0f;
         won = false;
         dead = false;
         walkPhase = 0f;
@@ -277,21 +384,27 @@ public final class World {
         switch (c) {
             case 'g': return Art.Z_GUARD;
             case 'v': return Art.Z_VECTRA;
-            case 'r': return Art.Z_REPORTER;
-            case 'c': return Art.Z_CAMERA;
-            case 'p': return Art.Z_ANCHOR;
-            case 'k': return Art.Z_COOK;
+            case 'p': return Art.Z_PATIENT;
+            case 'a': return Art.Z_NURSE;
+            case 'm': return Art.Z_MEDIC;
+            case 'c': return Art.Z_SURGEON;
             case 's': return Art.Z_SPIT;
-            default: return Art.Z_REPORTER;
+            default: return Art.Z_PATIENT;
         }
     }
 
+    /** Se numără la statistici (infectații și bossii, nu oamenii, cadavrele sau buteliile). */
     boolean counts(int i) {
-        return !zdecor[i] && !npc(i);
+        return !zdecor[i] && !npc(i) && zty[i] != T_O2;
     }
 
     boolean npc(int i) {
-        return zty[i] == Art.Z_IOANA || zty[i] == Art.Z_MARA;
+        int t = zty[i];
+        return t == Art.Z_IOANA || t == Art.Z_ELENA || t == Art.Z_CRISTI;
+    }
+
+    boolean isBoss(int i) {
+        return zty[i] == T_BOSS9 || zty[i] == T_CREATURE;
     }
 
     void addZombie(float x, float y, int type) {
@@ -310,7 +423,18 @@ public final class World {
         if (type == Art.Z_SPIT) {
             zsp[i] *= 0.8f;
             zhp[i] = D_HP[difficulty] + 1;
+        } else if (type == T_BOSS9) {
+            zsp[i] = 0.85f * D_SPEED[difficulty];
+            zhp[i] = D_BOSS9[difficulty];
+        } else if (type == T_CREATURE) {
+            zsp[i] = 1.0f * D_SPEED[difficulty];
+            zhp[i] = D_CREATURE[difficulty];
+        } else if (type == T_O2) {
+            zsp[i] = 0f;
+            zhp[i] = 1;
         }
+        zcharge[i] = 0f;
+        zchargeCd[i] = 3f;
         zty[i] = type;
         zcarry[i] = -1;
         zdecor[i] = false;
@@ -354,10 +478,26 @@ public final class World {
         setAngle(ang);
         zbuf = new float[w];
         cone = new int[w * h];
-        if (Art.handPistol != null) {
-            int gh = Math.round(h * GUN_H);
-            int gw = Math.round(gh * (float) Art.handPistol.w / Art.handPistol.h);
-            gunHd = Art.downscale(Art.handPistol, gw, gh);
+        skyCol = new int[w];
+        skyRow = new int[h];
+        if (Art.sky != null) {
+            // rândul din panoramă pentru fiecare rând de pe ecran (tangenta elevației: +0.5 sus ... -0.3 jos)
+            int half = h >> 1;
+            for (int y = 0; y < h; y++) {
+                float t = (half - y - 0.5f) / proj;
+                int v = (int) ((0.5f - t) / 0.8f * Art.sky.h);
+                skyRow[y] = Math.max(0, Math.min(Art.sky.h - 1, v));
+            }
+        }
+        for (int wp = 0; wp < 3; wp++) {
+            Img src = Art.hand[wp];
+            if (src == null) {
+                gunHd[wp] = null;
+                continue;
+            }
+            float k = Art.handFH[wp] > 0 ? (float) h / Art.handFH[wp] : h * GUN_H / src.h;
+            gunK[wp] = k;
+            gunHd[wp] = Art.downscale(src, Math.max(1, Math.round(src.w * k)), Math.max(1, Math.round(src.h * k)));
         }
         float cx = w * 0.5f, cy = h * 0.54f;
         float rx = w * 0.30f, ry = h * 0.62f;
@@ -377,31 +517,73 @@ public final class World {
 
     // ================================================================== texturi după zonă
 
+    /** Indicii texturilor, căutați o singură dată după nume. */
+    static int[] TX;
+    static int TX_CORR, F_HELI0, TX_WIN2, TX_PH2, TX_MON1, TX_CONC;
+    static final String SIGNS = "567890!@%&$";
+    static final String[] SIGN_TEX = {"sign_urg", "sign_rad", "sign_farm", "sign_ati", "sign_bloc", "sign_ped",
+        "sign_lab", "sign_scara", "sign_heli", "sign_int", "sign_cafe"};
+    static final String[] FIXED = {
+        "G", "window", "K", "tiles", "J", "tiles_blue", "T", "wc", "C", "concrete", "E", "panel", "L", "liftpanel",
+        "H", "elevator", "O", "garage", "A", "pharmacy", "X", "xray", "V", "monitors0", "I", "icu", "U", "curtain",
+        "B", "lab1", "Q", "lab_glass", "W", "lab2", "Z", "vent", "Y", "tank", "R", "parapet", "M", "marble",
+        "1", "logo0", "2", "logo1", "3", "logo2", "4", "logo3", "S", "servers", "N", "lockers", "P", "hosp_c3",
+        "F", "cafe", "D", "door", "b", "door_blue", "r", "door_red", "y", "door_yellow", "g", "door_green",
+        "x", "door_exit", "e", "door_entrance", "v", "door_vectra", "o", "door_or", "k", "kitchen"};
+
+    static void initTex() {
+        if (TX != null && TX.length == 128) {
+            return;
+        }
+        int[] tx = new int[128];
+        for (int k = 0; k < FIXED.length; k += 2) {
+            tx[FIXED[k].charAt(0)] = Art.t(FIXED[k + 1]);
+        }
+        for (int k = 0; k < SIGNS.length(); k++) {
+            tx[SIGNS.charAt(k)] = Art.t(SIGN_TEX[k]);
+        }
+        TX_CORR = Art.t("hosp_c0");
+        F_HELI0 = Art.t("f_heli0");
+        TX_WIN2 = Art.t("window2");
+        TX_PH2 = Art.t("pharmacy2");
+        TX_MON1 = Art.t("monitors1");
+        TX_CONC = Art.t("concrete");
+        TX = tx;
+    }
+
     static int floorTex(char z) {
         switch (z) {
-            case 'm': return Art.F_LOBBY;
-            case 'c': return Art.F_LINO;
-            case 'o': return Art.F_CARPET;
-            case 'r': return Art.F_CARPET;
-            case 's': return Art.F_STUDIO;
-            case 'k': return Art.F_KITCHEN;
-            case 't': return Art.F_WC;
-            case 'w': return Art.F_WOOD;
-            case 'l': return Art.F_DOCK;
-            default: return Art.F_CONC;
+            case 'm': return Art.t("f_terrazzo");
+            case 'u': case 'i': return Art.t("f_vinyl_blue");
+            case 'w': return Art.t("f_vinyl_green");
+            case 'p': return Art.t("f_kids");
+            case 's': return Art.t("f_or");
+            case 'l': return Art.t("f_lab");
+            case 'k': case 'n': return Art.t("f_wood");
+            case 't': return Art.t("f_wc");
+            case 'a': case 'x': return Art.t("f_concrete");
+            case 'd': return Art.t("f_dock");
+            case 'e': case 'h': return Art.t("f_roof");
+            default: return Art.t("f_vinyl");
         }
     }
 
+    /** Lumina din celulă are o lampă în tavan? */
+    static boolean lampLight(char l) {
+        return "fFwsocr".indexOf(l) >= 0;
+    }
+
     static int ceilTex(char z, char light) {
-        boolean lamp = light == 'f' || light == 'F' || light == 'w' || light == 's' || light == 'o' || light == 'r';
+        boolean lamp = lampLight(light);
         if (light == 'r') {
-            return Art.C_RED;
+            return Art.t("c_red");
         }
         switch (z) {
-            case 'm': return lamp ? Art.C_LOBBY_L : Art.C_LOBBY;
-            case 's': return lamp ? Art.C_STUDIO_L : Art.C_STUDIO;
-            case 'a': case 'd': case 'l': case 'x': return lamp ? Art.C_CONC_L : Art.C_CONC;
-            default: return lamp ? (light == 'o' ? Art.C_CONC_L : Art.C_TILES_L) : Art.C_TILES;
+            case 'm': return Art.t(lamp ? "c_lobby_l" : "c_lobby");
+            case 's': return Art.t(lamp ? "c_or_l" : "c_or");
+            case 'l': return Art.t(lamp ? "c_lab_l" : "c_lab");
+            case 'a': case 'd': case 'x': return Art.t(lamp ? "c_concrete_l" : "c_concrete");
+            default: return Art.t(lamp ? (light == 'o' ? "c_concrete_l" : "c_tiles_l") : "c_tiles");
         }
     }
 
@@ -412,75 +594,94 @@ public final class World {
         return (h ^ (h >>> 15)) & 0x7FFFFFFF;
     }
 
+    /** Peretele obișnuit (#) văzut dintr-o cameră din zona z. */
+    static int zoneWall(char z, int h) {
+        switch (z) {
+            case 'm': return Art.t("marble");
+            case 'c': {
+                int v = h % 14;
+                return v < 9 ? TX_CORR : Art.t("hosp_c" + (v - 8));
+            }
+            case 'u': return Art.t(h % 5 == 0 ? "hosp_u1" : "hosp_u");
+            case 'w': return Art.t(h % 6 == 0 ? "hosp_w1" : "hosp_w");
+            case 'o': return Art.t(h % 5 == 0 ? "hosp_o1" : "hosp_o");
+            case 'i': return Art.t(h % 4 == 0 ? "hosp_i1" : "hosp_i");
+            case 'p': return Art.t(h % 3 == 0 ? "kids1" : (h % 3 == 1 ? "kids0" : "hosp_w"));
+            case 's': return Art.t(h % 5 == 0 ? "or1" : (h % 5 == 1 ? "or2" : "or0"));
+            case 'l': return Art.t(h % 6 == 0 ? "lab1" : "lab0");
+            case 'k': return Art.t(h % 4 == 0 ? "hosp_k1" : "hosp_k");
+            case 't': return Art.t("wc");
+            case 'r': return Art.t(h % 4 == 0 ? "hosp_r1" : "hosp_r");
+            case 'f': return Art.t(h % 4 == 0 ? "hosp_f1" : "hosp_f");
+            case 'n': return Art.t(h % 4 == 0 ? "chapel1" : (h % 4 == 1 ? "chapel2" : "chapel0"));
+            case 'v': return Art.t(h % 2 == 0 ? "lockers" : "hosp_c0");
+            case 'e': case 'h': return Art.t("metal");
+            default: return Art.t("concrete");
+        }
+    }
+
     /** Textura unui perete văzut dintr-o celulă din zona `z`. */
     int wallTex(char c, char z, int x, int y) {
-        // sigla, piatra, liftul și geamurile holului se văd doar din hol
-        if (z != 'm' && "1234MHGe".indexOf(c) >= 0) {
+        // inscripția și marmura holului se văd doar din hol
+        if (z != 'm' && "1234Me".indexOf(c) >= 0) {
             c = '#';
         }
-        switch (c) {
-            case '#': {
-                int h = hash(x, y);
-                switch (z) {
-                    case 'm': return Art.T_STONE;
-                    case 's': return Art.T_FOAM;
-                    case 'k': return Art.T_KITCHEN;
-                    case 't': return Art.T_WC;
-                    case 'a': case 'd': case 'l': case 'x': return Art.T_CONC;
-                    case 'c':
-                        if (h % 11 == 0) {
-                            return Art.T_POSTER + (h / 11) % 3;
-                        }
-                        // fall through
-                    default: {
-                        int v = h % 9;
-                        return Art.T_OFFICE + (v < 5 ? 0 : v - 4);
-                    }
-                }
-            }
-            case 'M': return Art.T_STONE;
-            case '1': return Art.T_LOGO;
-            case '2': return Art.T_LOGO + 1;
-            case '3': return Art.T_LOGO + 2;
-            case '4': return Art.T_LOGO + 3;
-            case 'G': return Art.T_GLASS;
-            case 'S': return Art.T_FOAM;
-            case 'Q': return Art.T_BACKDROP;
-            case 'V': return Art.T_MON + hash(x, y) % 3;
-            case 'P': return Art.T_POSTER + hash(x, y) % 3;
-            case 'K': return Art.T_KITCHEN;
-            case 'T': return Art.T_WC;
-            case 'A': return Art.T_ARCH + hash(x, y) % 2;
-            case 'R': return Art.T_SERV;
-            case 'C': return Art.T_CONC;
-            case 'E': return Art.T_PANEL;
-            case 'Y': return Art.T_MIRROR;
-            case 'O': return Art.T_GARAGE;
-            case 'H': return Art.T_ELEV;
-            case 'D': return Art.T_DOOR;
-            case 'b': return Art.T_DBLUE;
-            case 'r': return Art.T_DRED;
-            case 'y': return Art.T_DYEL;
-            case 'g': return Art.T_DGREEN;
-            case 's': return Art.T_DSTUDIO;
-            case 'x': return Art.T_DEXIT;
-            case 'e': return Art.T_DENTR;
-            case 'q': return Art.T_DCODE;
-            default: return Art.T_CONC;
+        if (c == '#') {
+            return wallCache(z, x, y);
         }
+        if (c == 'G') {
+            return hash(x, y) % 3 == 0 ? TX_WIN2 : TX['G'];
+        }
+        if (c == 'A' && (hash(x, y) & 1) == 1) {
+            return TX_PH2;
+        }
+        if (c == 'V' && (hash(x, y) & 1) == 1) {
+            return TX_MON1;
+        }
+        if (c < 128 && TX[c] != 0) {
+            return TX[c];
+        }
+        return TX_CONC;
+    }
+
+    /** Pereții obișnuiți (#), pe celule și zone: calculați o dată pe hartă, ca să nu căutăm la fiecare cadru. */
+    int[] wallC;
+    String wallZones = "mcuwoipslktrfnvehadx";
+
+    int wallCache(char z, int x, int y) {
+        int zi = wallZones.indexOf(z);
+        if (zi < 0) {
+            zi = wallZones.length() - 1;
+        }
+        int nzn = wallZones.length();
+        if (wallC == null || wallC.length != mw * mh * nzn) {
+            wallC = new int[mw * mh * nzn];
+            for (int i = 0; i < wallC.length; i++) {
+                wallC[i] = -1;
+            }
+        }
+        int o = (y * mw + x) * nzn + zi;
+        int v = wallC[o];
+        if (v < 0) {
+            v = zoneWall(wallZones.charAt(zi), hash(x, y));
+            wallC[o] = v;
+        }
+        return v;
     }
 
     static boolean isDoor(char c) {
-        return "DbrygsxeqH".indexOf(c) >= 0;
+        return "DbrygxevoH".indexOf(c) >= 0;
     }
 
-    /** Măștile de pixeli care luminează singuri (ecrane, geamuri, becuri, semne). */
+    /** Măștile de pixeli care luminează singuri (ecrane, geamuri, negatoscoape, lumânări, semne). */
     void buildEmissive() {
+        initTex();
         int n = Art.tex.length;
         emis = new byte[n][];
         emisMode = new int[n];
         for (int t = 0; t < n; t++) {
             int[] p = Art.tex[t];
+            String nm = Art.texName[t] == null ? "" : Art.texName[t];
             byte[] m = new byte[p.length];
             int mode = 0;
             for (int i = 0; i < p.length; i++) {
@@ -488,28 +689,37 @@ public final class World {
                 int r = (c >> 16) & 255, g = (c >> 8) & 255, b = c & 255;
                 int mx = Math.max(r, Math.max(g, b)), mn = Math.min(r, Math.min(g, b));
                 boolean on = false;
-                if (t == Art.T_GLASS || t == Art.T_DENTR || (t >= Art.T_MON && t < Art.T_MON + 3)) {
+                if (nm.startsWith("window") || nm.equals("entrance") || nm.equals("door_entrance")) {
+                    on = i < 50 * 64 && !(mn > 200 && mx - mn < 20) && !(r == g && g == b);
+                    mode = 1;
+                } else if (nm.equals("lab_glass")) {
+                    on = i < 46 * 64 && b > 140;
+                    mode = 1;
+                } else if (nm.startsWith("monitors")) {
                     on = true;
                     mode = 1;
-                } else if (t == Art.T_SERV || t == Art.T_PANEL) {
-                    on = mx > 150 && mx - mn > 90;
+                } else if (nm.equals("xray")) {
+                    on = mn > 120 || (b > 60 && i / 64 > 8 && i / 64 < 42 && (i % 64 > 4 && i % 64 < 30 || i % 64 > 34 && i % 64 < 60));
                     mode = 1;
-                } else if (t == Art.T_DEXIT) {
-                    on = g > 120 && g > r + 40;
+                } else if (nm.equals("servers") || nm.equals("panel") || nm.equals("liftpanel") || nm.equals("icu")) {
+                    on = mx > 150 && mx - mn > 90 || (nm.equals("icu") && g > 150 && r < 120);
                     mode = 1;
-                } else if (t == Art.T_DSTUDIO) {
-                    on = r > 150 && g < 120;
+                } else if (nm.equals("door_exit")) {
+                    on = g > 100 && g > r + 40;
                     mode = 1;
-                } else if (t >= Art.T_LOGO && t < Art.T_LOGO + 4) {
+                } else if (nm.equals("door_vectra")) {
+                    on = r > 200 && g < 130;
+                    mode = 1;
+                } else if (nm.equals("chapel1") || nm.equals("chapel2")) {
+                    on = r > 240 && g > 150 && b < 200;
+                    mode = 1;
+                } else if (nm.startsWith("logo")) {
                     on = mx > 180;
                     mode = 2;
-                } else if (t == Art.T_MIRROR) {
-                    on = r > 240 && g > 220;
-                    mode = 2;
-                } else if (t == Art.C_TILES_L || t == Art.C_LOBBY_L || t == Art.C_STUDIO_L || t == Art.C_CONC_L) {
+                } else if (nm.endsWith("_l")) {
                     on = mn > 180;
                     mode = 2;
-                } else if (t == Art.C_RED) {
+                } else if (nm.equals("c_red")) {
                     on = r > 100 && g < 90;
                     mode = 3;
                 }
@@ -527,12 +737,20 @@ public final class World {
 
     // ================================================================== lumina
 
-    static final String LIGHT_CH = "fFwsrbugo";
-    static final int[] L_COL = {0xFFF6E8, 0xFFF6E8, 0xFFD49A, 0xFFF8EC, 0xFF2C1C, 0x4A8CFF, 0x9C78B4, 0x2CDC5A, 0xFF9640};
-    static final float[] L_RAD = {5.0f, 5.0f, 4.6f, 5.6f, 4.8f, 3.4f, 5.6f, 2.8f, 4.6f};
-    static final float[] L_INT = {1.05f, 1.05f, 1.0f, 1.1f, 0.85f, 0.8f, 0.9f, 0.65f, 1.0f};
+    /**
+     * Sursele: f neon, F neon care pâlpâie, w spot cald, s lampă puternică, r avarie roșie, b monitoare,
+     * u zorii de la geamuri, g semn verde de ieșire, o bec portocaliu, c neon rece de pe circuitul de urgență
+     * (ATI, blocul operator, laboratorul: merge mereu), n lumânări.
+     */
+    static final String LIGHT_CH = "fFwsrbugocn";
+    static final int[] L_COL = {0xFFF6E8, 0xFFF6E8, 0xFFD49A, 0xFFF8EC, 0xFF2C1C, 0x4A8CFF, 0x9C78B4, 0x2CDC5A,
+        0xFF9640, 0xE4F2FF, 0xFFA048};
+    static final float[] L_RAD = {5.0f, 5.0f, 4.6f, 5.6f, 4.8f, 3.4f, 5.6f, 2.8f, 4.6f, 5.0f, 2.8f};
+    static final float[] L_INT = {1.05f, 1.05f, 1.0f, 1.1f, 0.85f, 0.8f, 0.9f, 0.65f, 1.0f, 0.95f, 0.8f};
     /** 0 = doar cu curent, 1 = doar fără curent (avarie), 2 = mereu. */
-    static final int[] L_MODE = {0, 0, 0, 0, 1, 2, 2, 2, 2};
+    static final int[] L_MODE = {0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2};
+    /** Lumina zorilor afară, pe acoperiș (8.8). */
+    static final int DAWN_R = 168, DAWN_G = 140, DAWN_B = 150;
     static final int AMB_OFF = 28, AMB_ON = 46;
     /** Peste valoarea asta lumina crește mai încet (nu se „arde” culoarea când se adună multe surse). */
     static final int L_KNEE = 300;
@@ -557,6 +775,27 @@ public final class World {
             onR[i] = AMB_ON;
             onG[i] = AMB_ON;
             onB[i] = AMB_ON + 4;
+        }
+        // afară e zori: lumina vine de sus, la fel peste tot
+        if (anyOutdoor) {
+            for (int j = 0; j < lh; j++) {
+                for (int i = 0; i < lw; i++) {
+                    boolean out = false;
+                    for (int k = 0; k < 4 && !out; k++) {
+                        int cx = (i - 1 + (k & 1)) >> 1, cy = (j - 1 + (k >> 1)) >> 1;
+                        if (cx >= 0 && cy >= 0 && cx < mw && cy < mh && outdoor[cy * mw + cx]
+                                && lv.struct[cy * mw + cx] == '.') {
+                            out = true;
+                        }
+                    }
+                    if (out) {
+                        int o = j * lw + i;
+                        offR[o] = onR[o] = DAWN_R;
+                        offG[o] = onG[o] = DAWN_G;
+                        offB[o] = onB[o] = DAWN_B;
+                    }
+                }
+            }
         }
         int nf = 0;
         for (int i = 0; i < mw * mh; i++) {
@@ -705,7 +944,7 @@ public final class World {
         for (int i = 0; i < mw * mh; i++) {
             char l = lv.lights[i];
             int k = LIGHT_CH.indexOf(l);
-            lampCell[i] = k >= 0 && k != 5 && k != 6 && k != 7 && (L_MODE[k] == 2 || (L_MODE[k] == 0) == power);
+            lampCell[i] = k >= 0 && lampLight(l) && (L_MODE[k] == 2 || (L_MODE[k] == 0) == power);
         }
         if (power) {
             for (int f = 0; f < nflick; f++) {
@@ -830,6 +1069,9 @@ public final class World {
                 sfx |= S_PUMP;
             }
         }
+        if (boomT > 0f) {
+            boomT -= dt;
+        }
         if (reloadT > 0f) {
             reloadT -= dt;
             if (reloadT <= 0f) {
@@ -891,6 +1133,7 @@ public final class World {
         updateZombies(dt);
         updateShots(dt);
         checkScene();
+        checkHelicopter();
         if (health <= 30 && health > 0) {
             heartT -= dt;
             if (heartT <= 0f) {
@@ -915,8 +1158,12 @@ public final class World {
         char c = map[idx];
         if (c == 'E') {
             useGenerator();
+        } else if (c == 'L') {
+            useLiftPanel();
         } else if (c == 'H') {
-            lockedMsg(power ? Texts.ELEVATOR_BROKEN : Texts.ELEVATOR_DEAD);
+            if (button) {
+                lockedMsg(Texts.ELEVATOR_DEAD);
+            }
         } else if (c == 'O') {
             if (button) {
                 lockedMsg(Texts.GARAGE_LOCKED);
@@ -928,9 +1175,67 @@ public final class World {
                 if (npc(i)) {
                     float dx = zx[i] - px, dy = zy[i] - py;
                     if (dx * dx + dy * dy < 2.5f) {
-                        pendingScene = zty[i] == Art.Z_MARA ? SCENE_MARA : SCENE_IOANA;
+                        int t = zty[i];
+                        pendingScene = t == Art.Z_ELENA ? SCENE_ELENA : (t == Art.Z_CRISTI ? SCENE_CRISTI : SCENE_IOANA);
                     }
                 }
+            }
+        }
+    }
+
+    /** Panoul liftului de serviciu (acoperișul): după ce Cristi îți spune ce să faci, liftul pornește. */
+    void useLiftPanel() {
+        if (liftOn) {
+            if (msg != Texts.LIFT_DONE && msg != Texts.LIFT_ON) {
+                setMsg(Texts.LIFT_DONE);
+            }
+            return;
+        }
+        if (!metCristi) {
+            lockedMsg(Texts.LIFT_ERROR);
+            return;
+        }
+        liftOn = true;
+        sfx |= S_GEN;
+        setMsg(Texts.LIFT_ON);
+        objective = 2;
+        // creatura iese din puțul liftului, pe acoperiș
+        for (int i = 0; i < nz; i++) {
+            if (zst[i] == Z_HIDDEN) {
+                zst[i] = Z_CHASE;
+                zhas[i] = true;
+                zlx[i] = px;
+                zly[i] = py;
+                zt[i] = 0f;
+                sfx |= S_ROAR;
+            }
+        }
+        pendingScene = SCENE_CREATURE;
+    }
+
+    /** Pe acoperiș: când creatura e moartă, urci în elicopter și jocul se termină. */
+    void checkHelicopter() {
+        if (ep != 2) {
+            return;
+        }
+        int h = Art.decorIndex("elicopter");
+        for (int k = 0; k < nd; k++) {
+            if (dty[k] != h) {
+                continue;
+            }
+            float dx = dxp[k] - px, dy = dyp[k] - py;
+            if (dx * dx + dy * dy > 2.4f * 2.4f) {
+                continue;
+            }
+            if (bossDead) {
+                won = true;
+                sfx |= S_DOOR;
+            } else if (!metCristi) {
+                if (msg != Texts.HELI_NO_PILOT) {
+                    lockedMsg(Texts.HELI_NO_PILOT);
+                }
+            } else if (msg != Texts.HELI_WAIT) {
+                lockedMsg(Texts.HELI_WAIT);
             }
         }
     }
@@ -981,8 +1286,9 @@ public final class World {
             return;
         }
         sceneSeen |= 1 << r;
-        if (lv.rid[r].equals("coridor")) {
-            radio(1);
+        int rr = Texts.roomRadio(lv.rid[r]);
+        if (rr >= 0) {
+            radio(rr);
         }
         if (Texts.scene(lv.rid[r]) != null) {
             pendingScene = r;
@@ -991,7 +1297,7 @@ public final class World {
 
     /** Pune în coadă un mesaj radio de la Ioana (fiecare se aude o singură dată). */
     public void radio(int id) {
-        if ((radioSeen & (1L << id)) != 0) {
+        if ((radioSeen & (1L << id)) != 0 || Texts.radio(ep, id) == null) {
             return;
         }
         radioSeen |= 1L << id;
@@ -1091,8 +1397,9 @@ public final class World {
             if (i == skip || zst[i] >= Z_DYING) {
                 continue;
             }
+            float rr = isBoss(i) ? r + 0.25f : r;
             float dx = zx[i] - x, dy = zy[i] - y;
-            if (dx * dx + dy * dy < r * r) {
+            if (dx * dx + dy * dy < rr * rr) {
                 return true;
             }
         }
@@ -1114,10 +1421,12 @@ public final class World {
     void tryOpen(int idx) {
         char c = map[idx];
         if (c == 'x') {
-            if (!power) {
+            if (ep == 0 && !power) {
                 lockedMsg(Texts.STAIRS_NO_POWER);
-            } else if (!metMara) {
-                lockedMsg(Texts.NEED_MARA);
+            } else if (ep == 0 && !metElena) {
+                lockedMsg(Texts.NEED_ELENA);
+            } else if (ep == 2) {
+                lockedMsg(Texts.NO_WAY_BACK);
             } else {
                 won = true;
                 sfx |= S_DOOR;
@@ -1126,6 +1435,10 @@ public final class World {
         }
         if (c == 'e') {
             lockedMsg(Texts.ENTRANCE_LOCKED);
+            return;
+        }
+        if (c == 'v') {
+            lockedMsg(Texts.VECTRA_SEALED);
             return;
         }
         if (c == 'b') {
@@ -1137,7 +1450,7 @@ public final class World {
             sfx |= S_CARD;
         } else if (c == 'r') {
             if (!keyRed) {
-                lockedMsg(Texts.LOCK_RED);
+                lockedMsg(Texts.LOCK_RED[ep]);
                 return;
             }
             setMsg(Texts.USE_RED);
@@ -1155,7 +1468,7 @@ public final class World {
             }
             setMsg(Texts.USE_GREEN);
             sfx |= S_CARD;
-        } else if (c == 'H' || c == 'q') {
+        } else if (c == 'H') {
             lockedMsg(Texts.ELEVATOR_DEAD);
             return;
         }
@@ -1176,7 +1489,7 @@ public final class World {
         setMsg(Texts.GEN_ON);
         applyPower();
         objective = 3;
-        radio(6);
+        radio(R_POWER);
         for (int i = 0; i < nz; i++) {
             if (zst[i] == Z_IDLE && counts(i)) {
                 float dx = zx[i] - px, dy = zy[i] - py;
@@ -1223,7 +1536,7 @@ public final class World {
                     shootCd = 0.5f;
                 }
                 setMsg(Texts.GOT_SHOTGUN);
-                radio(5);
+                radio(R_SHOTGUN);
             } else if (t == IT_SMG) {
                 hasSmg = true;
                 mag[2] = W_MAG[2];
@@ -1232,6 +1545,7 @@ public final class World {
                     shootCd = 0.4f;
                 }
                 setMsg(Texts.GOT_SMG);
+                radio(R_SMG);
             } else if (t == IT_MED) {
                 if (health < 100) {
                     health += D_MED[difficulty];
@@ -1245,20 +1559,28 @@ public final class World {
             } else if (t == IT_BLUE) {
                 keyBlue = true;
                 setMsg(Texts.GOT_BLUE);
-                radio(2);
+                radio(R_BLUE);
             } else if (t == IT_RED) {
                 keyRed = true;
                 setMsg(Texts.GOT_RED);
-                radio(4);
-                if (objective < 2) {
+                radio(R_RED);
+                if (ep == 0 && metElena && objective < 2) {
                     objective = 2;
                 }
             } else if (t == IT_YELLOW) {
                 keyYellow = true;
                 setMsg(Texts.GOT_YELLOW);
+                radio(R_YELLOW);
+                if (ep == 1 && objective < 1) {
+                    objective = 1;
+                }
             } else if (t == IT_GREEN) {
                 keyGreen = true;
                 setMsg(Texts.GOT_GREEN);
+                radio(R_GREEN);
+                if (ep == 1 && objective < 2) {
+                    objective = 2;
+                }
             } else if (t == IT_NOTE) {
                 pendingNote = inote[i];
                 ion[i] = false;
@@ -1276,12 +1598,27 @@ public final class World {
         for (int i = 0; i < nz; i++) {
             int st = zst[i];
             int ty = zty[i];
-            if (st == Z_DEAD || zdecor[i]) {
+            if (st == Z_DEAD || st == Z_HIDDEN || zdecor[i]) {
+                continue;
+            }
+            if (ty == T_O2) {
+                // butelia lovită: arde o clipă, apoi explodează
+                if (st == Z_DYING) {
+                    zt[i] += dt;
+                    if (zt[i] > 0.5f) {
+                        zst[i] = Z_DEAD;
+                    }
+                } else if (zhit[i] > 0f) {
+                    zhit[i] -= dt;
+                    if (zhit[i] <= 0f) {
+                        explode(i);
+                    }
+                }
                 continue;
             }
             if (st == Z_DYING) {
                 zt[i] += dt;
-                if (zt[i] > 0.4f) {
+                if (zt[i] > (isBoss(i) ? 0.7f : 0.4f)) {
                     zst[i] = Z_DEAD;
                 }
                 continue;
@@ -1291,9 +1628,16 @@ public final class World {
             if (npc(i)) {
                 zt[i] += dt;
                 if (d < 1.4f) {
-                    if (ty == Art.Z_MARA && !metMara) {
-                        metMara = true;
-                        pendingScene = SCENE_MARA;
+                    if (ty == Art.Z_ELENA && !metElena) {
+                        metElena = true;
+                        pendingScene = SCENE_ELENA;
+                        if (objective < 1) {
+                            objective = keyRed ? 2 : 1;
+                        }
+                    } else if (ty == Art.Z_CRISTI && !metCristi) {
+                        metCristi = true;
+                        keyRed = true;
+                        pendingScene = SCENE_CRISTI;
                         if (objective < 1) {
                             objective = 1;
                         }
@@ -1304,6 +1648,7 @@ public final class World {
                 }
                 continue;
             }
+            boolean boss = isBoss(i);
             if (zanim[i] > 0f) {
                 zanim[i] -= dt;
             }
@@ -1318,8 +1663,11 @@ public final class World {
                     if (st == Z_IDLE) {
                         zst[i] = Z_CHASE;
                         st = Z_CHASE;
-                        sfx |= (i & 1) == 0 ? S_GROAN : S_GROAN2;
+                        sfx |= boss ? S_ROAR : ((i & 1) == 0 ? S_GROAN : S_GROAN2);
                         zgr[i] = 3f + rnd.nextFloat() * 4f;
+                    }
+                    if (boss) {
+                        radio(R_BOSS_SEEN);
                     }
                 }
             }
@@ -1331,7 +1679,7 @@ public final class World {
                 zgr[i] -= dt;
                 if (zgr[i] <= 0f) {
                     zgr[i] = 4f + rnd.nextFloat() * 5f;
-                    sfx |= rnd.nextInt(2) == 0 ? S_GROAN : S_GROAN2;
+                    sfx |= boss ? S_ROAR : (rnd.nextInt(2) == 0 ? S_GROAN : S_GROAN2);
                 }
             }
             if (zhit[i] > 0f) {
@@ -1350,15 +1698,38 @@ public final class World {
                 }
             }
             float speed = zsp[i];
-            if (d < 0.75f) {
+            if (ty == T_CREATURE) {
+                // creatura se ghemuiește și sare spre tine
+                if (zcharge[i] > 0f) {
+                    zcharge[i] -= dt;
+                    speed = 2.8f * D_SPEED[difficulty];
+                } else {
+                    zchargeCd[i] -= dt;
+                    if (zchargeCd[i] <= 0f && zsee[i] && d > 2.4f && d < 8f) {
+                        zcharge[i] = 0.9f;
+                        zchargeCd[i] = 3.8f + rnd.nextFloat() * 2f;
+                        zanim[i] = 0.5f;
+                        sfx |= S_ROAR;
+                    }
+                }
+            }
+            float reach = boss ? 1.05f : 0.75f;
+            if (d < reach) {
+                zcharge[i] = 0f;
                 zatk[i] -= dt;
                 if (zatk[i] <= 0f) {
-                    zatk[i] = 1.15f;
-                    hurt((int) ((9 + rnd.nextInt(7)) * D_DMG[difficulty]));
+                    if (boss) {
+                        zatk[i] = ty == T_CREATURE ? 1.2f : 1.5f;
+                        hurt((int) ((14 + rnd.nextInt(7)) * D_DMG[difficulty]));
+                        zanim[i] = 0.35f;
+                    } else {
+                        zatk[i] = 1.15f;
+                        hurt((int) ((9 + rnd.nextInt(7)) * D_DMG[difficulty]));
+                    }
                 }
                 continue;
             }
-            zatk[i] = 0.55f;
+            zatk[i] = boss ? 0.7f : 0.55f;
             float tx, ty2;
             if (zsee[i]) {
                 tx = px;
@@ -1398,13 +1769,15 @@ public final class World {
                 continue;
             }
             float s = speed * dt / ed;
+            float rad = boss ? 0.4f : 0.25f;
+            float stop = boss ? 0.85f : 0.6f;
             float nx = zx[i] + ex * s;
-            if (freeBox(nx, zy[i], 0.25f) && !zombieNear(nx, zy[i], 0.55f, i) && !playerNear(nx, zy[i], 0.6f)
+            if (freeBox(nx, zy[i], rad) && !zombieNear(nx, zy[i], 0.55f, i) && !playerNear(nx, zy[i], stop)
                     && !decorNear(nx, zy[i], 0.2f)) {
                 zx[i] = nx;
             }
             float ny = zy[i] + ey * s;
-            if (freeBox(zx[i], ny, 0.25f) && !zombieNear(zx[i], ny, 0.55f, i) && !playerNear(zx[i], ny, 0.6f)
+            if (freeBox(zx[i], ny, rad) && !zombieNear(zx[i], ny, 0.55f, i) && !playerNear(zx[i], ny, stop)
                     && !decorNear(zx[i], ny, 0.2f)) {
                 zy[i] = ny;
             }
@@ -1429,6 +1802,7 @@ public final class World {
         plife[slot] = 3f;
         pon[slot] = true;
         sfx |= S_SPIT;
+        radio(R_ACID);
     }
 
     void updateShots(float dt) {
@@ -1546,8 +1920,9 @@ public final class World {
             if (off < 0f) {
                 off = -off;
             }
-            float h = proj * 0.8f / tY;
-            float wdt = h * Art.ZW / Art.ZH;
+            Img sp = sprite(i);
+            float h = proj * spriteH(i) / tY;
+            float wdt = h * sp.w / sp.h;
             if (w == 1) {
                 if (off < wdt * 0.5f + W * 0.05f && tY < 8f) {
                     damage(i, tY < 2.5f ? 4 : (tY < 5f ? 3 : 2), true);
@@ -1581,31 +1956,94 @@ public final class World {
     }
 
     void damage(int i, int dmg, boolean heavy) {
+        if (zty[i] == T_O2) {
+            if (zst[i] < Z_DYING && zhit[i] <= 0f) {
+                explode(i);
+            }
+            return;
+        }
+        boolean boss = isBoss(i);
         zhp[i] -= dmg;
         zst[i] = Z_CHASE;
         zsee[i] = true;
         zhas[i] = true;
         zlx[i] = px;
         zly[i] = py;
-        zhit[i] = 0.3f;
-        float kb = heavy ? 0.3f : 0.15f;
-        float kx = zx[i] + dirX * kb, ky = zy[i] + dirY * kb;
-        if (freeBox(kx, ky, 0.25f)) {
-            zx[i] = kx;
-            zy[i] = ky;
+        if (boss) {
+            zhit[i] = heavy ? 0.3f : 0.05f;
+        } else {
+            zhit[i] = 0.3f;
+            float kb = heavy ? 0.3f : 0.15f;
+            float kx = zx[i] + dirX * kb, ky = zy[i] + dirY * kb;
+            if (freeBox(kx, ky, 0.25f)) {
+                zx[i] = kx;
+                zy[i] = ky;
+            }
         }
         if (zhp[i] <= 0) {
             zst[i] = Z_DYING;
             zt[i] = 0f;
             kills++;
-            sfx |= S_ZDIE;
+            sfx |= boss ? S_ROAR : S_ZDIE;
             int c = zcarry[i];
             if (c >= 0) {
                 ix[c] = zx[i];
                 iy[c] = zy[i];
                 ion[c] = true;
             }
+            if (boss) {
+                bossDead = true;
+                radio(R_BOSS_DEAD);
+                objective = 3;
+                if (ep == 1) {
+                    openVectra();
+                }
+            }
         }
+    }
+
+    /** Subiectul 9 a murit: ușile sigilate ale laboratorului Vectra se deblochează. */
+    void openVectra() {
+        int cells = mw * mh;
+        for (int i = 0; i < cells; i++) {
+            if (map[i] == 'v' && door[i] == 0f) {
+                doorMoving[i] = true;
+            }
+        }
+        setMsg(Texts.VECTRA_OPEN);
+        sfx |= S_DOOR | S_ALARM;
+    }
+
+    /** Butelia explodează: rănește tot ce e în jur (și pe tine) și aprinde buteliile vecine. */
+    void explode(int i) {
+        zst[i] = Z_DYING;
+        zt[i] = 0f;
+        zhit[i] = 0f;
+        sfx |= S_EXPLODE;
+        boomT = 0.35f;
+        radio(R_O2);
+        float ex = zx[i], ey = zy[i];
+        for (int j = 0; j < nz; j++) {
+            if (j == i || zdecor[j] || zst[j] >= Z_DYING || npc(j)) {
+                continue;
+            }
+            float dx = zx[j] - ex, dy = zy[j] - ey;
+            if (dx * dx + dy * dy < 2.3f * 2.3f) {
+                if (zty[j] == T_O2) {
+                    if (zhit[j] <= 0f) {
+                        zhit[j] = 0.2f;
+                    }
+                } else {
+                    damage(j, isBoss(j) ? 6 : 5, true);
+                }
+            }
+        }
+        float dx = px - ex, dy = py - ey;
+        float d2 = dx * dx + dy * dy;
+        if (d2 < 2.3f * 2.3f) {
+            hurt((int) ((d2 < 1f ? 35 : 18) * D_DMG[difficulty]));
+        }
+        wakeNear(ex, ey, 100f);
     }
 
     public void reload() {
@@ -1619,7 +2057,7 @@ public final class World {
 
     // ================================================================== salvare
 
-    static final int SAVE_V1 = 0x544E3231;
+    static final int SAVE_V1 = 0x544E3232;
 
     static void wf(DataOutputStream o, float f) throws IOException {
         o.writeInt(Float.floatToIntBits(f));
@@ -1646,7 +2084,8 @@ public final class World {
         o.writeInt(kills);
         o.writeInt(shots);
         o.writeByte((keyBlue ? 1 : 0) | (keyRed ? 2 : 0) | (keyYellow ? 4 : 0) | (keyGreen ? 8 : 0));
-        o.writeByte((power ? 1 : 0) | (metMara ? 2 : 0) | (foundIoana ? 4 : 0));
+        o.writeByte((power ? 1 : 0) | (metElena ? 2 : 0) | (foundIoana ? 4 : 0) | (metCristi ? 8 : 0)
+                | (liftOn ? 16 : 0) | (bossDead ? 32 : 0));
         wf(o, playTime);
         o.writeInt(sceneSeen);
         o.writeLong(radioSeen);
@@ -1709,8 +2148,11 @@ public final class World {
         keyGreen = (k & 8) != 0;
         int f = in.readByte();
         power = (f & 1) != 0;
-        metMara = (f & 2) != 0;
+        metElena = (f & 2) != 0;
         foundIoana = (f & 4) != 0;
+        metCristi = (f & 8) != 0;
+        liftOn = (f & 16) != 0;
+        bossDead = (f & 32) != 0;
         playTime = rf(in);
         sceneSeen = in.readInt();
         radioSeen = in.readLong();
@@ -1770,8 +2212,18 @@ public final class World {
     }
 
     /** Cât de întunecată devine lumea cu distanța (8.8). */
-    static int fog(float d) {
-        return (int) (256f / (1f + d * d * 0.010f));
+    int fog(float d) {
+        return (int) (256f / (1f + d * d * fogK));
+    }
+
+    /** Luminozitatea din setări: 0 foarte întunecat, 2 normal, 4 foarte luminos (curbă gamma). */
+    public void setBrightness(int level) {
+        bright = level < 0 ? 0 : (level > 4 ? 4 : level);
+        float[] gm = {1.45f, 1.2f, 1f, 0.78f, 0.6f};
+        float g = gm[bright];
+        for (int i = 0; i < 256; i++) {
+            gammaLut[i] = Math.min(255, (int) (255.0 * Math.pow(i / 255.0, g) + 0.5));
+        }
     }
 
     private final int[] tmpL = new int[3];
@@ -1792,12 +2244,38 @@ public final class World {
         curFlG = (int) (238 * 1.55f * fl);
         curFlB = (int) (210 * 1.55f * fl);
         curMuzzle = flashT > 0f ? (int) (Math.min(1f, flashT / 0.08f) * 170f) : 0;
+        if (boomT > 0f) {
+            curMuzzle = Math.max(curMuzzle, (int) (boomT / 0.35f * 240f));
+        }
+        int pc = (int) py * mw + (int) px;
+        fogK = pc >= 0 && pc < mw * mh && outdoor[pc] ? 0.0035f : 0.010f;
+        if (anyOutdoor && Art.sky != null) {
+            int sw2 = Art.sky.w;
+            for (int x = 0; x < W; x++) {
+                float camX = (2f * x + 1f) / W - 1f;
+                double a = ang + Math.atan(camX * plane);
+                int u = (int) (a / (2 * Math.PI) * sw2) % sw2;
+                skyCol[x] = u < 0 ? u + sw2 : u;
+            }
+        }
         castFloor(buf);
         castWalls(buf);
         drawSprites(buf);
         if (withGun) {
             drawGun(buf);
         }
+        if (bright != 2) {
+            int[] lut = gammaLut;
+            for (int i = W * H - 1; i >= 0; i--) {
+                int c = buf[i];
+                buf[i] = 0xFF000000 | (lut[(c >> 16) & 255] << 16) | (lut[(c >> 8) & 255] << 8) | lut[c & 255];
+            }
+        }
+    }
+
+    /** Pixelul de cer pentru coloana și rândul de pe ecran. */
+    int skyAt(int x, int y) {
+        return Art.sky.px[skyRow[y] * Art.sky.w + skyCol[x]] | 0xFF000000;
     }
 
     private void castFloor(int[] buf) {
@@ -1850,9 +2328,11 @@ public final class World {
                     Lb = ((Lb * fg) >> 8) + ((mz * 130) >> 8);
                     int cn = cone[co + x];
                     int fr = Lr + ((flr * cn) >> 8), fgc = Lg + ((flg * cn) >> 8), fb = Lb + ((flb * cn) >> 8);
-                    col = shadeCol(tex[floorT[cell]][ti], fr, fgc, fb);
-                    if (cyr >= 0) {
-                        int ct = ceilT[cell];
+                    col = shadeCol(tex[floorT[cell] & 255][ti], fr, fgc, fb);
+                    if (cyr >= 0 && outdoor[cell]) {
+                        ccol = skyAt(x, cyr);
+                    } else if (cyr >= 0) {
+                        int ct = ceilT[cell] & 255;
                         int tc = tex[ct][ti];
                         if (lampCell[cell] && emis[ct][ti] != 0) {
                             ccol = tc;
@@ -2005,7 +2485,9 @@ public final class World {
                 int ti = (((tpos >> 16) & 63) << 6) | tx;
                 int c = tp[ti];
                 tpos += stepT;
-                if (emOn && em[ti] != 0) {
+                if (c == 0) {
+                    buf[o] = skyAt(x, y);       // balustrada acoperișului: printre bare se vede cerul
+                } else if (emOn && em[ti] != 0) {
                     buf[o] = c;
                 } else {
                     int cn = cone[o];
@@ -2019,6 +2501,9 @@ public final class World {
     private void drawSprites(int[] buf) {
         int n = 0;
         for (int i = 0; i < nz; i++) {
+            if (zst[i] == Z_HIDDEN) {
+                continue;
+            }
             float dx = zx[i] - px, dy = zy[i] - py;
             sOrder[n] = i;
             sDist[n++] = dx * dx + dy * dy;
@@ -2067,31 +2552,16 @@ public final class World {
             float wxp, wyp, hScale;
             Img spr;
             int minLight = 0;
-            boolean floating = false;
+            boolean floating = false, hanging = false;
             if (id < 1000) {
                 wxp = zx[id];
                 wyp = zy[id];
-                int st = zst[id], ty = zty[id];
-                int frame;
-                if (st == Z_DYING) {
-                    frame = zt[id] < 0.2f ? 2 : 3;
-                } else if (st == Z_DEAD) {
-                    frame = 3;
-                } else if (zhit[id] > 0f) {
-                    frame = 2;
-                } else if (ty == Art.Z_SPIT && zanim[id] > 0f) {
-                    frame = 4;
-                } else if (st == Z_CHASE) {
-                    frame = ((int) (zt[id] * 3f)) & 1;
-                } else if (npc(id)) {
-                    frame = ((int) (zt[id] * 1.2f)) & 1;
-                } else {
-                    frame = 0;
-                }
-                spr = Art.zombie[ty][frame];
-                hScale = npc(id) ? 0.76f : 0.8f;
+                spr = sprite(id);
+                hScale = spriteH(id);
                 if (npc(id)) {
                     minLight = 60;
+                } else if (zty[id] == T_O2 && zst[id] == Z_DYING) {
+                    minLight = 300;
                 }
             } else if (id < 2000) {
                 int i = id - 1000;
@@ -2114,6 +2584,7 @@ public final class World {
                 wyp = dyp[i];
                 spr = Art.decor[dty[i]];
                 hScale = Art.decorH[dty[i]];
+                hanging = Art.decorSolid[dty[i]] == 2;
             }
             float rx = wxp - px, ry = wyp - py;
             float tX = invDet * (dirY * rx - dirX * ry);
@@ -2131,7 +2602,8 @@ public final class World {
             if (w < 2) {
                 w = 2;
             }
-            int floorY = floating ? half + (int) (proj * 0.12f / tY) + (h >> 1) : half + (int) (proj * 0.5f / tY);
+            int floorY = floating ? half + (int) (proj * 0.12f / tY) + (h >> 1)
+                    : (hanging ? half - (int) (proj * 0.5f / tY) + h : half + (int) (proj * 0.5f / tY));
             int top = floorY - h;
             int left = scx - (w >> 1);
             int xs = Math.max(0, left), xe = Math.min(W, left + w);
@@ -2141,6 +2613,10 @@ public final class World {
             // lumina sprite-ului
             lightAt(wxp, wyp, tmpL);
             int fg = fog(tY);
+            if (minLight >= 300) {
+                tmpL[0] = tmpL[1] = tmpL[2] = 256;
+                fg = 256;
+            }
             int Lr = tmpL[0] * fg >> 8, Lg = tmpL[1] * fg >> 8, Lb = tmpL[2] * fg >> 8;
             float fd = 1f / (1f + tY * tY * 0.05f);
             int cxs = Math.min(W - 1, Math.max(0, scx));
@@ -2192,12 +2668,62 @@ public final class World {
         }
     }
 
+    /** Cadrul curent al unui personaj, boss sau al unei butelii. */
+    Img sprite(int id) {
+        int st = zst[id], ty = zty[id];
+        if (ty == T_O2) {
+            if (st == Z_DYING) {
+                int f = (int) (zt[id] * 6f);
+                return Art.expl[f > 2 ? 2 : f];
+            }
+            return Art.o2[st == Z_DEAD ? 1 : 0];
+        }
+        int frame;
+        if (st == Z_DYING) {
+            frame = zt[id] < 0.2f ? 2 : 3;
+        } else if (st == Z_DEAD) {
+            frame = 3;
+        } else if (zhit[id] > 0f) {
+            frame = 2;
+        } else if ((ty == Art.Z_SPIT || ty == T_CREATURE) && (zanim[id] > 0f || zcharge[id] > 0f)) {
+            frame = 4;
+        } else if (st == Z_CHASE) {
+            frame = ((int) (zt[id] * (isBoss(id) ? 2.2f : 3f))) & 1;
+        } else if (npc(id)) {
+            frame = ((int) (zt[id] * 1.2f)) & 1;
+        } else {
+            frame = 0;
+        }
+        if (ty == T_BOSS9) {
+            return Art.boss9[frame > 3 ? 0 : frame];
+        }
+        if (ty == T_CREATURE) {
+            return Art.creature[frame];
+        }
+        return Art.zombie[ty][frame];
+    }
+
+    /** Înălțimea în lume a sprite-ului (1 = cât peretele). */
+    float spriteH(int id) {
+        int ty = zty[id];
+        if (ty == T_BOSS9) {
+            return 1.1f;
+        }
+        if (ty == T_CREATURE) {
+            return zst[id] >= Z_DYING ? 0.9f : 1.05f;
+        }
+        if (ty == T_O2) {
+            return zst[id] == Z_DYING ? 1.0f : 0.62f;
+        }
+        return npc(id) ? 0.76f : 0.8f;
+    }
+
     private void drawGun(int[] buf) {
-        if (weapon == 0 && gunHd != null) {
-            drawPistolHd(buf);
+        int wp = weapon;
+        if (gunHd[wp] != null) {
+            drawGunHd(buf, wp);
             return;
         }
-        int wp = weapon;
         float k = H / 180f;
         Img g = Art.gun[wp];
         int gw = (int) (g.w * k), gh = (int) (g.h * k);
@@ -2211,20 +2737,66 @@ public final class World {
         }
         if (shootCd > W_CD[wp] - 0.1f) {
             by -= (int) (k * (wp == 1 ? 7 : (wp == 2 ? 2 : 4)));
-            if (wp == 2) {
-                bx += (int) (((shots & 1) == 0 ? 2 : -2) * k);
-            }
         }
         int x0 = (W - gw) / 2 + bx + (wp == 0 ? 0 : W / 20);
         int y0 = H - gh + by + (int) (3 * k);
+        int L = gunLight();
+        if (flashT > 0f) {
+            Img f = Art.flash[wp];
+            int fw = (int) (f.w * k), fh = (int) (f.h * k);
+            blit(buf, f, x0 + gw / 2 - fw / 2, y0 - fh + (int) (6 * k), fw, fh, 256, 256, 256);
+        }
+        blit(buf, g, x0, y0, gw, gh, L + Math.max(0, curMuzzle), L + curMuzzle * 3 / 4, L + curMuzzle / 3);
+    }
+
+    /** Lumina de pe armă: din camera în care stai, plus lanterna. */
+    int gunLight() {
         lightAt(px, py, tmpL);
-        int L = (tmpL[0] + tmpL[1] + tmpL[2]) / 3 + (flashlight ? 70 : 0);
-        if (L < 120) {
-            L = 120;
+        int L = (tmpL[0] + tmpL[1] + tmpL[2]) / 3 + (flashlight ? 60 : 0);
+        return L < 110 ? 110 : (L > 270 ? 270 : L);
+    }
+
+    /**
+     * Mâna (mâinile) cu arma randată 3D: legănat la mers, recul, reîncărcare și flacăra la gura țevii.
+     * Pistolul stă jos-dreapta; armele lungi stau exact cum au fost randate în cadrul întreg.
+     */
+    private void drawGunHd(int[] buf, int wp) {
+        Img g = gunHd[wp];
+        float k = gunK[wp];
+        float bob = (float) Math.sin(walkPhase * 0.5f);
+        float abob = Math.abs(bob);
+        int bx = (int) (bob * H * 0.015f);
+        int by = (int) (abob * H * 0.0135f);
+        if (reloadT > 0f) {
+            float p = 1f - reloadT / W_RELOAD[wp];
+            by += (int) ((float) Math.sin(p * 3.14159f) * g.h * 0.75f);
         }
-        if (L > 280) {
-            L = 280;
+        boolean recoil = shootCd > W_CD[wp] - 0.1f;
+        if (recoil) {
+            if (wp == 1) {
+                by -= (int) (H * 0.045f);
+                bx += (int) (W * 0.012f);
+            } else if (wp == 2) {
+                by -= (int) (H * 0.012f);
+                bx += (int) (W * ((shots & 1) == 0 ? 0.004f : -0.002f));
+            } else {
+                by -= (int) (H * 0.027f);
+                bx += (int) (W * 0.0045f);
+            }
         }
+        if (wp == 1 && pumpT > 0f && pumpT < 0.4f) {
+            // pompa: arma coboară puțin și revine
+            by += (int) ((float) Math.sin(pumpT / 0.4f * 3.14159f) * H * 0.03f);
+        }
+        int x0, y0;
+        if (Art.handFH[wp] > 0) {
+            x0 = W / 2 + (int) ((Art.handFX[wp] - Art.handFW[wp] * 0.5f) * k) + bx;
+            y0 = (int) (Art.handFY[wp] * k) + by;
+        } else {
+            x0 = (int) (W * 0.535f) + bx;
+            y0 = H - g.h + by + (int) (H * 0.02f);
+        }
+        int L = gunLight();
         int Lr = L, Lg = L, Lb = L;
         if (curMuzzle > 0) {
             Lr += curMuzzle;
@@ -2233,51 +2805,11 @@ public final class World {
         }
         if (flashT > 0f) {
             Img f = Art.flash[wp];
-            int fw = (int) (f.w * k), fh = (int) (f.h * k);
-            blit(buf, f, x0 + gw / 2 - fw / 2, y0 - fh + (int) (6 * k), fw, fh, 256, 256, 256);
-        }
-        blit(buf, g, x0, y0, gw, gh, Lr, Lg, Lb);
-    }
-
-    /** Mâna cu pistolul randată 3D: jos-dreapta, cu legănat la mers, recul și flacără la țeavă. */
-    private void drawPistolHd(int[] buf) {
-        Img g = gunHd;
-        float bob = (float) Math.sin(walkPhase * 0.5f);
-        float abob = Math.abs(bob);
-        int bx = (int) (bob * H * 0.015f);
-        int by = (int) (abob * H * 0.0135f);
-        if (reloadT > 0f) {
-            float p = 1f - reloadT / W_RELOAD[0];
-            by += (int) ((float) Math.sin(p * 3.14159f) * g.h * 0.75f);
-        }
-        boolean recoil = shootCd > W_CD[0] - 0.1f;
-        if (recoil) {
-            by -= (int) (H * 0.027f);
-            bx += (int) (W * 0.0045f);
-        }
-        int x0 = (int) (W * 0.535f) + bx;
-        int y0 = H - g.h + by + (int) (H * 0.02f);
-        lightAt(px, py, tmpL);
-        int L = (tmpL[0] + tmpL[1] + tmpL[2]) / 3 + (flashlight ? 60 : 0);
-        if (L < 110) {
-            L = 110;
-        }
-        if (L > 270) {
-            L = 270;
-        }
-        int Lr = L, Lg = L, Lb = L;
-        if (curMuzzle > 0) {
-            Lr += curMuzzle;
-            Lg += curMuzzle * 3 / 4;
-            Lb += curMuzzle / 3;
-        }
-        if (flashT > 0f) {
-            Img f = Art.flash[0];
-            float k = H / 180f;
-            int fw = (int) (f.w * k * 0.72f), fh = (int) (f.h * k * 0.72f);
+            float fk = H / 180f * (wp == 1 ? 0.95f : (wp == 2 ? 0.6f : 0.72f));
+            int fw = (int) (f.w * fk), fh = (int) (f.h * fk);
             // centrul flăcării chiar în fața gurii țevii (calculată din modelul 3D)
-            int tipX = x0 + (int) (Art.handTipX * g.w / Art.handPistol.w);
-            int tipY = y0 + (int) (Art.handTipY * g.h / Art.handPistol.h);
+            int tipX = x0 + (int) (Art.handTipX[wp] * k);
+            int tipY = y0 + (int) (Art.handTipY[wp] * k);
             blit(buf, f, tipX - fw / 2 - fw / 10, tipY - fh / 2 - fh / 8, fw, fh, 256, 256, 256);
         }
         for (int y = 0; y < g.h; y++) {

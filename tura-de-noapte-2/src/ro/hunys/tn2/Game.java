@@ -14,7 +14,7 @@ public final class Game {
     // ------------------------------------------------------------------ stări
     public static final int ST_TITLE = 0, ST_SETTINGS = 1, ST_STORY = 2, ST_PLAY = 3, ST_PAUSE = 4, ST_MAP = 5;
     public static final int ST_NOTE = 6, ST_SCENE = 7, ST_RADIO = 8, ST_DEAD = 9, ST_WIN = 10, ST_STATS = 11;
-    public static final int ST_CONTROLS = 12;
+    public static final int ST_CONTROLS = 12, ST_EPISODES = 13;
 
     /** Ce înălțime are lumea (în pixeli mari) la fiecare nivel de pixelare. */
     static final int[] PIXEL_ROWS = {270, 180, 135};
@@ -34,7 +34,9 @@ public final class Game {
     public final Vec vec = new Vec();
 
     // setări
-    public int difficulty = 1, pixel = 1, sens = 1;
+    public int difficulty = 1, pixel = 1, sens = 1, bright = 2;
+    /** Câte episoade s-au terminat (0..3): cele deblocate se pot alege din meniul de episoade. */
+    public int unlocked;
     public boolean sound = true, vibra = true, fps;
 
     public int state = ST_TITLE;
@@ -98,7 +100,8 @@ public final class Game {
         }
         world = new World(plat);
         world.difficulty = difficulty;
-        world.load(Level.load(plat, "parter.txt"));
+        world.setBrightness(bright);
+        world.load(Level.load(plat, World.LEVELS[0] + ".txt"));
         hasSave = plat.load("save") != null;
         resize(screenW, screenH);
         titleView();
@@ -149,11 +152,19 @@ public final class Game {
         br[B_MAP] = 14;
     }
 
-    /** Camera din meniul principal: holul, privit spre siglă. */
+    /** Camera din meniul principal: holul spitalului, privit spre inscripție. */
     void titleView() {
-        world.px = 19.6f;
-        world.py = 24.2f;
-        world.setAngle((float) Math.toRadians(293));
+        if (!world.lv.name.equals(World.LEVELS[0])) {
+            try {
+                world.load(Level.load(plat, World.LEVELS[0] + ".txt"));
+            } catch (java.io.IOException e) {
+                // rămâne harta curentă
+            }
+        }
+        world.reset();
+        world.px = 24.0f;
+        world.py = 27.2f;
+        world.setAngle((float) Math.toRadians(300));
         // în meniu holul e luminat; jocul începe fără curent
         world.power = true;
         world.applyPower();
@@ -173,6 +184,8 @@ public final class Game {
             o.writeBoolean(vibra);
             o.writeBoolean(fps);
             o.writeBoolean(Texts.EN);
+            o.writeByte(bright);
+            o.writeByte(unlocked);
             o.flush();
         } catch (java.io.IOException e) {
             // nu se întâmplă în memorie
@@ -191,6 +204,8 @@ public final class Game {
             vibra = in.readBoolean();
             fps = in.readBoolean();
             Texts.set(in.readBoolean());
+            bright = clamp(in.readByte(), 0, 4);
+            unlocked = clamp(in.readByte(), 0, 3);
         } catch (java.io.IOException e) {
             Texts.set(plat.systemEnglish());
         }
@@ -207,10 +222,26 @@ public final class Game {
     // ================================================================== joc
 
     public void newGame() {
+        startEpisode(0, null);
+    }
+
+    /** Pornește episodul ep; carry = ce aduce jucătorul din episodul dinainte (sau null). */
+    void startEpisode(int ep, int[] carry) {
+        try {
+            world.load(Level.load(plat, World.LEVELS[ep] + ".txt"));
+        } catch (java.io.IOException e) {
+            toast(Texts.LOAD_FAIL);
+            return;
+        }
         world.difficulty = difficulty;
         world.reset();
+        if (carry != null) {
+            world.applyCarry(carry);
+        } else {
+            world.startGear();
+        }
         lastObjective = -1;
-        showPages(Texts.STORY, ST_PLAY);
+        showPages(Texts.STORY[ep], ST_PLAY);
     }
 
     void showPages(String[] p, int after) {
@@ -299,7 +330,7 @@ public final class Game {
             fpsFrames = 0;
             fpsT = 0f;
         }
-        if (state == ST_TITLE || state == ST_SETTINGS || state == ST_CONTROLS) {
+        if (state == ST_TITLE || state == ST_SETTINGS || state == ST_CONTROLS || state == ST_EPISODES) {
             if (prevStateIsTitle()) {
                 world.setAngle(world.ang + dt * 0.06f * (float) Math.sin(time * 0.15f));
                 world.updateFlicker(dt);
@@ -323,20 +354,32 @@ public final class Game {
                 }
                 setState(ST_DEAD);
             } else if (world.won) {
-                showPages(Texts.WIN, ST_STATS);
+                if (world.ep + 1 > unlocked) {
+                    unlocked = world.ep + 1;
+                    storeSettings();
+                }
+                showPages(Texts.WIN[world.ep], ST_STATS);
             } else if (world.pendingNote >= 0) {
                 int n = world.pendingNote;
                 world.pendingNote = -1;
-                noteTitle = Texts.NOTE_TITLES[n];
-                noteText = Texts.NOTES[n];
+                int e = world.ep;
+                n = Math.max(0, Math.min(n, Texts.NOTES[e].length - 1));
+                noteTitle = Texts.NOTE_TITLES[e][n];
+                noteText = Texts.NOTES[e][n];
                 setState(ST_NOTE);
             } else if (world.pendingScene >= 0) {
                 int sc = world.pendingScene;
                 world.pendingScene = -1;
                 String t;
-                if (sc == World.SCENE_MARA) {
-                    t = Texts.SCENE_MARA;
-                    world.radio(3);
+                if (sc == World.SCENE_ELENA) {
+                    t = Texts.SCENE_ELENA;
+                    world.radio(World.R_NPC);
+                } else if (sc == World.SCENE_CRISTI) {
+                    t = Texts.SCENE_CRISTI;
+                    world.radio(World.R_NPC);
+                } else if (sc == World.SCENE_CREATURE) {
+                    t = Texts.SCENE_CREATURE;
+                    world.radio(World.R_LIFT);
                 } else if (sc == World.SCENE_IOANA) {
                     t = Texts.SCENE_IOANA;
                 } else {
@@ -357,7 +400,8 @@ public final class Game {
     }
 
     boolean prevStateIsTitle() {
-        return state == ST_TITLE || prevState == ST_TITLE || prevState == ST_SETTINGS;
+        return state == ST_TITLE || state == ST_EPISODES || prevState == ST_TITLE || prevState == ST_SETTINGS
+                || prevState == ST_EPISODES;
     }
 
     int lastHurt;
@@ -539,7 +583,8 @@ public final class Game {
                 if (afterPages == ST_PLAY) {
                     setState(ST_PLAY);
                     if (world.playTime == 0f) {
-                        world.radio(0);
+                        world.radio(World.R_START);
+                        saveGame();
                     }
                 } else if (afterPages == ST_STATS) {
                     setState(ST_STATS);
@@ -557,6 +602,15 @@ public final class Game {
         }
     }
 
+    /** Aplicația trece în fundal: jocul intră în pauză și se uită atingerile în curs. */
+    public void pause() {
+        if (state == ST_PLAY) {
+            setState(ST_PAUSE);
+        } else {
+            releaseAll();
+        }
+    }
+
     public void back() {
         if (state == ST_PLAY) {
             setState(ST_PAUSE);
@@ -564,6 +618,8 @@ public final class Game {
             setState(ST_PLAY);
         } else if (state == ST_SETTINGS || state == ST_CONTROLS) {
             setState(prevState == ST_PAUSE ? ST_PAUSE : ST_TITLE);
+        } else if (state == ST_EPISODES) {
+            setState(ST_TITLE);
         } else if (state == ST_TITLE) {
             plat.quit();
         } else {
@@ -583,6 +639,7 @@ public final class Game {
     static final int A_CONTINUE = 1, A_NEW = 2, A_SETTINGS = 3, A_EXIT = 4, A_BACK = 5, A_RESUME = 6, A_SAVE = 7;
     static final int A_MAIN = 8, A_DIFF = 9, A_PIXEL = 10, A_SENS = 11, A_SOUND = 12, A_VIBRA = 13, A_LANG = 14;
     static final int A_FPS = 15, A_LOAD = 16, A_RETRY = 17, A_CONTROLS = 18, A_STATS_DONE = 19;
+    static final int A_BRIGHT = 20, A_NEXT = 21, A_EPISODES = 22, A_EP0 = 30;
 
     void menuAction(int a) {
         if (sound) {
@@ -624,7 +681,6 @@ public final class Game {
                 toast(saveGame() ? Texts.SAVED : Texts.SAVE_FAIL);
                 break;
             case A_MAIN:
-                world.reset();
                 titleView();
                 hasSave = plat.load("save") != null;
                 setState(ST_TITLE);
@@ -663,14 +719,37 @@ public final class Game {
                 }
                 break;
             case A_RETRY:
-                world.reset();
+                if (!loadGame()) {
+                    world.reset();
+                }
                 lastObjective = -1;
                 setState(ST_PLAY);
                 break;
             case A_STATS_DONE:
-                world.reset();
                 titleView();
+                hasSave = plat.load("save") != null;
                 setState(ST_TITLE);
+                break;
+            case A_NEXT:
+                if (world.ep + 1 < World.LEVELS.length) {
+                    startEpisode(world.ep + 1, world.carry());
+                }
+                break;
+            case A_BRIGHT:
+                bright = (bright + 1) % 5;
+                world.setBrightness(bright);
+                break;
+            case A_EPISODES:
+                setState(ST_EPISODES);
+                break;
+            case A_EP0:
+            case A_EP0 + 1:
+            case A_EP0 + 2:
+                if (a - A_EP0 <= unlocked) {
+                    startEpisode(a - A_EP0, null);
+                } else {
+                    toast(Texts.LOCKED_EP);
+                }
                 break;
             default:
                 break;
@@ -696,7 +775,8 @@ public final class Game {
         nm = 0;
         boolean worldVisible = state != ST_STORY && state != ST_STATS;
         if (worldVisible) {
-            world.render(worldBuf, state != ST_TITLE && state != ST_SETTINGS && state != ST_CONTROLS);
+            world.render(worldBuf, state != ST_TITLE && state != ST_SETTINGS && state != ST_CONTROLS
+                    && state != ST_EPISODES);
         }
         switch (state) {
             case ST_TITLE:
@@ -707,6 +787,9 @@ public final class Game {
                 break;
             case ST_CONTROLS:
                 drawControlsHelp(g);
+                break;
+            case ST_EPISODES:
+                drawEpisodes(g);
                 break;
             case ST_STORY:
                 drawStory(g);
@@ -812,6 +895,9 @@ public final class Game {
             button(g, Texts.M_CONTINUE, lx, by0 + n++ * (bh + gap), bw, bh, A_CONTINUE, true);
         }
         button(g, Texts.M_NEW, lx, by0 + n++ * (bh + gap), bw, bh, A_NEW, !hasSave);
+        if (unlocked > 0) {
+            button(g, Texts.M_EPISODES, lx, by0 + n++ * (bh + gap), bw, bh, A_EPISODES, false);
+        }
         button(g, Texts.M_SETTINGS, lx, by0 + n++ * (bh + gap), bw, bh, A_SETTINGS, false);
         button(g, Texts.M_EXIT, lx, by0 + n * (bh + gap), bw, bh, A_EXIT, false);
         small.drawShadow(g, Texts.PLACE, lx, UH - 14, C_DIM, 1);
@@ -827,6 +913,7 @@ public final class Game {
         big.drawShadow(g, t, cx - big.width(t) / 2, 12, C_TITLE, 1);
         String[][] rows = {
             {Texts.S_DIFF, Texts.DIFF_NAMES[difficulty]},
+            {Texts.S_BRIGHT, Texts.BRIGHT_NAMES[bright]},
             {Texts.S_PIXEL, Texts.PIXEL_NAMES[pixel] + "  (" + W + "x" + H + ")"},
             {Texts.S_SENS, Texts.SENS_NAMES[sens]},
             {Texts.S_SOUND, sound ? Texts.ON : Texts.OFF},
@@ -834,9 +921,9 @@ public final class Game {
             {Texts.S_LANG, Texts.LANG_NAME},
             {Texts.S_FPS, fps ? Texts.ON : Texts.OFF},
         };
-        int[] acts = {A_DIFF, A_PIXEL, A_SENS, A_SOUND, A_VIBRA, A_LANG, A_FPS};
-        int bw = 300, bh = 22, gap = 4;
-        int y = 40;
+        int[] acts = {A_DIFF, A_BRIGHT, A_PIXEL, A_SENS, A_SOUND, A_VIBRA, A_LANG, A_FPS};
+        int bw = 300, bh = 21, gap = 3;
+        int y = 34;
         for (int i = 0; i < rows.length; i++) {
             int x = cx - bw / 2;
             if (nm < mx.length) {
@@ -849,13 +936,29 @@ public final class Game {
             }
             boolean pressed = menuSel == nm - 1;
             g.panel(x, y, bw, bh, pressed ? 0xE0503018 : 0xC0141418, C_BORDER);
-            big.draw(g, rows[i][0], x + 8, y + 2, C_DIM, 1);
+            big.draw(g, rows[i][0], x + 8, y + 1, C_DIM, 1);
             String v = rows[i][1];
-            big.draw(g, v, x + bw - 8 - big.width(v), y + 2, C_TEXT, 1);
+            big.draw(g, v, x + bw - 8 - big.width(v), y + 1, C_TEXT, 1);
             y += bh + gap;
         }
         button(g, Texts.M_CONTROLS, cx - bw / 2, y + 4, bw / 2 - 3, bh, A_CONTROLS, false);
         button(g, Texts.M_BACK, cx + 3, y + 4, bw / 2 - 3, bh, A_BACK, true);
+    }
+
+    /** Alegerea episodului (cele terminate și următorul). */
+    void drawEpisodes(Gfx g) {
+        darken(g, 170);
+        int cx = UW / 2;
+        String t = Texts.M_EPISODES.toUpperCase();
+        big.drawShadow(g, t, cx - big.width(t) / 2, 20, C_TITLE, 1);
+        int bw = 280, bh = 26, gap = 8, y = 56;
+        for (int e = 0; e < World.LEVELS.length; e++) {
+            boolean open = e <= unlocked;
+            button(g, open ? Texts.EP_NAMES[e] : "? ? ?", cx - bw / 2, y, bw, bh, A_EP0 + e, open && e == Math.min(unlocked, 2));
+            y += bh + gap;
+        }
+        small.drawShadow(g, Texts.DIFF_NAMES[difficulty], cx - small.width(Texts.DIFF_NAMES[difficulty]) / 2, y + 2, C_DIM, 1);
+        button(g, Texts.M_BACK, cx - 60, UH - 40, 120, 24, A_STATS_DONE, false);
     }
 
     void drawControlsHelp(Gfx g) {
@@ -966,7 +1069,8 @@ public final class Game {
         }
         // obiectivul
         if (objT > 0f || state == ST_PAUSE) {
-            String o = Texts.OBJ[Math.min(w.objective, Texts.OBJ.length - 1)];
+            String[] ob = Texts.OBJ[w.ep];
+            String o = ob[Math.min(w.objective, ob.length - 1)];
             int a = state == ST_PAUSE ? 255 : (int) (255 * Math.min(1f, objT));
             String lab = Texts.OBJ_LABEL.toUpperCase();
             int tw = Math.max(big.width(o), small.width(lab)) + 16;
@@ -1230,7 +1334,7 @@ public final class Game {
     void drawMap(Gfx g) {
         g.fill(0, 0, UW, UH, 0xF00A0A0C);
         World w = world;
-        String t = Texts.MAP_TITLE;
+        String t = Texts.MAP_TITLES[w.ep];
         big.drawShadow(g, t, 10, 6, C_TITLE, 1);
         String hint = Texts.TAP_CLOSE;
         small.drawShadow(g, hint, UW - small.width(hint) - 10, 12, C_DIM, 1);
@@ -1272,7 +1376,7 @@ public final class Game {
             if (!w.seen[ccy * w.mw + ccx] || x2 - x1 < 3 || y2 - y1 < 3) {
                 continue;
             }
-            String nm2 = roomName(w.lv.rid[r]);
+            String nm2 = Texts.roomName(w.lv.rid[r]);
             if (nm2 == null) {
                 continue;
             }
@@ -1290,12 +1394,16 @@ public final class Game {
     static int zoneColor(char z) {
         switch (z) {
             case 'm': return 0xFF5C554C;
-            case 's': return 0xFF2C2C34;
-            case 'k': return 0xFF66665E;
+            case 'u': case 'i': return 0xFF3E5470;
+            case 's': return 0xFF3A5C52;
+            case 'l': return 0xFF6A7078;
+            case 'p': return 0xFF6E6440;
+            case 'k': case 'n': return 0xFF5C4430;
             case 't': return 0xFF4C6458;
-            case 'a': case 'd': return 0xFF4A4844;
-            case 'w': return 0xFF5C4430;
-            case 'o': case 'r': return 0xFF3E4660;
+            case 'a': case 'd': case 'x': return 0xFF4A4844;
+            case 'e': return 0xFF3C3E44;
+            case 'h': return 0xFF6A5C28;
+            case 'o': case 'r': case 'f': case 'v': return 0xFF3E4660;
             default: return 0xFF4A5448;
         }
     }
@@ -1307,46 +1415,11 @@ public final class Game {
             case 'y': return 0xFFE8C030;
             case 'g': return 0xFF3AB860;
             case 'x': return 0xFF40E070;
-            case 's': return 0xFFB02020;
+            case 'v': return 0xFFF08C00;
+            case 'o': return 0xFFB8B8C0;
             case 'e': return 0xFF80C0FF;
             default: return 0xFFA07040;
         }
-    }
-
-    static String roomName(String id) {
-        boolean en = Texts.EN;
-        if (id.equals("hol")) {
-            return en ? "LOBBY" : "HOL";
-        } else if (id.equals("paza")) {
-            return en ? "SECURITY" : "PAZĂ";
-        } else if (id.equals("cantina")) {
-            return en ? "CAFETERIA" : "CANTINĂ";
-        } else if (id.equals("invitati")) {
-            return en ? "GREEN ROOM" : "INVITAȚI";
-        } else if (id.equals("wc")) {
-            return "WC";
-        } else if (id.equals("magazie")) {
-            return en ? "STORE" : "MAGAZIE";
-        } else if (id.equals("arhiva")) {
-            return en ? "ARCHIVE" : "ARHIVĂ";
-        } else if (id.equals("montaj")) {
-            return en ? "EDITING" : "MONTAJ";
-        } else if (id.equals("regie")) {
-            return en ? "CONTROL" : "REGIE";
-        } else if (id.equals("studio1")) {
-            return "STUDIO 1";
-        } else if (id.equals("studio2")) {
-            return "STUDIO 2";
-        } else if (id.equals("tehnic")) {
-            return en ? "TECH" : "TEHNIC";
-        } else if (id.equals("machiaj")) {
-            return en ? "MAKEUP" : "MACHIAJ";
-        } else if (id.equals("garderoba")) {
-            return en ? "WARDROBE" : "GARDEROBĂ";
-        } else if (id.equals("rampa")) {
-            return en ? "DOCK" : "RAMPĂ";
-        }
-        return null;
     }
 
     void drawNote(Gfx g) {
@@ -1401,7 +1474,10 @@ public final class Game {
         if (radioId < 0) {
             return;
         }
-        String text = Texts.RADIO[Math.min(radioId, Texts.RADIO.length - 1)];
+        String text = Texts.radio(world.ep, radioId);
+        if (text == null) {
+            return;
+        }
         int pw = Math.min(UW - 40, 500);
         String[] lines = big.wrap(text, pw - 56, 1);
         int ph = 34 + lines.length * big.lineH + 14;
@@ -1437,10 +1513,16 @@ public final class Game {
         World w = world;
         int t = (int) w.playTime;
         String time2 = (t / 60) + ":" + (t % 60 < 10 ? "0" : "") + (t % 60);
-        String text = Texts.STATS_TITLE + "\n\n" + Texts.STAT_DIFF + Texts.DIFF_NAMES[w.difficulty] + "\n"
+        String text = Texts.STATS_TITLE + " · " + Texts.EP_NAMES[w.ep].toUpperCase() + "\n\n"
+                + Texts.STAT_DIFF + Texts.DIFF_NAMES[w.difficulty] + "\n"
                 + Texts.STAT_TIME + time2 + "\n" + Texts.STAT_KILLS + w.kills + " / " + w.totalZ + "\n"
                 + Texts.STAT_SHOTS + w.shots + "\n" + Texts.STAT_NOTES + w.notesFound() + " / " + w.notesTotal();
         drawRichText(g, text, 60, 30, UW - 120, UH - 80);
-        button(g, Texts.M_MAIN, UW / 2 - 95, UH - 40, 190, 24, A_STATS_DONE, true);
+        if (w.ep + 1 < World.LEVELS.length) {
+            button(g, Texts.M_NEXT, UW / 2 - 196, UH - 40, 190, 24, A_NEXT, true);
+            button(g, Texts.M_MAIN, UW / 2 + 6, UH - 40, 190, 24, A_STATS_DONE, false);
+        } else {
+            button(g, Texts.M_MAIN, UW / 2 - 95, UH - 40, 190, 24, A_STATS_DONE, true);
+        }
     }
 }

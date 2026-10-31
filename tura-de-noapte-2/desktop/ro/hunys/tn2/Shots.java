@@ -37,21 +37,24 @@ public final class Shots {
         g.newGame();
         shot("02_poveste", only);
 
-        // 3. holul, la început (fără curent: lumini de avarie, zorii prin geam)
+        // ---------------------------------------------------------- episodul 1: parterul
+        // 3. rampa ambulanțelor, la început (fără curent)
         start();
-        place(22.5f, 27.0f, 270);
+        place(3.0f, 4.8f, 350);
         g.world.radioN = 0;
         tick(0.1f);
-        shot("03_hol_start", only);
+        shot("03_rampa_start", only);
 
-        // 4. holul spre geamuri și intrare
-        place(23.0f, 20.6f, 95);
-        shot("04_hol_geamuri", only);
+        // 4. urgențele: perdele, paturi, infectați
+        place(14.0f, 9.5f, 330);
+        moveZ(Art.Z_PATIENT, 17.5f, 6.0f, true);
+        moveZ(Art.Z_NURSE, 19.5f, 7.0f, true);
+        shot("04_urgente", only);
 
-        // 5. coridorul: infectați care vin, foc, joystick apăsat
-        place(25.0f, 14.6f, 180);
-        moveZ(Art.Z_REPORTER, 18.5f, 14.5f, true);
-        moveZ(Art.Z_CAMERA, 20.5f, 15.4f, true);
+        // 5. coridorul: foc spre infectați, o butelie care explodează
+        place(30.0f, 12.6f, 180);
+        moveZ(Art.Z_PATIENT, 22.0f, 12.4f, true);
+        moveZ(Art.Z_VECTRA, 24.0f, 13.4f, true);
         g.world.fire();
         g.world.flashT = 0.07f;
         press(Game.B_FIRE);
@@ -60,86 +63,120 @@ public final class Shots {
         release();
         g.world.flashT = 0f;
 
-        // 6. studioul 1 fără curent (lanterna)
-        place(26.0f, 12.0f, 270);
-        moveZ(Art.Z_ANCHOR, 25.0f, 6.5f, true);
-        moveZ(Art.Z_CAMERA, 28.0f, 5.5f, true);
-        shot("06_studio1_intuneric", only);
-
-        // 7. studioul 1 cu curent
+        // 6. holul mare, cu curent: inscripția spitalului
         power(true);
-        place(25.2f, 12.4f, 272);
-        shot("07_studio1_lumini", only);
+        place(16.0f, 26.0f, 330);
+        shot("06_hol", only);
+
+        // 7. radiologia: dr. Elena în camera de comandă
         power(false);
+        place(36.7f, 4.6f, 300);
+        shot("07_radiologie", only);
 
-        // 8. cantina
-        place(8.6f, 23.0f, 215);
-        shot("08_cantina", only);
+        // 8. capela cu lumânări
+        moveZ(Art.Z_NURSE, 44.0f, 3.5f, false);
+        place(41.7f, 10.0f, 285);
+        shot("08_capela", only);
 
-        // 9. regia studioului 1
-        place(13.5f, 12.2f, 320);
-        shot("09_regie", only);
+        // 9. farmacia
+        moveZ(Art.Z_PATIENT, 36.0f, 23.0f, false);
+        place(31.0f, 30.8f, 315);
+        shot("09_farmacie", only);
 
-        // 10. arhiva cu lanterna
-        place(1.6f, 12.2f, 300);
-        moveZ(Art.Z_VECTRA, 1.5f, 10.4f, false);
-        shot("10_arhiva", only);
+        // 10. butelia explodează
+        place(9.5f, 12.6f, 0);
+        for (int i = 0; i < g.world.nz; i++) {
+            if (g.world.zty[i] == World.T_O2 && Math.abs(g.world.zx[i] - 12.0f) < 0.5f) {
+                g.world.explode(i);
+                g.world.zt[i] = 0.18f;
+            }
+        }
+        shot("10_explozie", only);
 
-        // 11. machiaj
-        place(38.0f, 12.4f, 265);
-        moveZ(Art.Z_ANCHOR, 37.5f, 10.5f, true);
-        shot("11_machiaj", only);
-
-        // 12. paza, cu Ioana la monitoare
-        place(31.6f, 22.3f, 320);
-        shot("12_paza_ioana", only);
-
-        // 13. harta
+        // 11. harta parterului
         for (int i = 0; i < g.world.seen.length; i++) {
             g.world.seen[i] = true;
         }
-        place(26.0f, 12.0f, 270);
+        place(20.0f, 12.6f, 0);
         g.state = Game.ST_MAP;
-        shot("13_harta", only);
+        shot("11_harta_parter", only);
 
-        // 14. o notiță
-        g.noteTitle = Texts.NOTE_TITLES[1];
-        g.noteText = Texts.NOTES[1];
+        // 12. o notiță
+        g.noteTitle = Texts.NOTE_TITLES[0][2];
+        g.noteText = Texts.NOTES[0][2];
         g.state = Game.ST_NOTE;
-        place(32.0f, 21.0f, 300);
-        shot("14_notita", only);
+        place(25.0f, 8.0f, 0);
+        shot("12_notita", only);
 
-        // 15. stația radio
-        g.state = Game.ST_RADIO;
-        g.radioId = 1;
-        place(36.0f, 14.6f, 0);
-        shot("15_statie", only);
+        // ---------------------------------------------------------- episodul 2: etajul
+        g.startEpisode(1, null);
+        start();
+        // 13. ATI (circuitul de urgență), cu pușca
+        place(14.5f, 9.5f, 270);
+        g.world.weapon = 1;
+        shot("13_ati", only);
+        g.world.fire();
+        g.world.flashT = 0.1f;
+        g.world.weapon = 1;
+        shot("13b_ati_pusca_foc", only);
+        g.world.flashT = 0f;
+        g.world.shootCd = 0f;
 
-        // 16. pauză
-        g.state = Game.ST_PAUSE;
-        shot("16_pauza", only);
+        // 14. sala de operație 2
+        place(39.0f, 6.5f, 270);
+        shot("14_sala_operatie", only);
 
-        // 17. setări
+        // 15. pediatria
+        place(14.0f, 28.0f, 250);
+        shot("15_pediatrie", only);
+
+        // 16. laboratorul Vectra și Subiectul 9, cu pistolul-mitralieră
+        g.world.weapon = 2;
+        place(38.5f, 22.5f, 0);
+        moveZ(World.T_BOSS9, 44.0f, 21.0f, true);
+        shot("16_subiectul9", only);
+
+        // ---------------------------------------------------------- episodul 3: acoperișul
+        g.startEpisode(2, null);
+        start();
+        // 17. ieșirea pe acoperiș: cerul din zori, heliportul
+        place(19.0f, 17.0f, 5);
+        shot("17_acoperis", only);
+
+        // 18. elicopterul de aproape
+        place(26.5f, 20.5f, 325);
+        shot("18_elicopter", only);
+
+        // 19. creatura
+        for (int i = 0; i < g.world.nz; i++) {
+            if (g.world.zty[i] == World.T_CREATURE) {
+                g.world.zst[i] = World.Z_CHASE;
+            }
+        }
+        moveZ(World.T_CREATURE, 25.5f, 12.5f, true);
+        place(27.5f, 18.0f, 250);
+        shot("19_creatura", only);
+
+        // 20. camera mașinilor liftului
+        place(8.5f, 13.5f, 230);
+        shot("20_camera_masini", only);
+
+        // 21. setări (luminozitatea)
         g.state = Game.ST_SETTINGS;
         g.prevState = Game.ST_TITLE;
-        g.world.reset();
         g.titleView();
-        shot("17_setari", only);
+        shot("21_setari", only);
 
-        // 18. pixelarea: aceeași imagine la cele trei niveluri
-        if (only == null || "18".startsWith(only) || only.startsWith("18")) {
+        // 22. luminozitatea: foarte întunecat / normal / foarte luminos
+        if (only == null || only.startsWith("22")) {
+            g.startEpisode(0, null);
             start();
-            power(true);
-            place(26.0f, 12.0f, 270);
-            moveZ(Art.Z_ANCHOR, 25.0f, 6.5f, true);
-            moveZ(Art.Z_CAMERA, 28.0f, 5.5f, true);
-            for (int px = 0; px < 3; px++) {
-                g.pixel = px;
-                g.resize(g.sw, g.sh);
-                shot("18_pixeli_" + px, null);
+            place(14.0f, 9.5f, 330);
+            for (int b = 0; b <= 4; b += 2) {
+                g.world.setBrightness(b);
+                shot("22_luminozitate_" + b, null);
             }
-            g.pixel = 1;
-            g.resize(g.sw, g.sh);
+            g.world.setBrightness(2);
         }
 
         System.out.printf("gata in %.1f s%n", (System.nanoTime() - t0) / 1e9);

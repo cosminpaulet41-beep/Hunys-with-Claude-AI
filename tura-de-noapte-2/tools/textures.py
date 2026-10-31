@@ -1,7 +1,8 @@
-"""Texturile clădirii ZORI TV (pereți, uși, podele, tavane), 64x64 pixeli fiecare, desenate din cod.
+"""Uneltele de desen pentru texturi (64x64 pixeli, desenate din cod) și atlasul jocului.
+Texturile Spitalului Universitar sunt în tex_spital.py.
 
-Ieșire: assets/tex.png = atlas de 8 coloane; ordinea e cea din lista TEX de mai jos și trebuie să rămână
-aceeași cu indicii din Art.java (Art.T_*). Rulează: python3 -I tools/textures.py assets [previzualizare.png]
+Ieșire: assets/tex.png = atlas de 8 coloane și assets/tex.txt cu numele fiecărei texturi (Art.java le caută
+după nume), plus assets/sky.png (cerul). Rulează: python3 -I tools/textures.py assets [previzualizare.png]
 """
 import math
 import random
@@ -816,7 +817,7 @@ TEX = []
 
 
 def add(name, t):
-    TEX.append((name, t.im if isinstance(t, T) else t))
+    TEX.append((name, t if isinstance(t, Image.Image) else t.im))
 
 
 def build():
@@ -878,7 +879,11 @@ def build():
 
 def main():
     out = sys.argv[1] if len(sys.argv) > 1 else "assets"
-    build()
+    import os
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import tex_spital
+    tex_spital.build(add)
+    tex_spital.sky_panorama(out + "/sky.png")
     cols = 8
     rows = (len(TEX) + cols - 1) // cols
     atlas = Image.new("RGB", (cols * S, rows * S), (255, 0, 255))

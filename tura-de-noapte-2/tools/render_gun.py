@@ -2,7 +2,8 @@
 (cutii rotunjite, capsule), cu lumini, umbre moi și ocluzie ambientală. Ca la jocurile clasice, imaginea
 randată devine apoi sprite-ul armei (jocul o micșorează la pixelii lumii).
 
-Ieșire: assets/hand_pistol.png (RGBA). Rulează: python3 -I tools/render_gun.py assets [W H]
+Ieșire: assets/hand_pistol.png, hand_shotgun.png, hand_smg.png (RGBA) și .txt cu gura țevii.
+Rulează: python3 -I tools/render_gun.py assets [W H [pistol,shotgun,smg [supraeșantionare]]]
 """
 import math
 import sys
@@ -72,7 +73,7 @@ def rot_z(a):
 GRIP_TILT = math.radians(18)
 RG = rot_x(-GRIP_TILT)          # rotește mânerul: partea de jos merge înapoi
 
-M_SLIDE, M_FRAME, M_SKIN, M_SLEEVE, M_STRIPE, M_DARK, M_DOT, M_NAIL = range(8)
+M_SLIDE, M_FRAME, M_SKIN, M_SLEEVE, M_STRIPE, M_DARK, M_DOT, M_NAIL, M_GUN = range(9)
 
 
 def finger(p, base, segs, radii):
@@ -83,6 +84,49 @@ def finger(p, base, segs, radii):
         di = sd_capsule_tapered(p, pts[i], pts[i + 1], radii[i], radii[i + 1])
         d = di if d is None else smin(d, di, 0.004)
     return d
+
+
+def right_hand(p, grip_tilt_extra=0.0):
+    """Mâna dreaptă pe mâner (palma pe spate, degetele îl cuprind prin față, arătătorul întins pe lateral),
+    încheietura și mâneca geacă de ambulanțier. Întoarce (mâna, unghiile, mâneca, capetele mânecii)."""
+    palm = sd_round_box((p - np.array([0.008, -0.041, -0.024])) @ RG, [0.0185, 0.033, 0.0135], 0.010)
+    thenar = sd_capsule_tapered(p, [-0.007, -0.050, -0.029], [-0.009, -0.026, -0.026], 0.0135, 0.0115)
+    hand = smin(palm, thenar, 0.006)
+    web = sd_capsule(p, [-0.003, -0.007, -0.027], [0.014, -0.011, -0.027], 0.0095)
+    hand = smin(hand, web, 0.008)
+    nails = None
+    for k, (yk, r0) in enumerate([(-0.031, 0.0080), (-0.0475, 0.0078), (-0.0635, 0.0071)]):
+        zb = -0.004 + 0.30 * yk
+        # încheieturile: baza (dreapta), îndoit prin fața mânerului, vârful culcat înapoi pe stânga
+        f = finger(p, [0.020, yk, zb - 0.013],
+                   [[0.0205, yk - 0.001, zb + 0.014], [0.006, yk - 0.002, zb + 0.029], [-0.0135, yk - 0.003, zb + 0.022],
+                    [-0.0190, yk - 0.003, zb + 0.004]],
+                   [r0, r0 * 0.97, r0 * 0.92, r0 * 0.86, r0 * 0.78])
+        hand = smin(hand, f, 0.0025)
+        # unghia, pe dosul ultimei falange (spre exterior, adică spre stânga)
+        nl = sd_round_box(p - np.array([-0.0190 - r0 * 0.80, yk - 0.003, zb + 0.008]),
+                          [0.0010, r0 * 0.56, r0 * 0.78], 0.0009)
+        nails = nl if nails is None else np.minimum(nails, nl)
+    idx = finger(p, [0.018, -0.012, -0.012], [[0.0185, -0.010, 0.022], [0.0165, -0.011, 0.048], [0.0148, -0.012, 0.067]],
+                 [0.0086, 0.0080, 0.0074, 0.0065])
+    hand = smin(hand, idx, 0.003)
+    # degetul mare: scurt și gros, ca la un om (cam 5 cm de la încheietură la vârf)
+    th = finger(p, [-0.011, -0.015, -0.022], [[-0.0150, -0.008, -0.010], [-0.0160, -0.005, 0.000], [-0.0157, -0.003, 0.010]],
+                [0.0118, 0.0108, 0.0097, 0.0086])
+    hand = smin(hand, th, 0.005)
+    nail = np.minimum(sd_round_box(p - np.array([-0.0238, -0.0010, 0.0055]), [0.0011, 0.0050, 0.0058], 0.0010), nails)
+    wrist = sd_capsule_tapered(p, [0.008, -0.068, -0.044], [0.040, -0.170, -0.160], 0.0235, 0.029)
+    hand = smin(hand, wrist, 0.010)
+
+    # ---------------- mâneca (geaca de ambulanțier) cu banda reflectorizantă
+    sa = np.array([0.028, -0.118, -0.105])
+    sb = np.array([0.120, -0.340, -0.400])
+    sleeve = sd_capsule_tapered(p, sa, sb, 0.036, 0.052)
+    cuff = sd_capsule_tapered(p, sa, sa + (sb - sa) * 0.05, 0.0385, 0.0395)
+    sleeve = smin(sleeve, cuff, 0.003)
+    hand = np.minimum(hand, nail)
+    return hand, nail, sleeve, sa, sb
+
 
 
 def scene(p, want_mat=False):
@@ -119,45 +163,7 @@ def scene(p, want_mat=False):
     magbase = sd_round_box(gp - np.array([0.0, -0.095, 0.002]), [0.0125, 0.004, 0.018], 0.002)
     frame = np.minimum(frame, np.minimum(grip, magbase))
 
-    # ---------------- mâna dreaptă: palma pe spatele mânerului, degetele îl cuprind prin față
-    palm = sd_round_box((p - np.array([0.008, -0.041, -0.024])) @ RG, [0.0185, 0.033, 0.0135], 0.010)
-    thenar = sd_capsule_tapered(p, [-0.007, -0.050, -0.029], [-0.009, -0.026, -0.026], 0.0135, 0.0115)
-    hand = smin(palm, thenar, 0.006)
-    web = sd_capsule(p, [-0.003, -0.007, -0.027], [0.014, -0.011, -0.027], 0.0095)
-    hand = smin(hand, web, 0.008)
-    nails = None
-    for k, (yk, r0) in enumerate([(-0.031, 0.0080), (-0.0475, 0.0078), (-0.0635, 0.0071)]):
-        zb = -0.004 + 0.30 * yk
-        # încheieturile: baza (dreapta), îndoit prin fața mânerului, vârful culcat înapoi pe stânga
-        f = finger(p, [0.020, yk, zb - 0.013],
-                   [[0.0205, yk - 0.001, zb + 0.014], [0.006, yk - 0.002, zb + 0.029], [-0.0135, yk - 0.003, zb + 0.022],
-                    [-0.0190, yk - 0.003, zb + 0.004]],
-                   [r0, r0 * 0.97, r0 * 0.92, r0 * 0.86, r0 * 0.78])
-        hand = smin(hand, f, 0.0025)
-        # unghia, pe dosul ultimei falange (spre exterior, adică spre stânga)
-        nl = sd_round_box(p - np.array([-0.0190 - r0 * 0.80, yk - 0.003, zb + 0.008]),
-                          [0.0010, r0 * 0.56, r0 * 0.78], 0.0009)
-        nails = nl if nails is None else np.minimum(nails, nl)
-    idx = finger(p, [0.018, -0.012, -0.012], [[0.0185, -0.010, 0.022], [0.0165, -0.011, 0.048], [0.0148, -0.012, 0.067]],
-                 [0.0086, 0.0080, 0.0074, 0.0065])
-    hand = smin(hand, idx, 0.003)
-    # degetul mare: scurt și gros, ca la un om (cam 5 cm de la încheietură la vârf)
-    th = finger(p, [-0.011, -0.015, -0.022], [[-0.0150, -0.008, -0.010], [-0.0160, -0.005, 0.000], [-0.0157, -0.003, 0.010]],
-                [0.0118, 0.0108, 0.0097, 0.0086])
-    hand = smin(hand, th, 0.005)
-    nail = np.minimum(sd_round_box(p - np.array([-0.0238, -0.0010, 0.0055]), [0.0011, 0.0050, 0.0058], 0.0010), nails)
-    wrist = sd_capsule_tapered(p, [0.008, -0.068, -0.044], [0.040, -0.170, -0.160], 0.0235, 0.029)
-    hand = smin(hand, wrist, 0.010)
-
-    # ---------------- mâneca (geaca de ambulanțier) cu banda reflectorizantă
-    sa = np.array([0.028, -0.118, -0.105])
-    sb = np.array([0.120, -0.340, -0.400])
-    sleeve = sd_capsule_tapered(p, sa, sb, 0.036, 0.052)
-    cuff = sd_capsule_tapered(p, sa, sa + (sb - sa) * 0.05, 0.0385, 0.0395)
-    sleeve = smin(sleeve, cuff, 0.003)
-    la, lb = sa, sb
-    hand = np.minimum(hand, nail)
-
+    hand, nail, sleeve, sa, sb = right_hand(p)
     d = np.minimum.reduce([slide, sights, hole, frame, hand, sleeve])
     if not want_mat:
         return d
@@ -180,21 +186,174 @@ def scene(p, want_mat=False):
     return d, mat
 
 
+def left_hand(p, zc, yc, wrap_r=0.019):
+    """Mâna stângă sub țeavă (pe pompă sau pe mânerul din față): palma dedesubt, degetele urcă pe partea
+    dreaptă, degetul mare pe stânga; antebrațul și mâneca vin din stânga jos."""
+    palm = sd_round_box(p - np.array([-0.004, yc - wrap_r - 0.010, zc]), [0.021, 0.010, 0.030], 0.009)
+    hand = palm
+    nails = None
+    for k, dz in enumerate((-0.0235, -0.008, 0.008, 0.0225)):
+        z = zc + dz
+        r0 = 0.0076 - abs(dz) * 0.02
+        f = finger(p, [0.010, yc - wrap_r - 0.011, z],
+                   [[wrap_r + 0.006, yc - wrap_r * 0.7, z], [wrap_r + 0.009, yc - 0.002, z + 0.002],
+                    [wrap_r + 0.002, yc + wrap_r * 0.62, z + 0.003]],
+                   [r0, r0 * 0.96, r0 * 0.90, r0 * 0.82])
+        hand = smin(hand, f, 0.003)
+        nl = sd_round_box(p - np.array([wrap_r + 0.006, yc + wrap_r * 0.55, z + 0.003]), [0.0028, 0.0018, r0 * 0.7], 0.0009)
+        nails = nl if nails is None else np.minimum(nails, nl)
+    th = finger(p, [-0.016, yc - wrap_r - 0.008, zc - 0.034],
+                [[-wrap_r - 0.004, yc - wrap_r * 0.55, zc - 0.014], [-wrap_r - 0.005, yc - wrap_r * 0.2, zc + 0.008],
+                 [-wrap_r - 0.004, yc - 0.000, zc + 0.026]],
+                [0.0110, 0.0100, 0.0090, 0.0080])
+    hand = smin(hand, th, 0.005)
+    wrist = sd_capsule_tapered(p, [-0.010, yc - wrap_r - 0.020, zc - 0.020], [-0.060, yc - 0.140, zc - 0.150], 0.024, 0.030)
+    hand = smin(hand, wrist, 0.010)
+    sa = np.array([-0.040, yc - 0.105, zc - 0.105])
+    sb = np.array([-0.190, yc - 0.380, zc - 0.400])
+    sleeve = sd_capsule_tapered(p, sa, sb, 0.037, 0.055)
+    cuff = sd_capsule_tapered(p, sa, sa + (sb - sa) * 0.05, 0.0395, 0.0405)
+    sleeve = smin(sleeve, cuff, 0.003)
+    hand = np.minimum(hand, nails)
+    return hand, nails, sleeve, sa, sb
+
+
+def grip_frame(p):
+    """Mânerul, garda și trăgaciul (la fel ca la pistol), pentru armele lungi."""
+    tg = sd_capsule(p, [0.0, -0.010, 0.026], [0.0, -0.030, 0.034], 0.0032)
+    tg = np.minimum(tg, sd_capsule(p, [0.0, -0.030, 0.034], [0.0, -0.032, 0.066], 0.0032))
+    tg = np.minimum(tg, sd_capsule(p, [0.0, -0.032, 0.066], [0.0, -0.011, 0.082], 0.0032))
+    trig = sd_capsule(p, [0.0, -0.010, 0.044], [0.0, -0.022, 0.048], 0.0022)
+    gp = (p - np.array([0.0, -0.004, -0.004])) @ RG
+    grip = sd_round_box(gp - np.array([0.0, -0.046, 0.0]), [0.0120, 0.047, 0.0170], 0.0045)
+    return np.minimum(np.minimum(tg, trig), grip)
+
+
+def mats(p, parts, sleeves):
+    """Materialul fiecărui punct: cea mai apropiată piesă; dungile reflectorizante pe mâneci."""
+    best = None
+    mat = None
+    for m, dd in parts:
+        if best is None:
+            best = dd.copy()
+            mat = np.full(p.shape[0], m)
+        else:
+            sel = dd < best
+            mat[sel] = m
+            best = np.minimum(best, dd)
+    for (a0, b0) in sleeves:
+        ab = b0 - a0
+        h = np.sum((p - a0) * ab, axis=-1) / np.dot(ab, ab)
+        near = length(p - (a0 + ab * np.clip(h, 0, 1)[:, None])) < 0.065
+        mat[(mat == M_SLEEVE) & near & (h > 0.20) & (h < 0.27)] = M_STRIPE
+    return mat
+
+
+def pins(p, pts, r=0.0022, side=-1):
+    """Știfturi rotunde pe partea stângă (side=-1) a cutiei."""
+    d = None
+    for (y, z) in pts:
+        di = length(p - np.array([side * 0.0148, y, z])) - r
+        d = di if d is None else np.minimum(d, di)
+    return d
+
+
+def scene_shotgun(p, want_mat=False):
+    """Pușca cu pompă: mâna dreaptă pe mâner, stânga pe pompă."""
+    recv = sd_round_box(p - np.array([0.0, 0.016, 0.060]), [0.0145, 0.021, 0.086], 0.0045)
+    # o linie adâncită de-a lungul cutiei și știfturile, ca să nu fie o cutie goală
+    line = np.maximum(np.abs(p[:, 1] - 0.010) - 0.0008, np.abs(p[:, 2] - 0.06) - 0.07)
+    line = np.maximum(line, 0.0135 - np.abs(p[:, 0]))
+    recv = np.maximum(recv, -line)
+    port = sd_round_box(p - np.array([0.012, 0.020, 0.075]), [0.006, 0.008, 0.026], 0.001)
+    recv = np.maximum(recv, -port)
+    barrel = sd_cyl_z(p, [0.0, 0.027, 0.385], 0.0105, 0.245)
+    rib = sd_round_box(p - np.array([0.0, 0.0385, 0.385]), [0.0035, 0.0018, 0.24], 0.0008)
+    tube = sd_cyl_z(p, [0.0, 0.004, 0.360], 0.0095, 0.215)
+    cap = sd_cyl_z(p, [0.0, 0.004, 0.578], 0.0108, 0.008)
+    band = sd_round_box(p - np.array([0.0, 0.016, 0.560]), [0.0115, 0.017, 0.006], 0.003)
+    metal = np.minimum.reduce([recv, barrel, rib, tube, cap, band])
+    hole = sd_cyl_z(p, [0.0, 0.027, 0.630], 0.0072, 0.004)
+    bead = length(p - np.array([0.0, 0.0425, 0.612])) - 0.0028
+    pump = sd_round_box(p - np.array([0.0, 0.008, 0.330]), [0.0195, 0.0185, 0.085], 0.006)
+    groove = np.abs(np.mod(p[:, 2], 0.009) - 0.0045) - 0.0014
+    gcut = np.maximum(groove, np.abs(p[:, 2] - 0.33) - 0.075)
+    gcut = np.maximum(gcut, 0.0165 - np.abs(p[:, 0]))
+    pump = np.maximum(pump, -gcut)
+    stock = sd_round_box((p - np.array([0.0, 0.004, -0.025])) @ rot_x(-0.16) - np.array([0.0, -0.004, -0.13]),
+                         [0.0175, 0.026, 0.13], 0.008)
+    frame = np.minimum.reduce([grip_frame(p), pump, stock])
+    pn = pins(p, [(0.002, 0.030), (0.002, 0.095), (0.026, 0.120)])
+    hand, nail, sleeve, sa, sb = right_hand(p)
+    lh, lnail, lsleeve, la, lb = left_hand(p, 0.322, 0.008, 0.0195)
+    d = np.minimum.reduce([metal, hole, bead, frame, pn, hand, sleeve, lh, lsleeve])
+    if not want_mat:
+        return d
+    mat = mats(p, [(M_GUN, metal), (M_DARK, hole), (M_DOT, bead), (M_FRAME, frame), (M_SLIDE, pn),
+                   (M_SKIN, np.minimum(hand, lh)), (M_SLEEVE, np.minimum(sleeve, lsleeve)),
+                   (M_NAIL, np.minimum(nail, lnail))], [(sa, sb), (la, lb)])
+    return d, mat
+
+
+def scene_smg(p, want_mat=False):
+    """Pistolul-mitralieră compact: mâna dreaptă pe mâner, stânga pe apărătoarea din față."""
+    recv = sd_round_box(p - np.array([0.0, 0.017, 0.080]), [0.0150, 0.0225, 0.112], 0.004)
+    tube = sd_cyl_z(p, [0.0, 0.035, 0.090], 0.0105, 0.11)
+    recv = smin(recv, tube, 0.004)
+    drum = sd_cyl_z(p, [0.0, 0.050, 0.004], 0.0085, 0.0045)
+    hood = sd_round_box(p - np.array([0.0, 0.049, 0.216]), [0.0075, 0.0075, 0.005], 0.002)
+    hood = np.maximum(hood, -sd_cyl_z(p, [0.0, 0.050, 0.216], 0.0045, 0.01))
+    barrel = sd_cyl_z(p, [0.0, 0.016, 0.340], 0.0085, 0.032)
+    metal = np.minimum.reduce([recv, drum, hood, barrel])
+    hole = sd_cyl_z(p, [0.0, 0.016, 0.372], 0.0055, 0.004)
+    guard = sd_round_box(p - np.array([0.0, 0.010, 0.262]), [0.0185, 0.0205, 0.060], 0.008)
+    rib = np.abs(np.mod(p[:, 2], 0.012) - 0.006) - 0.0016
+    rcut = np.maximum(np.maximum(rib, np.abs(p[:, 2] - 0.262) - 0.05), 0.0160 - np.abs(p[:, 0]))
+    guard = np.maximum(guard, -rcut)
+    mp = (p - np.array([0.0, -0.004, 0.118])) @ rot_x(-0.22)
+    mag = sd_round_box(mp - np.array([0.0, -0.048, 0.0]), [0.0085, 0.050, 0.0145], 0.0025)
+    frame = np.minimum.reduce([grip_frame(p), guard, mag])
+    hand, nail, sleeve, sa, sb = right_hand(p)
+    lh, lnail, lsleeve, la, lb = left_hand(p, 0.262, 0.010, 0.0205)
+    pn = pins(p, [(0.004, 0.025), (0.004, 0.150), (0.030, 0.165)])
+    line = np.maximum(np.abs(p[:, 1] - 0.024) - 0.0009, np.abs(p[:, 2] - 0.09) - 0.09)
+    line = np.maximum(line, 0.0140 - np.abs(p[:, 0]))
+    metal = np.maximum(metal, -line)
+    d = np.minimum.reduce([metal, hole, frame, pn, hand, sleeve, lh, lsleeve])
+    if not want_mat:
+        return d
+    mat = mats(p, [(M_GUN, metal), (M_DARK, hole), (M_FRAME, frame), (M_SLIDE, pn), (M_SKIN, np.minimum(hand, lh)),
+                   (M_SLEEVE, np.minimum(sleeve, lsleeve)), (M_NAIL, np.minimum(nail, lnail))], [(sa, sb), (la, lb)])
+    return d, mat
+
+
 # ------------------------------------------------------------------ cameră și randare
 
-SCALE = 0.66          # cât din câmpul vizual cuprinde cadrul (mai mic = mai aproape)
-SHIFT_X = 0.255       # încotro se uită cadrul (în unități de tangentă)
-SHIFT_Y = -0.400
+# camera pentru fiecare armă: unghiuri (grade), unde e arma față de ochi (m), cât cuprinde cadrul
+# (SCALE, mai mic = mai aproape), încotro se uită cadrul (lens shift, în tangentă) și gura țevii
+CAMS = {
+    "pistol": dict(yaw=-9.0, pitch=-2.0, roll=-7.0, origin=(0.075, -0.098, 0.255), scale=0.66, sx=0.255, sy=-0.400,
+                   tip=(0.0, 0.017, 0.186)),
+    # armele lungi: cadrul întreg, cu câmpul vizual al jocului (tangenta 0.45), ca în joc să stea exact așa
+    "shotgun": dict(yaw=-4.0, pitch=2.0, roll=-8.0, origin=(0.14, -0.09, 0.26), scale=1.0, sx=0.0, sy=0.0, fov=48.5,
+                    tip=(0.0, 0.027, 0.636), frame=True),
+    "smg": dict(yaw=-4.0, pitch=2.0, roll=-8.0, origin=(0.14, -0.09, 0.26), scale=1.0, sx=0.0, sy=0.0, fov=48.5,
+                tip=(0.0, 0.016, 0.376), frame=True),
+}
 
 
-def render(W, H):
+def render(W, H, scene=None, cam=None):
+    if scene is None:
+        scene = globals()["scene"]
+    cam = cam or CAMS["pistol"]
+    SCALE, SHIFT_X, SHIFT_Y = cam["scale"], cam["sx"], cam["sy"]
     # arma, așezată jos-dreapta, cu țeava spre centrul ecranului
-    yaw = math.radians(-9.0)
-    pitch = math.radians(-2.0)
-    roll = math.radians(-7.0)
+    yaw = math.radians(cam["yaw"])
+    pitch = math.radians(cam["pitch"])
+    roll = math.radians(cam["roll"])
     R = rot_y(yaw) @ rot_x(pitch) @ rot_z(roll)
-    origin = np.array([0.075, -0.098, 0.255])
-    fov = math.radians(50)
+    origin = np.array(cam["origin"])
+    fov = math.radians(cam.get("fov", 50.0))
     aspect = W / H
     ys, xs = np.mgrid[0:H, 0:W]
     # obiectiv deplasat (lens shift): cadrul cuprinde arma și mâinile, fără să schimbe perspectiva
@@ -220,7 +379,7 @@ def render(W, H):
         h = d < 0.00015
         hit[idx[h]] = True
         alive[idx[h]] = False
-        far = t[idx] > 1.0
+        far = t[idx] > 1.6
         alive[idx[far]] = False
     col = np.zeros((n, 3))
     alpha = hit.astype(float)
@@ -277,6 +436,7 @@ def render(W, H):
         M_DARK: ([0.02, 0.02, 0.02], 0.0, 4.0, 0.0),
         M_DOT: ([0.55, 1.0, 0.65], 0.0, 4.0, 0.0),
         M_NAIL: ([0.84, 0.66, 0.60], 0.45, 30.0, 0.1),
+        M_GUN: ([0.075, 0.08, 0.095], 0.85, 46.0, 0.0),
     }
     for m, (c, sk, sn, wr) in pal.items():
         sel = mat == m
@@ -301,7 +461,7 @@ def render(W, H):
     c[dots] = [0.6, 1.0, 0.7]
     col[idx] = np.clip(c, 0, 1)
     img = np.concatenate([col, alpha[:, None]], axis=-1).reshape(H, W, 4)
-    tip_cam = R @ np.array([0.0, 0.017, 0.186]) + origin
+    tip_cam = R @ np.array(cam["tip"]) + origin
     tu, tv = tip_cam[0] / tip_cam[2], tip_cam[1] / tip_cam[2]
     tx = ((tu - SHIFT_X) / (tf * aspect * SCALE) + 1) / 2 * W - 0.5
     ty = (1 - (tv - SHIFT_Y) / (tf * SCALE)) / 2 * H - 0.5
@@ -312,26 +472,36 @@ def main():
     out = sys.argv[1] if len(sys.argv) > 1 else "assets"
     W = int(sys.argv[2]) if len(sys.argv) > 2 else 640
     H = int(sys.argv[3]) if len(sys.argv) > 3 else 480
-    ss = 2
-    img, tip = render(W * ss, H * ss)
-    # supraeșantionare: media pe blocuri ss x ss (culoarea ponderată cu alfa)
-    a = img[..., 3:4]
-    rgb = img[..., :3] * a
-    rgb = rgb.reshape(H, ss, W, ss, 3).mean(axis=(1, 3))
-    al = a.reshape(H, ss, W, ss, 1).mean(axis=(1, 3))
-    rgb = np.where(al > 0, rgb / np.maximum(al, 1e-6), 0)
-    # gamma pentru afișare
-    rgb = np.clip(rgb, 0, 1) ** (1 / 2.2)
-    im = np.concatenate([rgb, al], axis=-1)
-    im = (np.clip(im, 0, 1) * 255 + 0.5).astype(np.uint8)
-    pil = Image.fromarray(im, "RGBA")
-    bb = pil.getbbox()
-    pil = pil.crop(bb)
-    pil.save(out + "/hand_pistol.png")
-    tx, ty = tip[0] / ss - bb[0], tip[1] / ss - bb[1]
-    with open(out + "/hand_pistol.txt", "w") as f:
-        f.write("teava %.1f %.1f\n" % (tx, ty))
-    print("hand_pistol.png %dx%d, teava la %.1f %.1f" % (pil.width, pil.height, tx, ty))
+    which = sys.argv[4].split(",") if len(sys.argv) > 4 else ["pistol", "shotgun", "smg"]
+    ss = int(sys.argv[5]) if len(sys.argv) > 5 else 2
+    scenes = {"pistol": scene, "shotgun": scene_shotgun, "smg": scene_smg}
+    for name in which:
+        # armele lungi se randează în tot cadrul (lat cât ecranul telefonului, 2.22:1)
+        cam = CAMS[name]
+        w = W if not cam.get("frame") else int(H * 2.22)
+        img, tip = render(w * ss, H * ss, scenes[name], cam)
+        # supraeșantionare: media pe blocuri ss x ss (culoarea ponderată cu alfa)
+        a = img[..., 3:4]
+        rgb = img[..., :3] * a
+        rgb = rgb.reshape(H, ss, w, ss, 3).mean(axis=(1, 3))
+        al = a.reshape(H, ss, w, ss, 1).mean(axis=(1, 3))
+        rgb = np.where(al > 0, rgb / np.maximum(al, 1e-6), 0)
+        # gamma pentru afișare
+        rgb = np.clip(rgb, 0, 1) ** (1 / 2.2)
+        im = np.concatenate([rgb, al], axis=-1)
+        im = (np.clip(im, 0, 1) * 255 + 0.5).astype(np.uint8)
+        pil = Image.fromarray(im, "RGBA")
+        bb = pil.getbbox()
+        pil = pil.crop(bb)
+        fn = "hand_" + name
+        pil.save(out + "/" + fn + ".png")
+        tx, ty = tip[0] / ss - bb[0], tip[1] / ss - bb[1]
+        with open(out + "/" + fn + ".txt", "w") as f:
+            f.write("teava %.1f %.1f\n" % (tx, ty))
+            if cam.get("frame"):
+                # unde stă imaginea tăiată în cadrul întreg (ca jocul să o pună la fel pe ecran)
+                f.write("cadru %d %d %d %d\n" % (w, H, bb[0], bb[1]))
+        print("%s.png %dx%d, teava la %.1f %.1f" % (fn, pil.width, pil.height, tx, ty))
 
 
 if __name__ == "__main__":

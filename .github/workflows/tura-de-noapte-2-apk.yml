@@ -1,0 +1,81 @@
+name: Tura de Noapte 2 APK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tura-de-noapte-2/**'
+      - '.github/workflows/tura-de-noapte-2-apk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # Aceleași unelte ca în build.sh: aapt2 (din Apktool), dx (din dex2jar), uber-apk-signer.
+      # Same tools as build.sh: aapt2 (from Apktool), dx (from dex2jar), uber-apk-signer.
+      - name: Get the build tools
+        run: |
+          mkdir -p "$HOME/tools" && cd "$HOME/tools"
+          curl -sSfL -o apktool.jar https://github.com/iBotPeaches/Apktool/releases/download/v2.9.3/apktool_2.9.3.jar
+          unzip -q -j apktool.jar prebuilt/linux/aapt2_64 -d . && chmod +x aapt2_64
+          curl -sSfL -o dex-tools.zip https://github.com/pxb1988/dex2jar/releases/download/v2.4/dex-tools-v2.4.zip
+          unzip -q -j dex-tools.zip dex-tools-v2.4/lib/dx-30.0.2.jar -d .
+          curl -sSfL -o uber-apk-signer.jar https://github.com/patrickfav/uber-apk-signer/releases/download/v1.3.0/uber-apk-signer-1.3.0.jar
+          JAR="$ANDROID_HOME/platforms/android-34/android.jar"
+          if [ ! -f "$JAR" ]; then
+            yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" > /dev/null
+          fi
+          echo "ANDROID_JAR=$JAR" >> "$GITHUB_ENV"
+
+      - name: Test the game (random play + automatic player through all episodes)
+        working-directory: tura-de-noapte-2
+        run: |
+          mkdir -p build/desk
+          javac -encoding UTF-8 -nowarn -d build/desk src/ro/hunys/tn2/*.java desktop/ro/hunys/tn2/*.java test/ro/hunys/tn2/*.java
+          java -Djava.awt.headless=true -cp build/desk ro.hunys.tn2.Smoke assets
+          java -Djava.awt.headless=true -cp build/desk ro.hunys.tn2.Play assets
+
+      - name: Build the APK
+        working-directory: tura-de-noapte-2
+        run: |
+          AAPT2="$HOME/tools/aapt2_64" DX_JAR="$HOME/tools/dx-30.0.2.jar" SIGNER_JAR="$HOME/tools/uber-apk-signer.jar" ./build.sh
+          VERSION=$(grep -m1 '^VERSION_NAME=' build.sh | cut -d= -f2)
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Name the files
+        run: |
+          cp "tura-de-noapte-2/build/apk/TuraDeNoapte2-v$VERSION.apk" "TuraDeNoapte2-v$VERSION.apk"
+          # Bluetooth-ul de pe Android refuză .apk, dar acceptă .zip / Android's Bluetooth refuses .apk but accepts .zip.
+          zip -j "TuraDeNoapte2-v$VERSION-bluetooth.zip" "TuraDeNoapte2-v$VERSION.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TuraDeNoapte2-apk
+          path: TuraDeNoapte2-v${{ env.VERSION }}.apk
+
+      - name: Publish a release with the APK
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: tura-de-noapte-2-build-${{ github.run_number }}
+          name: Tura de Noapte 2 v${{ env.VERSION }} · build ${{ github.run_number }}
+          make_latest: false
+          files: |
+            TuraDeNoapte2-v${{ env.VERSION }}.apk
+            TuraDeNoapte2-v${{ env.VERSION }}-bluetooth.zip
+          body: |
+            **RO:** Tura de Noapte 2 - jocul de groază 3D din Spitalul Universitar, toate cele trei episoade (Parterul, Etajele, Acoperișul). Descarcă `TuraDeNoapte2-v${{ env.VERSION }}.apk` de mai jos și deschide-l pe telefon ca să-l instalezi (permite instalarea din surse necunoscute dacă îți cere). Versiunile noi se instalează peste cea veche.
+            Ca să-l trimiți altui telefon prin Bluetooth, trimite `TuraDeNoapte2-v${{ env.VERSION }}-bluetooth.zip` (Bluetooth-ul de pe Android nu acceptă fișiere .apk), apoi extrage-l pe celălalt telefon și apasă pe APK.
+
+            **EN:** Night Shift 2 - the 3D horror game set in the University Hospital, all three episodes (Ground Floor, The Wards, The Roof). Download `TuraDeNoapte2-v${{ env.VERSION }}.apk` below and open it on your phone to install (allow installs from unknown sources if asked). New versions install over the old one.
+            To send it to another phone by Bluetooth, send `TuraDeNoapte2-v${{ env.VERSION }}-bluetooth.zip` (Android's Bluetooth won't accept .apk files), then extract it on the other phone and tap the APK.

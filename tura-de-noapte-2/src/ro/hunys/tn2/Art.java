@@ -5,43 +5,49 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 /**
- * Grafica jocului, citită din resurse: texturile (tools/textures.py), personajele, obiectele, armele
- * și decorul (tools/sprites.py). Lumina se aplică la desen, deci nu mai ținem copii umbrite.
+ * Grafica jocului, citită din resurse: texturile (tools/textures.py, tools/tex_spital.py), personajele,
+ * bossii, obiectele, armele și decorul (tools/sprites_spital.py). Lumina se aplică la desen, deci nu mai
+ * ținem copii umbrite.
  */
 public final class Art {
     public static final int TS = 64, TSH = 6, TSM = 63;
 
-    // texturile (ordinea din tools/textures.py)
-    public static final int T_OFFICE = 0, T_STONE = 5, T_LOGO = 6, T_GLASS = 10, T_FOAM = 11, T_BACKDROP = 12;
-    public static final int T_MON = 13, T_POSTER = 16, T_KITCHEN = 19, T_WC = 20, T_ARCH = 21, T_SERV = 23;
-    public static final int T_CONC = 24, T_PANEL = 25, T_MIRROR = 26, T_GARAGE = 27, T_ELEV = 28;
-    public static final int T_DOOR = 29, T_DBLUE = 30, T_DRED = 31, T_DYEL = 32, T_DGREEN = 33;
-    public static final int T_DSTUDIO = 34, T_DEXIT = 35, T_DENTR = 36, T_DCODE = 37;
-    public static final int F_LOBBY = 38, F_LINO = 39, F_CARPET = 40, F_STUDIO = 41, F_KITCHEN = 42, F_WC = 43;
-    public static final int F_CONC = 44, F_WOOD = 45, F_DOCK = 46;
-    public static final int C_TILES = 47, C_TILES_L = 48, C_LOBBY = 49, C_LOBBY_L = 50, C_STUDIO = 51;
-    public static final int C_STUDIO_L = 52, C_CONC = 53, C_CONC_L = 54, C_RED = 55;
-
     /** Personaje (rândurile din z.png). */
-    public static final int Z_GUARD = 0, Z_VECTRA = 1, Z_IOANA = 2, Z_REPORTER = 3, Z_CAMERA = 4;
-    public static final int Z_ANCHOR = 5, Z_COOK = 6, Z_MARA = 7, Z_SPIT = 8, ZTYPES = 9;
+    public static final int Z_GUARD = 0, Z_VECTRA = 1, Z_IOANA = 2, Z_PATIENT = 3, Z_NURSE = 4, Z_MEDIC = 5;
+    public static final int Z_SURGEON = 6, Z_ELENA = 7, Z_CRISTI = 8, Z_SPIT = 9, ZTYPES = 10;
     public static final int ZW = 48, ZH = 64;
     public static final int IS = 24, NITEMS = 11;
 
     public static int[][] tex;
+    /** Numele texturilor (din tex.txt), în ordinea din atlas. */
+    public static String[] texName;
     /** [tip][cadru: mers A, mers B, lovit, căzut, scuipă] */
     public static Img[][] zombie;
+    /** Subiectul 9: mers A, mers B, lovit, căzut. */
+    public static Img[] boss9;
+    /** Creatura: mers A, mers B, lovită, căzută, urlă. */
+    public static Img[] creature;
+    /** Butelia de oxigen (întreagă, spartă) și cele 3 cadre ale exploziei. */
+    public static Img[] o2, expl;
     public static Img[] item;
     public static Img[] gun, flash;
-    /** Mâna cu pistolul, randată 3D (alfa parțial, ARGB). */
-    public static Img handPistol;
-    /** Gura țevii pe imaginea mâinii (pixeli ai imaginii), ca flacăra să pornească de acolo. */
-    public static float handTipX, handTipY;
+    /** Mâinile cu armele (pistol, pușcă, pistol-mitralieră), randate 3D (alfa parțial, ARGB). */
+    public static Img[] hand = new Img[3];
+    /** Gura țevii pe fiecare imagine (pixeli ai imaginii), ca flacăra să pornească de acolo. */
+    public static float[] handTipX = new float[3], handTipY = new float[3];
+    /**
+     * Armele lungi sunt randate în tot cadrul, cu câmpul vizual al jocului: lățimea și înălțimea cadrului
+     * și colțul imaginii tăiate în cadru (0 = arma se așază ca pistolul).
+     */
+    public static int[] handFW = new int[3], handFH = new int[3], handFX = new int[3], handFY = new int[3];
     public static Img acid;
+    /** Cerul din zori: panoramă de 360 de grade (vezi tools/tex_spital.py). */
+    public static Img sky;
     public static Img[] decor;
     public static String[] decorName;
-    public static float[] decorH;
-    public static boolean[] decorSolid;
+    public static float[] decorH, decorR;
+    /** 0 = se trece prin el, 1 = solid, 2 = atârnă de tavan. */
+    public static int[] decorSolid;
 
     private Art() {
     }
@@ -54,10 +60,22 @@ public final class Art {
         int cols = atlas.w / TS;
         int n = cols * (atlas.h / TS);
         tex = new int[n][];
+        texName = new String[n];
+        java.util.Vector names = readLines(p, "tex.txt");
+        for (int i = 0; i < names.size(); i++) {
+            String[] f = split((String) names.elementAt(i));
+            int k = Integer.parseInt(f[0]);
+            if (k < n) {
+                texName[k] = f[1];
+            }
+        }
         for (int i = 0; i < n; i++) {
             Img t = atlas.cut((i % cols) * TS, (i / cols) * TS, TS, TS);
+            boolean key = "parapet".equals(texName[i]);
             for (int k = 0; k < t.px.length; k++) {
-                t.px[k] |= 0xFF000000;
+                int c = t.px[k] | 0xFF000000;
+                // magenta = transparent (pe acolo se vede cerul)
+                t.px[k] = key && c == 0xFFFF00FF ? 0 : c;
             }
             tex[i] = t.px;
         }
@@ -71,6 +89,22 @@ public final class Art {
             f[3] = z.cut(2 * ZW, t * ZH, ZW, ZH);
             f[4] = t == Z_SPIT ? z.cut(3 * ZW, t * ZH, ZW, ZH) : f[0];
             zombie[t] = f;
+        }
+        Img b = p.image("boss.png");
+        int bw = b.w / 3;
+        boss9 = new Img[] {b.cut(0, 0, bw, b.h), b.cut(bw, 0, bw, b.h), null, b.cut(2 * bw, 0, bw, b.h)};
+        boss9[2] = hit(boss9[0]);
+        Img c = p.image("boss3.png");
+        int cw = c.w / 4;
+        creature = new Img[] {c.cut(0, 0, cw, c.h), c.cut(cw, 0, cw, c.h), null, c.cut(2 * cw, 0, cw, c.h),
+            c.cut(3 * cw, 0, cw, c.h)};
+        creature[2] = hit(creature[0]);
+        Img o = p.image("barrel.png");
+        o2 = new Img[] {o.cut(0, 0, o.w / 2, o.h), o.cut(o.w / 2, 0, o.w / 2, o.h)};
+        Img e = p.image("expl.png");
+        expl = new Img[3];
+        for (int k = 0; k < 3; k++) {
+            expl[k] = e.cut(k * e.h, 0, e.h, e.h);
         }
         Img it = p.image("items.png");
         item = new Img[NITEMS];
@@ -87,23 +121,62 @@ public final class Art {
             Img f = p.image(fn[w]);
             flash[w] = f.cut(0, 0, f.w, f.h);
         }
-        handPistol = crop(p.image("hand_pistol.png"));
-        handTipX = handPistol.w * 0.07f;
-        handTipY = handPistol.h * 0.08f;
-        try {
-            BufferedReader tr = new BufferedReader(new InputStreamReader(p.open("hand_pistol.txt"), "UTF-8"));
-            String[] tf = split(tr.readLine().trim());
-            tr.close();
-            handTipX = Float.parseFloat(tf[1]);
-            handTipY = Float.parseFloat(tf[2]);
-        } catch (Exception e) {
-            // rămâne poziția aproximativă
+        String[] hn = {"pistol", "shotgun", "smg"};
+        for (int w = 0; w < 3; w++) {
+            try {
+                hand[w] = crop(p.image("hand_" + hn[w] + ".png"));
+            } catch (IOException ex) {
+                hand[w] = null;       // rămâne arma desenată în pixeli
+                continue;
+            }
+            handTipX[w] = hand[w].w * 0.07f;
+            handTipY[w] = hand[w].h * 0.08f;
+            try {
+                java.util.Vector tl = readLines(p, "hand_" + hn[w] + ".txt");
+                for (int k = 0; k < tl.size(); k++) {
+                    String[] tf = split((String) tl.elementAt(k));
+                    if (tf[0].equals("teava")) {
+                        handTipX[w] = Float.parseFloat(tf[1]);
+                        handTipY[w] = Float.parseFloat(tf[2]);
+                    } else if (tf[0].equals("cadru")) {
+                        handFW[w] = Integer.parseInt(tf[1]);
+                        handFH[w] = Integer.parseInt(tf[2]);
+                        handFX[w] = Integer.parseInt(tf[3]);
+                        handFY[w] = Integer.parseInt(tf[4]);
+                    }
+                }
+            } catch (Exception ex) {
+                // rămâne poziția aproximativă
+            }
         }
         Img a = p.image("acid.png");
         acid = a.cut(0, 0, a.w, a.h);
+        Img sk = p.image("sky.png");
+        sky = sk.cut(0, 0, sk.w, sk.h);
 
+        // decorul: „idx nume w h înălțime solid rază x y” (împachetat pe rânduri în decor.png)
         Img ds = p.image("decor.png");
-        BufferedReader r = new BufferedReader(new InputStreamReader(p.open("decor.txt"), "UTF-8"));
+        java.util.Vector lines = readLines(p, "decor.txt");
+        int nd = lines.size();
+        decor = new Img[nd];
+        decorName = new String[nd];
+        decorH = new float[nd];
+        decorR = new float[nd];
+        decorSolid = new int[nd];
+        for (int i = 0; i < nd; i++) {
+            String[] f = split((String) lines.elementAt(i));
+            int idx = Integer.parseInt(f[0]);
+            int w = Integer.parseInt(f[2]), h = Integer.parseInt(f[3]);
+            decorName[idx] = f[1];
+            decorH[idx] = Float.parseFloat(f[4]);
+            decorSolid[idx] = Integer.parseInt(f[5]);
+            decorR[idx] = Float.parseFloat(f[6]);
+            decor[idx] = ds.cut(Integer.parseInt(f[7]), Integer.parseInt(f[8]), w, h);
+        }
+    }
+
+    static java.util.Vector readLines(Platform p, String name) throws IOException {
+        BufferedReader r = new BufferedReader(new InputStreamReader(p.open(name), "UTF-8"));
         java.util.Vector lines = new java.util.Vector();
         String line;
         while ((line = r.readLine()) != null) {
@@ -112,23 +185,17 @@ public final class Art {
             }
         }
         r.close();
-        int nd = lines.size();
-        decor = new Img[nd];
-        decorName = new String[nd];
-        decorH = new float[nd];
-        decorSolid = new boolean[nd];
-        int dcols = ds.w / 64;
-        for (int i = 0; i < nd; i++) {
-            String[] f = split((String) lines.elementAt(i));
-            int idx = Integer.parseInt(f[0]);
-            int w = Integer.parseInt(f[2]), h = Integer.parseInt(f[3]);
-            decorName[idx] = f[1];
-            decorH[idx] = Float.parseFloat(f[4]);
-            decorSolid[idx] = f[5].equals("1");
-            int cx = (idx % dcols) * 64 + (64 - w) / 2;
-            int cy = (idx / dcols) * 64 + 64 - h;
-            decor[idx] = ds.cut(cx, cy, w, h);
+        return lines;
+    }
+
+    /** Indicele texturii cu numele dat (0 dacă lipsește, ca jocul să nu se oprească). */
+    public static int t(String name) {
+        for (int i = 0; i < texName.length; i++) {
+            if (name.equals(texName[i])) {
+                return i;
+            }
         }
+        return 0;
     }
 
     public static int decorIndex(String name) {

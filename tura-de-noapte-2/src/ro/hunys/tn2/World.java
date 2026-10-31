@@ -138,7 +138,7 @@ public final class World {
     /** Pistolul HD micșorat pentru rezoluția curentă a lumii (alfa înmulțit). */
     Img gunHd;
     /** Cât din înălțimea ecranului ocupă mâna cu pistolul. */
-    public static float GUN_H = 0.265f;
+    public static float GUN_H = 0.40f;
 
     public World(Platform p) {
         plat = p;
@@ -2244,18 +2244,18 @@ public final class World {
         Img g = gunHd;
         float bob = (float) Math.sin(walkPhase * 0.5f);
         float abob = Math.abs(bob);
-        int bx = (int) (bob * H * 0.010f);
-        int by = (int) (abob * H * 0.009f);
+        int bx = (int) (bob * H * 0.015f);
+        int by = (int) (abob * H * 0.0135f);
         if (reloadT > 0f) {
             float p = 1f - reloadT / W_RELOAD[0];
             by += (int) ((float) Math.sin(p * 3.14159f) * g.h * 0.75f);
         }
         boolean recoil = shootCd > W_CD[0] - 0.1f;
         if (recoil) {
-            by -= (int) (H * 0.018f);
-            bx += (int) (W * 0.003f);
+            by -= (int) (H * 0.027f);
+            bx += (int) (W * 0.0045f);
         }
-        int x0 = (int) (W * 0.545f) + bx;
+        int x0 = (int) (W * 0.535f) + bx;
         int y0 = H - g.h + by + (int) (H * 0.02f);
         lightAt(px, py, tmpL);
         int L = (tmpL[0] + tmpL[1] + tmpL[2]) / 3 + (flashlight ? 60 : 0);
@@ -2274,7 +2274,7 @@ public final class World {
         if (flashT > 0f) {
             Img f = Art.flash[0];
             float k = H / 180f;
-            int fw = (int) (f.w * k * 0.5f), fh = (int) (f.h * k * 0.5f);
+            int fw = (int) (f.w * k * 0.72f), fh = (int) (f.h * k * 0.72f);
             int tipX = x0 + (int) (g.w * 0.12f), tipY = y0 + (int) (g.h * 0.02f);
             blit(buf, f, tipX - fw / 2, tipY - fh / 2 - fh / 4, fw, fh, 256, 256, 256);
         }

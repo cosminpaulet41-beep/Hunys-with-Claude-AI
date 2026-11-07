@@ -164,10 +164,10 @@ final class Txt {
     }
     String logLine(String code) {
         if (Prefs.LOG_SERVICE.equals(code)) return t("Semafor a pornit", "Semafor started");
-        if (Prefs.LOG_OPEN.equals(code)) return t("✓ întrebarea s-a deschis", "✓ question opened");
+        if (Prefs.LOG_OPEN.equals(code)) return t("✓ întrebarea a apărut pe ecran", "✓ question shown on screen");
         if (Prefs.LOG_OPEN_RETRY.equals(code)) return t("✓ s-a deschis din a doua încercare", "✓ opened on the second try");
         if (Prefs.LOG_APP.equals(code)) return t("✓ aplicația a fost deschisă", "✓ app opened");
-        if (Prefs.LOG_BLOCKED.equals(code)) return t("✗ Android n-a lăsat deschiderea → notificare", "✗ Android blocked the opening → notification");
+        if (Prefs.LOG_BLOCKED.equals(code)) return t("✗ nu s-a putut arăta → notificare", "✗ couldn't be shown → notification");
         if (Prefs.LOG_FREQ.equals(code)) return t("– sărită („Cât de des”)", "– skipped (\"How often\")");
         if (Prefs.LOG_PAUSE.equals(code)) return t("– sărită (pauză)", "– skipped (paused)");
         if (Prefs.LOG_NIGHT.equals(code)) return t("– sărită (liniște noaptea)", "– skipped (quiet at night)");

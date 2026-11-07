@@ -49,7 +49,9 @@ public class UnlockService extends Service {
     private static final long OPEN_DELAY_MS = 350;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
+    private static UnlockService instance;
     private BroadcastReceiver unlockReceiver;
+    private QuestionOverlay overlay;
     /** Fereastra de 1 pixel care convinge Android să lase deschiderea / The 1-pixel window that lets Android allow the opening. */
     private View trampoline;
     private long lastTriggerAt;
@@ -96,6 +98,8 @@ public class UnlockService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        instance = this;
+        overlay = new QuestionOverlay(this);
         Prefs.addLog(Prefs.get(this), Prefs.LOG_SERVICE);
         unlockReceiver = new BroadcastReceiver() {
             @Override
@@ -111,12 +115,18 @@ public class UnlockService extends Service {
                 } else if (Intent.ACTION_SCREEN_OFF.equals(a)) {
                     handler.removeCallbacks(onScreenOn);
                     handler.removeCallbacks(onUnlock);
+                    if (overlay != null) overlay.hide();
+                } else if (Intent.ACTION_CLOSE_SYSTEM_DIALOGS.equals(a)) {
+                    // Butonul Acasă / The Home button
+                    String reason = intent.getStringExtra("reason");
+                    if (overlay != null && ("homekey".equals(reason) || "recentapps".equals(reason))) overlay.hide();
                 }
             }
         };
         IntentFilter f = new IntentFilter(Intent.ACTION_USER_PRESENT);
         f.addAction(Intent.ACTION_SCREEN_ON);
         f.addAction(Intent.ACTION_SCREEN_OFF);
+        f.addAction(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
         f.setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY - 1);
         try {
             if (Build.VERSION.SDK_INT >= 33) {
@@ -151,76 +161,65 @@ public class UnlockService extends Service {
             updateNotification();
             return;
         }
+        if (Prefs.getMode(sp) == Prefs.MODE_WINDOW) {
+            // Întrebarea desenată direct peste ecran: sistemul nu o poate bloca ca pe o fereastră
+            // deschisă din fundal. The question drawn straight over the screen: the system can't
+            // block it like a window opened from the background.
+            if (Gate.canDrawOverlays(this) && overlay != null && overlay.show()) {
+                Prefs.recordOpen(sp);
+                Prefs.addLog(sp, Prefs.LOG_OPEN);
+                updateNotification();
+            } else {
+                fallback(launch);
+            }
+            return;
+        }
         if (!Gate.canDrawOverlays(this)) {
             fallback(launch);
             return;
         }
 
-        // Android lasă o aplicație să deschidă o fereastră din fundal dacă are deja ceva vizibil
-        // pe ecran: punem un pixel invizibil, deschidem, apoi îl scoatem.
-        // Android lets an app open a window from the background if it already has something visible
-        // on screen: add an invisible pixel, open, then remove it.
+        // Altă aplicație: Android o lasă să se deschidă din fundal dacă avem deja ceva vizibil pe
+        // ecran, așa că punem un pixel invizibil, o deschidem, apoi îl scoatem. Nu putem verifica.
+        // Another app: Android lets it open from the background if we already have something
+        // visible on screen, so add an invisible pixel, open it, then remove it. Can't be checked.
         showTrampoline();
-        final long t0 = now;
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 startSafely(launch);
             }
         }, 120);
-
-        if (Prefs.getMode(sp) != Prefs.MODE_WINDOW) {
-            // Altă aplicație: nu putem verifica dacă s-a deschis / Another app: we can't check it opened.
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    hideTrampoline();
-                    Prefs.recordOpen(sp);
-                    Prefs.addLog(sp, Prefs.LOG_APP);
-                    updateNotification();
-                }
-            }, 1500);
-            return;
-        }
-
-        // Verificăm că fereastra chiar a apărut; dacă nu, încă o dată, apoi notificare.
-        // Check the window really appeared; if not, once more, then a notification.
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (QuestionActivity.lastShownAt >= t0) {
-                    opened(sp, Prefs.LOG_OPEN);
-                    return;
-                }
-                startSafely(launch);
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (QuestionActivity.lastShownAt >= t0) {
-                            opened(sp, Prefs.LOG_OPEN_RETRY);
-                        } else {
-                            fallback(launch);
-                        }
-                    }
-                }, 1500);
+                hideTrampoline();
+                Prefs.recordOpen(sp);
+                Prefs.addLog(sp, Prefs.LOG_APP);
+                updateNotification();
             }
-        }, 1600);
+        }, 1500);
     }
 
-    private void opened(SharedPreferences sp, String code) {
-        hideTrampoline();
-        Prefs.recordOpen(sp);
-        Prefs.addLog(sp, code);
-        updateNotification();
-    }
-
-    /** Android n-a lăsat deschiderea: notificare de atins / Android blocked the opening: a notification to tap. */
+    /** Nu s-a putut arăta: notificare de atins / Couldn't be shown: a notification to tap. */
     private void fallback(Intent launch) {
         hideTrampoline();
         SharedPreferences sp = Prefs.get(this);
         if (Gate.notifyQuestion(this, launch)) Prefs.recordOpen(sp);
         Prefs.addLog(sp, Prefs.LOG_BLOCKED);
         updateNotification();
+    }
+
+    /** Arată acum întrebarea peste ecran, ca la deblocare („Încearcă acum”) / Shows the overlay now, as on unlock ("Try it now"). */
+    static boolean showOverlayNow() {
+        UnlockService s = instance;
+        return s != null && s.overlay != null && Gate.canDrawOverlays(s) && s.overlay.show();
+    }
+
+    /** Închide întrebarea de peste ecran (ex. când se deschide fereastra normală) / Closes the overlay question. */
+    static void hideOverlay() {
+        UnlockService s = instance;
+        if (s != null && s.overlay != null) s.overlay.hide();
     }
 
     private void startSafely(Intent launch) {
@@ -307,6 +306,11 @@ public class UnlockService extends Service {
     public void onDestroy() {
         handler.removeCallbacksAndMessages(null);
         hideTrampoline();
+        if (overlay != null) {
+            overlay.destroy();
+            overlay = null;
+        }
+        if (instance == this) instance = null;
         if (unlockReceiver != null) {
             try {
                 unregisterReceiver(unlockReceiver);

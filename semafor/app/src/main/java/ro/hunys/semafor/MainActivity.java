@@ -157,6 +157,8 @@ public class MainActivity extends Activity {
     private void tryNow() {
         if (Prefs.getMode(prefs) == Prefs.MODE_APP && Gate.targetPackage(this).length() == 0) {
             showPicker();
+        } else if (Prefs.getMode(prefs) == Prefs.MODE_WINDOW && Prefs.isActive(prefs) && UnlockService.showOverlayNow()) {
+            // Exact ca la deblocare / Exactly as on unlock
         } else if (!Gate.openNow(this)) {
             Toast.makeText(this, txt.openFailed(), Toast.LENGTH_LONG).show();
         }

@@ -25,6 +25,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -46,6 +47,8 @@ import android.widget.TextView;
 public class QuestionActivity extends Activity {
     /** Altă adresă decât mediul de învățare (ex. pentru intrarea în cont) / Another address (e.g. to sign in). */
     static final String EXTRA_URL = "ro.hunys.semafor.URL";
+    /** Când a apărut ultima dată fereastra (SystemClock.elapsedRealtime) / When the window last appeared. */
+    static volatile long lastShownAt;
 
     private static final int BAR = Color.rgb(18, 21, 29);
     private static final int TEXT = Color.rgb(236, 239, 244);
@@ -88,6 +91,7 @@ public class QuestionActivity extends Activity {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+        lastShownAt = SystemClock.elapsedRealtime();
         setIntent(intent);
         handle(intent);
     }
@@ -158,6 +162,7 @@ public class QuestionActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        lastShownAt = SystemClock.elapsedRealtime();
         if (web != null) web.onResume();
     }
 

@@ -6,8 +6,8 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="ro.hunys.semafor"
-    android:versionCode="2"
-    android:versionName="1.1">
+    android:versionCode="3"
+    android:versionName="1.2">
 
     <!-- Fereastra cu întrebarea încarcă scoalarutiera.ro / The question window loads scoalarutiera.ro -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -17,6 +17,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Ca sistemul să nu-l oprească în fundal / So the system doesn't stop it in the background -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
     <!-- Vede aplicațiile din meniu, ca să poți alege Școala Rutieră / Sees the launcher apps so you can pick Școala Rutieră -->
     <queries>

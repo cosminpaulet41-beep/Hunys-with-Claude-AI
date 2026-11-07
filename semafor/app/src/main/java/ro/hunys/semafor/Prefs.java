@@ -43,6 +43,21 @@ final class Prefs {
     private static final String K_TOTAL = "total";
     private static final String K_LANG = "lang";
     private static final String K_ASKED_NOTIF = "asked_notif";
+    private static final String K_LOG = "log";
+
+    // Coduri pentru lista „Ultimele deblocări” / Codes for the "Recent unlocks" list
+    static final String LOG_SERVICE = "svc";
+    static final String LOG_OPEN = "open";
+    static final String LOG_OPEN_RETRY = "open2";
+    static final String LOG_APP = "app";
+    static final String LOG_BLOCKED = "notif";
+    static final String LOG_FREQ = "freq";
+    static final String LOG_PAUSE = "pause";
+    static final String LOG_NIGHT = "night";
+    static final String LOG_CALL = "call";
+    static final String LOG_NO_APP = "noapp";
+    static final String LOG_OFF = "off";
+    private static final int LOG_MAX = 15;
 
     private Prefs() {}
 
@@ -161,6 +176,21 @@ final class Prefs {
 
     static void setAskedNotifications(SharedPreferences sp) {
         sp.edit().putBoolean(K_ASKED_NOTIF, true).apply();
+    }
+
+    /** Adaugă un rând în listă, cel mai nou primul / Adds a line to the list, newest first. */
+    static synchronized void addLog(SharedPreferences sp, String code) {
+        String[] old = getLog(sp);
+        StringBuilder b = new StringBuilder();
+        b.append(System.currentTimeMillis()).append('|').append(code);
+        for (int i = 0; i < old.length && i < LOG_MAX - 1; i++) b.append('\n').append(old[i]);
+        sp.edit().putString(K_LOG, b.toString()).apply();
+    }
+
+    /** Rânduri „timp|cod”, cel mai nou primul / Lines "time|code", newest first. */
+    static String[] getLog(SharedPreferences sp) {
+        String s = sp.getString(K_LOG, "");
+        return s.length() == 0 ? new String[0] : s.split("\n");
     }
 
     private static int dayKey() {

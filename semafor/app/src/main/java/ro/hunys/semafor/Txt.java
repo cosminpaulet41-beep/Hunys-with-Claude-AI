@@ -143,6 +143,39 @@ final class Txt {
                 "Nothing opened yet. Lock the phone and unlock it to try.");
     }
 
+    String checkTitle() { return t("Ca să meargă la fiecare deblocare", "So it works on every unlock"); }
+    String overlayCheck(boolean ok) {
+        return ok ? t("✓ Afișare peste alte aplicații: permisă", "✓ Display over other apps: allowed")
+                : t("✗ Afișare peste alte aplicații: lipsește (vezi sus)", "✗ Display over other apps: missing (see above)");
+    }
+    String batteryCheck(boolean ok) {
+        return ok ? t("✓ Baterie: fără restricții", "✓ Battery: unrestricted")
+                : t("✗ Baterie: sistemul poate opri Semafor când ecranul e stins", "✗ Battery: the system may stop Semafor while the screen is off");
+    }
+    String batteryButton() { return t("Scoate restricțiile de baterie", "Remove battery restrictions"); }
+
+    String logTitle() { return t("Ultimele deblocări", "Recent unlocks"); }
+    String logEmpty() { return t("Încă nimic. Blochează și deblochează telefonul.", "Nothing yet. Lock and unlock the phone."); }
+    String logHelp() {
+        return t("Dacă ai deblocat telefonul și ora nu apare aici, sistemul a oprit Semafor în fundal: fă setările de mai jos. "
+                        + "„Semafor a pornit” fără să-l fi pornit tu înseamnă că sistemul l-a oprit între timp.",
+                "If you unlocked the phone and the time isn't listed here, the system stopped Semafor in the background: do the settings below. "
+                        + "\"Semafor started\" without you starting it means the system had stopped it.");
+    }
+    String logLine(String code) {
+        if (Prefs.LOG_SERVICE.equals(code)) return t("Semafor a pornit", "Semafor started");
+        if (Prefs.LOG_OPEN.equals(code)) return t("✓ întrebarea s-a deschis", "✓ question opened");
+        if (Prefs.LOG_OPEN_RETRY.equals(code)) return t("✓ s-a deschis din a doua încercare", "✓ opened on the second try");
+        if (Prefs.LOG_APP.equals(code)) return t("✓ aplicația a fost deschisă", "✓ app opened");
+        if (Prefs.LOG_BLOCKED.equals(code)) return t("✗ Android n-a lăsat deschiderea → notificare", "✗ Android blocked the opening → notification");
+        if (Prefs.LOG_FREQ.equals(code)) return t("– sărită („Cât de des”)", "– skipped (\"How often\")");
+        if (Prefs.LOG_PAUSE.equals(code)) return t("– sărită (pauză)", "– skipped (paused)");
+        if (Prefs.LOG_NIGHT.equals(code)) return t("– sărită (liniște noaptea)", "– skipped (quiet at night)");
+        if (Prefs.LOG_CALL.equals(code)) return t("– sărită (apel sau sunet de apel)", "– skipped (call or ringing)");
+        if (Prefs.LOG_NO_APP.equals(code)) return t("✗ nicio aplicație aleasă", "✗ no app chosen");
+        return code;
+    }
+
     String huaweiTitle() { return t("Pe Huawei / Honor", "On Huawei / Honor"); }
     String huaweiBody() {
         return t("Ca sistemul să nu oprească Semafor în fundal: Setări › Baterie › Lansare aplicații › Semafor › gestionare manuală, cu toate cele trei opțiuni pornite. "

@@ -1,6 +1,6 @@
 # Semafor
 
-**Autor / Author:** Hunys with Claude AI · **Licență / License:** MIT (open source) · **v1.1**
+**Autor / Author:** Hunys with Claude AI · **Licență / License:** MIT (open source) · **v1.2**
 
 <img src="icon.png" width="96" alt="Semafor">
 
@@ -21,13 +21,14 @@ Semafor nu conține întrebările. Folosește contul tău Școala Rutieră, așa
 - **Notificare cu butoane:** Pauză 1 h / Reia și Oprește.
 - **Progres:** câte întrebări ai deschis azi și în total, și ora ultimei deschideri.
 - Pornește singur după repornirea telefonului.
+- **Ultimele deblocări:** o listă cu ce s-a întâmplat la fiecare deblocare (deschisă, sărită și de ce, blocată de Android), ca să vezi dacă ceva îl oprește.
 - Interfață în **română și engleză**. Fără reclame. Internetul îl folosește doar fereastra cu întrebarea.
 
 ### Instalare
-1. Descarcă `Semafor-v1.1.apk` de la [Releases](https://github.com/cosminpaulet41-beep/Hunys-with-Claude-AI/releases) și deschide-l. Dacă telefonul îți cere, permite instalarea din surse necunoscute.
+1. Descarcă `Semafor-v1.2.apk` de la [Releases](https://github.com/cosminpaulet41-beep/Hunys-with-Claude-AI/releases) și deschide-l. Dacă telefonul îți cere, permite instalarea din surse necunoscute.
 2. Deschide Semafor și apasă **OPRIT — atinge ca să pornești**. Telefonul te duce la „Afișare peste alte aplicații”: pornește permisiunea pentru Semafor și revino. Fără ea, Android nu lasă o aplicație să deschidă alta din fundal, și primești doar o notificare pe care o atingi.
 3. Apasă **„Intră în cont (o singură dată)”** și conectează-te cu contul tău Școala Rutieră (iconița din dreapta sus a site-ului). Așa continui de unde ai rămas.
-4. Pe **Huawei** (EMUI): Setări › Baterie › Lansare aplicații › Semafor › gestionare manuală, cu toate cele trei opțiuni pornite. Altfel sistemul îl poate opri în fundal. Butonul „Lansare aplicații” din Semafor te duce acolo.
+4. La „Ca să meargă la fiecare deblocare” apasă **„Scoate restricțiile de baterie”**. Pe **Huawei** (EMUI) fă și: Setări › Baterie › Lansare aplicații › Semafor › gestionare manuală, cu toate cele trei opțiuni pornite. Altfel sistemul îl poate opri în fundal. Butonul „Lansare aplicații” din Semafor te duce acolo.
 5. Blochează telefonul și deblochează-l. Ar trebui să apară următoarea întrebare.
 
 ### Compilare
@@ -51,13 +52,14 @@ Semafor doesn't contain the questions. It uses your Școala Rutieră account, so
 - **Notification with buttons:** Pause 1 h / Resume and Turn off.
 - **Progress:** how many questions you opened today and in total, and when the last one opened.
 - Starts by itself after a reboot.
+- **Recent unlocks:** a list of what happened on each unlock (opened, skipped and why, blocked by Android), so you can see if something stops it.
 - Interface in **Romanian and English**. No ads. Only the question window uses the internet.
 
 ### Install
-1. Download `Semafor-v1.1.apk` from [Releases](https://github.com/cosminpaulet41-beep/Hunys-with-Claude-AI/releases) and open it. If the phone asks, allow installs from unknown sources.
+1. Download `Semafor-v1.2.apk` from [Releases](https://github.com/cosminpaulet41-beep/Hunys-with-Claude-AI/releases) and open it. If the phone asks, allow installs from unknown sources.
 2. Open Semafor and tap **OFF — tap to turn on**. The phone takes you to "Display over other apps": turn it on for Semafor and come back. Without it, Android won't let an app open another one from the background, and you only get a notification to tap.
 3. Tap **"Sign in (once)"** and sign in with your Școala Rutieră account (the icon top right of the site). That way you continue where you left off.
-4. On **Huawei** (EMUI): Settings › Battery › App launch › Semafor › manage manually, with all three options on. Otherwise the system may stop it in the background. The "App launch" button in Semafor takes you there.
+4. Under "So it works on every unlock" tap **"Remove battery restrictions"**. On **Huawei** (EMUI) also do: Settings › Battery › App launch › Semafor › manage manually, with all three options on. Otherwise the system may stop it in the background. The "App launch" button in Semafor takes you there.
 5. Lock the phone and unlock it. The next question should appear.
 
 ### Building

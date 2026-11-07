@@ -40,12 +40,17 @@ final class Gate {
 
     // ---------------------------------------------------------------- deblocare / unlock
 
-    /** Chemat la fiecare deblocare / Called on every unlock. */
-    static void onUnlock(Context c) {
+    /**
+     * La deblocare: null dacă trebuie deschisă întrebarea, altfel motivul pentru care nu
+     * (un cod pentru lista „Ultimele deblocări”).
+     * On unlock: null if the question should open, otherwise why not (a code for the log).
+     */
+    static String decide(Context c) {
         SharedPreferences sp = Prefs.get(c);
-        if (!Prefs.isActive(sp) || Prefs.isPaused(sp)) return;
-        if (Prefs.isNightQuiet(sp) && isNight()) return;
-        if (inCall(c)) return;
+        if (!Prefs.isActive(sp)) return Prefs.LOG_OFF;
+        if (Prefs.isPaused(sp)) return Prefs.LOG_PAUSE;
+        if (Prefs.isNightQuiet(sp) && isNight()) return Prefs.LOG_NIGHT;
+        if (inCall(c)) return Prefs.LOG_CALL;
 
         int idx = Prefs.getFreq(sp);
         int every = Prefs.FREQ_EVERY[idx];
@@ -53,49 +58,44 @@ final class Gate {
             int n = Prefs.getCounter(sp) + 1;
             if (n < every) {
                 Prefs.setCounter(sp, n);
-                return;
+                return Prefs.LOG_FREQ;
             }
             Prefs.setCounter(sp, 0);
         } else {
             long last = Prefs.getLastOpen(sp);
             long now = System.currentTimeMillis();
-            if (last > 0 && now >= last && now - last < Prefs.FREQ_MINUTES[idx] * 60000L) return;
+            if (last > 0 && now >= last && now - last < Prefs.FREQ_MINUTES[idx] * 60000L) return Prefs.LOG_FREQ;
         }
-
-        if (open(c, true)) Prefs.recordOpen(sp);
+        return null;
     }
 
-    /**
-     * Deschide aplicația cu întrebări de unde ai rămas.
-     * Opens the quiz app where you left off.
-     *
-     * @param fromBackground chemat din serviciu, nu din ecranul aplicației / called from the service, not the app screen
-     */
-    static boolean open(Context c, boolean fromBackground) {
+    /** Ce se deschide: fereastra Semafor sau aplicația aleasă / What opens: the Semafor window or the chosen app. */
+    static Intent launchIntent(Context c) {
         Intent launch;
         if (Prefs.getMode(Prefs.get(c)) == Prefs.MODE_WINDOW) {
             // Fereastra Semafor, direct la următoarea întrebare / The Semafor window, straight to the next question
             launch = new Intent(c, QuestionActivity.class);
         } else {
             String pkg = targetPackage(c);
-            if (pkg.length() == 0) return false;
+            if (pkg.length() == 0) return null;
             launch = appIntent(c, pkg);
         }
-        if (launch == null) return false;
+        if (launch == null) return null;
         // Fără RESET_TASK_IF_NEEDED: aplicația vine în față exact cum ai lăsat-o.
         // No RESET_TASK_IF_NEEDED: the app comes to the front exactly as you left it.
         launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        return launch;
+    }
 
-        if (fromBackground && !canDrawOverlays(c)) {
-            // Fără permisiune Android nu lasă deschiderea din fundal: arătăm o notificare.
-            // Without the permission Android blocks opening from the background: show a notification.
-            return notifyQuestion(c, launch);
-        }
+    /** Deschide acum, din ecranul aplicației („Încearcă acum”) / Opens now, from the app screen ("Try it now"). */
+    static boolean openNow(Context c) {
+        Intent launch = launchIntent(c);
+        if (launch == null) return false;
         try {
             c.startActivity(launch);
             return true;
         } catch (RuntimeException e) {
-            return fromBackground && notifyQuestion(c, launch);
+            return false;
         }
     }
 
@@ -126,7 +126,7 @@ final class Gate {
 
     /** Notificare de rezervă „Întrebarea ta te așteaptă” / Fallback notification "Your question is waiting". */
     @SuppressWarnings("deprecation")
-    private static boolean notifyQuestion(Context c, Intent launch) {
+    static boolean notifyQuestion(Context c, Intent launch) {
         try {
             Txt txt = Txt.of(c);
             NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);

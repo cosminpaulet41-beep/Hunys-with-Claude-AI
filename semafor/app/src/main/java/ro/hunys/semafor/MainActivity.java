@@ -25,6 +25,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PowerManager;
 import android.provider.Settings;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -40,7 +41,9 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.text.SimpleDateFormat;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -76,6 +79,10 @@ public class MainActivity extends Activity {
     private Button nightButton;
     private TextView statsText;
     private TextView lastText;
+    private TextView logText;
+    private TextView overlayCheck;
+    private TextView batteryCheck;
+    private Button batteryButton;
 
     private final Runnable ticker = new Runnable() {
         @Override
@@ -150,7 +157,7 @@ public class MainActivity extends Activity {
     private void tryNow() {
         if (Prefs.getMode(prefs) == Prefs.MODE_APP && Gate.targetPackage(this).length() == 0) {
             showPicker();
-        } else if (!Gate.open(this, false)) {
+        } else if (!Gate.openNow(this)) {
             Toast.makeText(this, txt.openFailed(), Toast.LENGTH_LONG).show();
         }
     }
@@ -352,6 +359,25 @@ public class MainActivity extends Activity {
         }
     }
 
+    private boolean ignoresBattery() {
+        if (Build.VERSION.SDK_INT < 23) return true;
+        try {
+            PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
+            return pm.isIgnoringBatteryOptimizations(getPackageName());
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
+    /** Cere scoaterea restricțiilor de baterie / Asks to lift the battery restrictions. */
+    private void requestBattery() {
+        if (Build.VERSION.SDK_INT < 23) return;
+        Intent i = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:" + getPackageName()));
+        if (tryStart(i)) return;
+        if (tryStart(new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))) return;
+        openAppSettings();
+    }
+
     private static boolean isHuawei() {
         String m = (Build.MANUFACTURER + " " + Build.BRAND).toLowerCase(Locale.ROOT);
         return m.contains("huawei") || m.contains("honor");
@@ -528,11 +554,34 @@ public class MainActivity extends Activity {
         statsCard.addView(lastText);
         root.addView(statsCard, cardParams());
 
-        // ---- Huawei
+        // ---- Ultimele deblocări / Recent unlocks
+        LinearLayout logCard = card();
+        logCard.addView(text(txt.logTitle(), 18, TEXT, true));
+        logText = help("", TEXT, 14);
+        logCard.addView(logText);
+        logCard.addView(help(txt.logHelp(), MUTED, 12));
+        root.addView(logCard, cardParams());
+
+        // ---- Ca să meargă la fiecare deblocare / So it works on every unlock
+        LinearLayout checkCard = card();
+        checkCard.addView(text(txt.checkTitle(), 18, TEXT, true));
+        overlayCheck = help("", TEXT, 15);
+        checkCard.addView(overlayCheck);
+        batteryCheck = help("", TEXT, 15);
+        checkCard.addView(batteryCheck);
+        batteryButton = button(txt.batteryButton());
+        batteryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                requestBattery();
+            }
+        });
+        checkCard.addView(batteryButton, topMargin(8));
         if (isHuawei()) {
-            LinearLayout hwCard = card();
-            hwCard.addView(text(txt.huaweiTitle(), 18, TEXT, true));
-            hwCard.addView(help(txt.huaweiBody(), TEXT, 14));
+            TextView hwTitle = text(txt.huaweiTitle(), 16, AMBER, true);
+            hwTitle.setPadding(0, dp(14), 0, 0);
+            checkCard.addView(hwTitle);
+            checkCard.addView(help(txt.huaweiBody(), TEXT, 14));
             LinearLayout hwRow = row();
             Button launch = button(txt.launchSettings());
             launch.setOnClickListener(new View.OnClickListener() {
@@ -550,9 +599,9 @@ public class MainActivity extends Activity {
                 }
             });
             hwRow.addView(details, weight(8));
-            hwCard.addView(hwRow, topMargin(10));
-            root.addView(hwCard, cardParams());
+            checkCard.addView(hwRow, topMargin(10));
         }
+        root.addView(checkCard, cardParams());
 
         // ---- Ajutor / Help
         LinearLayout helpCard = card();
@@ -617,6 +666,35 @@ public class MainActivity extends Activity {
         statsText.setText(txt.stats(Prefs.getToday(prefs), Prefs.getTotal(prefs)));
         long last = Prefs.getLastOpen(prefs);
         lastText.setText(last > 0 ? txt.lastOpen(Txt.time(this, last)) : txt.lastNever());
+
+        String[] log = Prefs.getLog(prefs);
+        if (log.length == 0) {
+            logText.setText(txt.logEmpty());
+        } else {
+            SimpleDateFormat f = new SimpleDateFormat("HH:mm:ss", Locale.ROOT);
+            StringBuilder b = new StringBuilder();
+            for (String line : log) {
+                int bar = line.indexOf('|');
+                if (bar <= 0) continue;
+                long t;
+                try {
+                    t = Long.parseLong(line.substring(0, bar));
+                } catch (NumberFormatException e) {
+                    continue;
+                }
+                if (b.length() > 0) b.append('\n');
+                b.append(f.format(new Date(t))).append("  ").append(txt.logLine(line.substring(bar + 1)));
+            }
+            logText.setText(b.toString());
+        }
+
+        boolean overlay = Gate.canDrawOverlays(this);
+        overlayCheck.setText(txt.overlayCheck(overlay));
+        overlayCheck.setTextColor(overlay ? GREEN : RED);
+        boolean battery = ignoresBattery();
+        batteryCheck.setText(txt.batteryCheck(battery));
+        batteryCheck.setTextColor(battery ? GREEN : RED);
+        batteryButton.setVisibility(battery || Build.VERSION.SDK_INT < 23 ? View.GONE : View.VISIBLE);
     }
 
     // ---------------------------------------------------------------- helpers

@@ -66,8 +66,8 @@ jobs:
             Semafor-v${{ env.VERSION }}.apk
             Semafor-v${{ env.VERSION }}-bluetooth.zip
           body: |
-            **RO:** Semafor îți deschide aplicația cu întrebări (Școala Rutieră) de fiecare dată când deblochezi telefonul, exact unde ai rămas în mediul de învățare. Descarcă `Semafor-v${{ env.VERSION }}.apk` de mai jos și deschide-l pe telefon ca să-l instalezi (permite instalarea din surse necunoscute dacă îți cere). La pornire, dă-i permisiunea „Afișare peste alte aplicații”. Versiunile noi se instalează peste cea veche.
+            **RO:** Semafor îți arată următoarea întrebare din mediul de învățare Școala Rutieră de fiecare dată când deblochezi telefonul. Descarcă `Semafor-v${{ env.VERSION }}.apk` de mai jos și deschide-l pe telefon ca să-l instalezi (permite instalarea din surse necunoscute dacă îți cere). La pornire, dă-i permisiunea „Afișare peste alte aplicații”. Versiunile noi se instalează peste cea veche.
             Ca să-l trimiți altui telefon prin Bluetooth, trimite `Semafor-v${{ env.VERSION }}-bluetooth.zip` (Bluetooth-ul de pe Android nu acceptă fișiere .apk), apoi extrage-l pe celălalt telefon și apasă pe APK.
 
-            **EN:** Semafor opens your quiz app (Școala Rutieră) every time you unlock the phone, exactly where you left off in the learning environment. Download `Semafor-v${{ env.VERSION }}.apk` below and open it on your phone to install (allow installs from unknown sources if asked). On first start, grant "Display over other apps". New versions install over the old one.
+            **EN:** Semafor shows you the next question from the Școala Rutieră learning environment every time you unlock the phone. Download `Semafor-v${{ env.VERSION }}.apk` below and open it on your phone to install (allow installs from unknown sources if asked). On first start, grant "Display over other apps". New versions install over the old one.
             To send it to another phone by Bluetooth, send `Semafor-v${{ env.VERSION }}-bluetooth.zip` (Android's Bluetooth won't accept .apk files), then extract it on the other phone and tap the APK.

@@ -6,9 +6,11 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="ro.hunys.semafor"
-    android:versionCode="1"
-    android:versionName="1.0">
+    android:versionCode="2"
+    android:versionName="1.1">
 
+    <!-- Fereastra cu întrebarea încarcă scoalarutiera.ro / The question window loads scoalarutiera.ro -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <!-- Ca să poată deschide aplicația cu întrebări din fundal / So it can open the quiz app from the background -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -41,6 +43,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Fereastra cu întrebarea, separată de setări / The question window, separate from the settings -->
+        <activity
+            android:name=".QuestionActivity"
+            android:exported="false"
+            android:label="@string/question_label"
+            android:launchMode="singleTask"
+            android:taskAffinity="ro.hunys.semafor.question"
+            android:windowSoftInputMode="adjustResize"
+            android:configChanges="locale|layoutDirection|keyboard|keyboardHidden|navigation|orientation|screenSize|screenLayout|smallestScreenSize|uiMode|density" />
 
         <!-- Ascultă deblocarea ecranului / Listens for the screen being unlocked -->
         <service

@@ -173,11 +173,11 @@ public class UnlockService extends Service {
         }
 
         boolean paused = Prefs.isPaused(sp);
-        String pkg = Gate.targetPackage(this);
+        String label = Gate.targetLabel(this, txt);
         String title = paused ? txt.notifPausedTitle(Prefs.getPauseUntil(sp), this) : txt.notifTitle(Prefs.getToday(sp));
-        String text = pkg.length() == 0
+        String text = label.length() == 0
                 ? txt.notifNoApp()
-                : txt.notifText(Gate.appLabel(this, pkg), Prefs.getFreq(sp));
+                : txt.notifText(label, Prefs.getFreq(sp));
 
         Intent open = new Intent(this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         b.setSmallIcon(R.drawable.ic_notif)

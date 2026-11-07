@@ -23,8 +23,15 @@ final class Prefs {
     static final int[] FREQ_EVERY = {1, 2, 3, 0, 0, 0};
     static final int[] FREQ_MINUTES = {0, 0, 0, 10, 30, 60};
 
+    /** Fereastra Semafor, direct la întrebare / Semafor window, straight to the question. */
+    static final int MODE_WINDOW = 0;
+    /** Aplicația aleasă / The chosen app. */
+    static final int MODE_APP = 1;
+
     private static final String FILE = "semafor";
     private static final String K_ACTIVE = "active";
+    private static final String K_MODE = "mode";
+    private static final String K_CATEGORY = "category";
     private static final String K_PKG = "pkg";
     private static final String K_FREQ = "freq";
     private static final String K_NIGHT = "night_quiet";
@@ -49,6 +56,23 @@ final class Prefs {
 
     static void setActive(SharedPreferences sp, boolean on) {
         sp.edit().putBoolean(K_ACTIVE, on).apply();
+    }
+
+    static int getMode(SharedPreferences sp) {
+        return sp.getInt(K_MODE, MODE_WINDOW) == MODE_APP ? MODE_APP : MODE_WINDOW;
+    }
+
+    static void setMode(SharedPreferences sp, int mode) {
+        sp.edit().putInt(K_MODE, mode).apply();
+    }
+
+    /** Categoria de permis din fereastră (index în Site.SLUGS) / Licence category in the window (index into Site.SLUGS). */
+    static int getCategory(SharedPreferences sp) {
+        return clamp(sp.getInt(K_CATEGORY, Site.DEFAULT_CATEGORY), 0, Site.SLUGS.length - 1);
+    }
+
+    static void setCategory(SharedPreferences sp, int idx) {
+        sp.edit().putInt(K_CATEGORY, clamp(idx, 0, Site.SLUGS.length - 1)).apply();
     }
 
     /** Pachetul aplicației cu întrebări / The quiz app's package. */

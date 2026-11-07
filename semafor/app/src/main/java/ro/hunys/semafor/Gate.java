@@ -16,6 +16,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 
@@ -71,13 +72,14 @@ final class Gate {
      * @param fromBackground chemat din serviciu, nu din ecranul aplicației / called from the service, not the app screen
      */
     static boolean open(Context c, boolean fromBackground) {
-        String pkg = targetPackage(c);
-        if (pkg.length() == 0) return false;
         Intent launch;
-        try {
-            launch = c.getPackageManager().getLaunchIntentForPackage(pkg);
-        } catch (RuntimeException e) {
-            launch = null;
+        if (Prefs.getMode(Prefs.get(c)) == Prefs.MODE_WINDOW) {
+            // Fereastra Semafor, direct la următoarea întrebare / The Semafor window, straight to the next question
+            launch = new Intent(c, QuestionActivity.class);
+        } else {
+            String pkg = targetPackage(c);
+            if (pkg.length() == 0) return false;
+            launch = appIntent(c, pkg);
         }
         if (launch == null) return false;
         // Fără RESET_TASK_IF_NEEDED: aplicația vine în față exact cum ai lăsat-o.
@@ -94,6 +96,31 @@ final class Gate {
             return true;
         } catch (RuntimeException e) {
             return fromBackground && notifyQuestion(c, launch);
+        }
+    }
+
+    /**
+     * Pentru Școala Rutieră încearcă întâi pagina mediului de învățare (merge dacă aplicația
+     * acceptă linkuri), altfel o deschide normal.
+     * For Școala Rutieră it first tries the learning page (works if the app accepts links),
+     * otherwise it opens the app normally.
+     */
+    private static Intent appIntent(Context c, String pkg) {
+        PackageManager pm = c.getPackageManager();
+        boolean site = pkg.toLowerCase(Locale.ROOT).contains("scoalarutiera");
+        if (site) {
+            Intent view = new Intent(Intent.ACTION_VIEW, Uri.parse(Site.categoryUrl(c)))
+                    .addCategory(Intent.CATEGORY_BROWSABLE)
+                    .setPackage(pkg);
+            try {
+                if (view.resolveActivity(pm) != null) return view;
+            } catch (RuntimeException ignored) {
+            }
+        }
+        try {
+            return pm.getLaunchIntentForPackage(pkg);
+        } catch (RuntimeException e) {
+            return null;
         }
     }
 
@@ -117,7 +144,7 @@ final class Gate {
             }
             b.setSmallIcon(R.drawable.ic_notif)
                     .setContentTitle(txt.questionTitle())
-                    .setContentText(txt.questionText(appLabel(c, targetPackage(c))))
+                    .setContentText(txt.questionText(targetLabel(c, txt)))
                     .setAutoCancel(true)
                     .setCategory(Notification.CATEGORY_REMINDER)
                     .setContentIntent(PendingIntent.getActivity(c, 7, launch, UnlockService.piFlags()));
@@ -129,6 +156,14 @@ final class Gate {
     }
 
     // ---------------------------------------------------------------- aplicația aleasă / chosen app
+
+    /** Ce se deschide, în cuvinte / What opens, in words. */
+    static String targetLabel(Context c, Txt txt) {
+        SharedPreferences sp = Prefs.get(c);
+        if (Prefs.getMode(sp) == Prefs.MODE_WINDOW) return txt.siteLabel(Prefs.getCategory(sp));
+        String pkg = targetPackage(c);
+        return pkg.length() == 0 ? "" : appLabel(c, pkg);
+    }
 
     /** Pachetul ales, sau unul găsit singur dacă lipsește / The chosen package, or one found automatically if missing. */
     static String targetPackage(Context c) {

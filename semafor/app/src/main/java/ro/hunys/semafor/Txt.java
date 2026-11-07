@@ -55,6 +55,48 @@ final class Txt {
     }
     String permButton() { return t("Deschide setarea", "Open the setting"); }
 
+    String modeTitle() { return t("Unde se deschide întrebarea", "Where the question opens"); }
+    String modeName(int mode) {
+        return mode == Prefs.MODE_APP
+                ? t("În aplicația aleasă", "In the chosen app")
+                : t("În fereastra Semafor, direct la întrebare", "In the Semafor window, straight to the question");
+    }
+    String catName(int idx) {
+        switch (idx) {
+            case 0: return "A (A, A1, A2, AM)";
+            case 2: return "C (C, C1)";
+            case 3: return "D (D, D1, Tb, Tv)";
+            case 4: return "E (BE, CE, DE, C1E, D1E)";
+            case 5: return t("Redobândire", "Licence recovery");
+            case 6: return "Tr";
+            default: return "B (B, B1)";
+        }
+    }
+    String category(int idx) { return t("Categoria ", "Category ") + catName(idx); }
+    String changeCategory() { return t("Schimbă categoria", "Change category"); }
+    String siteLabel(int idx) {
+        String short_ = idx == 5 ? t("redobândire", "recovery") : catName(idx).split(" ")[0];
+        return t("Școala Rutieră · cat. ", "Școala Rutieră · cat. ") + short_;
+    }
+    String windowHelp() {
+        return t("La deblocare se deschide mediul de învățare GENERAL de pe scoalarutiera.ro și Semafor apasă singur „Continuă”, deci ajungi direct la următoarea întrebare. "
+                        + "Răspunsul corect ți-l arată site-ul când greșești. „Gata ✓” te întoarce unde erai.\n"
+                        + "O singură dată: apasă „Intră în cont” și conectează-te cu contul tău Școala Rutieră (iconița din dreapta sus), ca să continui de unde ai rămas.",
+                "On unlock the GENERAL learning environment on scoalarutiera.ro opens and Semafor taps \"Continuă\" by itself, so you land straight on the next question. "
+                        + "The site shows the correct answer when you get one wrong. \"Done ✓\" takes you back to where you were.\n"
+                        + "Once only: tap \"Sign in\" and sign in with your Școala Rutieră account (the icon top right) so you continue where you left off.");
+    }
+    String signIn() { return t("Intră în cont (o singură dată)", "Sign in (once)"); }
+    String windowDone() { return t("Gata ✓", "Done ✓"); }
+    String notLoggedHint() {
+        return t("Nu ești în cont aici. Atinge iconița din dreapta sus și intră o dată în contul tău Școala Rutieră, ca să continui de unde ai rămas. (Atinge ca să ascunzi.)",
+                "You're not signed in here. Tap the icon top right and sign in once with your Școala Rutieră account to continue where you left off. (Tap to hide.)");
+    }
+    String noContinueHint() {
+        return t("Nu am găsit butonul „Continuă mediul GENERAL”. Apasă-l tu de pe pagină. (Atinge ca să ascunzi.)",
+                "Couldn't find the \"Continuă mediul GENERAL\" button. Tap it on the page yourself. (Tap to hide.)");
+    }
+
     String appTitle() { return t("Aplicația cu întrebări", "Quiz app"); }
     String noApp() { return t("Nicio aplicație aleasă", "No app chosen"); }
     String noAppHelp() {
@@ -62,8 +104,8 @@ final class Txt {
                 "Couldn't find Școala Rutieră. Tap \"Choose the app\" and pick it from the list.");
     }
     String appHelp() {
-        return t("Se deschide de unde ai rămas. Răspunsul corect când greșești ți-l arată chiar aplicația, ca de obicei.",
-                "It opens where you left off. When you get one wrong, the app itself shows the correct answer, as usual.");
+        return t("Se deschide aplicația aleasă. Dacă te trimite la ecranul ei de start, alege „În fereastra Semafor”, care merge direct la întrebare.",
+                "The chosen app opens. If it sends you to its start screen, pick \"In the Semafor window\", which goes straight to the question.");
     }
     String pickApp() { return t("Alege aplicația", "Choose the app"); }
     String tryNow() { return t("Încearcă acum", "Try it now"); }
@@ -113,14 +155,14 @@ final class Txt {
 
     String helpTitle() { return t("Cum funcționează", "How it works"); }
     String helpBody() {
-        return t("Când deblochezi telefonul, Semafor deschide aplicația aleasă (Școala Rutieră) exact unde ai rămas în mediul de învățare. "
-                        + "Răspunzi la o întrebare, apoi apeși Acasă și îți vezi de treabă.\n"
+        return t("Când deblochezi telefonul, Semafor îți arată următoarea întrebare din mediul de învățare Școala Rutieră. "
+                        + "Răspunzi, apoi apeși „Gata ✓” și ești înapoi unde erai.\n"
                         + "Nu se deschide în timpul unui apel. Din notificare poți pune pauză o oră sau îl poți opri.\n"
-                        + "Pornește singur după repornirea telefonului. Fără reclame, fără internet.",
-                "When you unlock the phone, Semafor opens the chosen app (Școala Rutieră) exactly where you left off in the learning environment. "
-                        + "Answer one question, then press Home and carry on.\n"
+                        + "Pornește singur după repornirea telefonului. Internetul îl folosește doar fereastra cu întrebarea.",
+                "When you unlock the phone, Semafor shows the next question from the Școala Rutieră learning environment. "
+                        + "Answer it, then tap \"Done ✓\" and you're back where you were.\n"
                         + "It doesn't open during a call. From the notification you can pause it for an hour or turn it off.\n"
-                        + "It starts by itself after a reboot. No ads, no internet.");
+                        + "It starts by itself after a reboot. Only the question window uses the internet.");
     }
 
     String language() { return t("Limba / Language: Română", "Limba / Language: English"); }
@@ -130,7 +172,10 @@ final class Txt {
     String channelName() { return t("Semafor pornit", "Semafor running"); }
     String questionChannel() { return t("Întrebarea de la deblocare", "Unlock question"); }
     String questionTitle() { return t("Întrebarea ta te așteaptă", "Your question is waiting"); }
-    String questionText(String app) { return t("Atinge ca să deschizi ", "Tap to open ") + app; }
+    String questionText(String app) {
+        if (app == null || app.length() == 0) return t("Atinge ca să răspunzi la o întrebare", "Tap to answer a question");
+        return t("Atinge ca să deschizi ", "Tap to open ") + app;
+    }
 
     String notifTitle(int today) {
         return t("Semafor pornit · azi " + today + (today == 1 ? " întrebare" : " întrebări"),

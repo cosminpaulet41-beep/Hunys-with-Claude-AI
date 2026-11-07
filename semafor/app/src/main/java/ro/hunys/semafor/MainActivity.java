@@ -66,6 +66,10 @@ public class MainActivity extends Activity {
     private Button pauseButton;
     private TextView pauseStatus;
     private LinearLayout permCard;
+    private TextView modeValue;
+    private LinearLayout windowBox;
+    private TextView catValue;
+    private LinearLayout appBox;
     private TextView appName;
     private TextView appHelp;
     private TextView freqValue;
@@ -129,7 +133,7 @@ public class MainActivity extends Activity {
         if (!Gate.setActive(this, true)) {
             Toast.makeText(this, txt.startFailed(), Toast.LENGTH_LONG).show();
         }
-        if (Gate.targetPackage(this).length() == 0) showPicker();
+        if (Prefs.getMode(prefs) == Prefs.MODE_APP && Gate.targetPackage(this).length() == 0) showPicker();
         refreshUi();
     }
 
@@ -144,11 +148,53 @@ public class MainActivity extends Activity {
     }
 
     private void tryNow() {
-        if (Gate.targetPackage(this).length() == 0) {
+        if (Prefs.getMode(prefs) == Prefs.MODE_APP && Gate.targetPackage(this).length() == 0) {
             showPicker();
         } else if (!Gate.open(this, false)) {
             Toast.makeText(this, txt.openFailed(), Toast.LENGTH_LONG).show();
         }
+    }
+
+    /** Fereastra pe prima pagină a site-ului, ca să intri în cont / The window on the site's home page, to sign in. */
+    private void openSignIn() {
+        tryStart(new Intent(this, QuestionActivity.class).putExtra(QuestionActivity.EXTRA_URL, Site.HOME));
+    }
+
+    private void showMode() {
+        String[] names = {txt.modeName(Prefs.MODE_WINDOW), txt.modeName(Prefs.MODE_APP)};
+        new AlertDialog.Builder(this, AlertDialog.THEME_DEVICE_DEFAULT_DARK)
+                .setTitle(txt.modeTitle())
+                .setSingleChoiceItems(names, Prefs.getMode(prefs), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface d, int which) {
+                        Prefs.setMode(prefs, which == 1 ? Prefs.MODE_APP : Prefs.MODE_WINDOW);
+                        d.dismiss();
+                        Gate.apply(MainActivity.this);
+                        refreshUi();
+                        if (which == 1 && Gate.targetPackage(MainActivity.this).length() == 0) showPicker();
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    private void showCategory() {
+        int n = Site.SLUGS.length;
+        String[] names = new String[n];
+        for (int i = 0; i < n; i++) names[i] = txt.category(i);
+        new AlertDialog.Builder(this, AlertDialog.THEME_DEVICE_DEFAULT_DARK)
+                .setTitle(txt.changeCategory())
+                .setSingleChoiceItems(names, Prefs.getCategory(prefs), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface d, int which) {
+                        Prefs.setCategory(prefs, which);
+                        d.dismiss();
+                        Gate.apply(MainActivity.this);
+                        refreshUi();
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
     }
 
     private void toggleNight() {
@@ -378,15 +424,56 @@ public class MainActivity extends Activity {
         permCard.addView(permBtn, topMargin(10));
         root.addView(permCard, cardParams());
 
-        // ---- Aplicația cu întrebări / Quiz app
-        LinearLayout appCard = card();
-        appCard.addView(text(txt.appTitle(), 18, TEXT, true));
-        appName = text("", 26, AMBER, true);
-        appName.setPadding(0, dp(4), 0, 0);
-        appCard.addView(appName);
+        // ---- Unde se deschide / Where it opens
+        LinearLayout modeCard = card();
+        modeCard.addView(text(txt.modeTitle(), 18, TEXT, true));
+        modeValue = text("", 20, AMBER, true);
+        modeValue.setPadding(0, dp(4), 0, 0);
+        modeCard.addView(modeValue);
+        Button modeBtn = button(txt.change());
+        modeBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showMode();
+            }
+        });
+        modeCard.addView(modeBtn, topMargin(10));
+
+        // Fereastra Semafor / Semafor window
+        windowBox = new LinearLayout(this);
+        windowBox.setOrientation(LinearLayout.VERTICAL);
+        catValue = text("", 17, TEXT, true);
+        catValue.setPadding(0, dp(12), 0, 0);
+        windowBox.addView(catValue);
+        windowBox.addView(help(txt.windowHelp(), MUTED, 13));
+        LinearLayout winRow = row();
+        Button signIn = button(txt.signIn());
+        signIn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openSignIn();
+            }
+        });
+        winRow.addView(signIn, weight(0));
+        Button cat = button(txt.changeCategory());
+        cat.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showCategory();
+            }
+        });
+        winRow.addView(cat, weight(8));
+        windowBox.addView(winRow, topMargin(10));
+        modeCard.addView(windowBox, new LinearLayout.LayoutParams(-1, -2));
+
+        // Aplicația aleasă / Chosen app
+        appBox = new LinearLayout(this);
+        appBox.setOrientation(LinearLayout.VERTICAL);
+        appName = text("", 22, TEXT, true);
+        appName.setPadding(0, dp(12), 0, 0);
+        appBox.addView(appName);
         appHelp = help("", MUTED, 13);
-        appCard.addView(appHelp);
-        LinearLayout appRow = row();
+        appBox.addView(appHelp);
         Button pick = button(txt.pickApp());
         pick.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -394,7 +481,9 @@ public class MainActivity extends Activity {
                 showPicker();
             }
         });
-        appRow.addView(pick, weight(0));
+        appBox.addView(pick, topMargin(10));
+        modeCard.addView(appBox, new LinearLayout.LayoutParams(-1, -2));
+
         Button test = button(txt.tryNow());
         test.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -402,9 +491,8 @@ public class MainActivity extends Activity {
                 tryNow();
             }
         });
-        appRow.addView(test, weight(8));
-        appCard.addView(appRow, topMargin(10));
-        root.addView(appCard, cardParams());
+        modeCard.addView(test, topMargin(8));
+        root.addView(modeCard, cardParams());
 
         // ---- Cât de des / How often
         LinearLayout freqCard = card();
@@ -505,15 +593,22 @@ public class MainActivity extends Activity {
 
         permCard.setVisibility(Gate.canDrawOverlays(this) ? View.GONE : View.VISIBLE);
 
-        String pkg = Gate.targetPackage(this);
-        if (pkg.length() == 0) {
-            appName.setText(txt.noApp());
-            appName.setTextColor(RED);
-            appHelp.setText(txt.noAppHelp());
-        } else {
-            appName.setText(Gate.appLabel(this, pkg));
-            appName.setTextColor(AMBER);
-            appHelp.setText(txt.appHelp());
+        boolean window = Prefs.getMode(prefs) == Prefs.MODE_WINDOW;
+        modeValue.setText(txt.modeName(Prefs.getMode(prefs)));
+        windowBox.setVisibility(window ? View.VISIBLE : View.GONE);
+        appBox.setVisibility(window ? View.GONE : View.VISIBLE);
+        catValue.setText(txt.category(Prefs.getCategory(prefs)));
+        if (!window) {
+            String pkg = Gate.targetPackage(this);
+            if (pkg.length() == 0) {
+                appName.setText(txt.noApp());
+                appName.setTextColor(RED);
+                appHelp.setText(txt.noAppHelp());
+            } else {
+                appName.setText(Gate.appLabel(this, pkg));
+                appName.setTextColor(TEXT);
+                appHelp.setText(txt.appHelp());
+            }
         }
 
         freqValue.setText(txt.freqName(Prefs.getFreq(prefs)));

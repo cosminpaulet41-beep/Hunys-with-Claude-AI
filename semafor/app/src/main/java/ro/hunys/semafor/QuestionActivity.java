@@ -65,6 +65,9 @@ public class QuestionActivity extends Activity implements QuestionView.Host {
     @Override
     protected void onDestroy() {
         view.destroy();
+        // Contul poate fi altul acum: întrebarea ascunsă se pregătește din nou.
+        // The sign-in may have changed: the hidden question is prepared again.
+        UnlockService.refreshPreload();
         super.onDestroy();
     }
 }

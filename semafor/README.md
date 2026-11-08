@@ -1,6 +1,6 @@
 # Semafor
 
-**Autor / Author:** Hunys with Claude AI · **Licență / License:** MIT (open source) · **v1.5**
+**Autor / Author:** Hunys with Claude AI · **Licență / License:** MIT (open source) · **v1.6**
 
 <img src="icon.png" width="96" alt="Semafor">
 
@@ -13,7 +13,7 @@ Semafor te pune să rezolvi o întrebare pentru permisul auto (categoria B) **de
 Semafor nu conține întrebările. Folosește contul tău Școala Rutieră, așa că progresul tău rămâne acolo.
 
 ### Ce face
-- La fiecare deblocare deschide direct următoarea întrebare din mediul de învățare (categoria B; se poate schimba).
+- La fiecare deblocare deschide direct următoarea întrebare din mediul de învățare (categoria B; se poate schimba). Întrebarea e pregătită dinainte, cât ecranul e stins, așa că apare imediat.
 - Sau, dacă vrei, deschide o aplicație aleasă de tine (ex. aplicația Școala Rutieră).
 - **Cât de des:** la fiecare deblocare, la a 2-a, la a 3-a, sau cel mult o dată la 10 / 30 / 60 de minute.
 - **Liniște noaptea** (opțional): nimic între 23:00 și 07:00.
@@ -26,7 +26,7 @@ Semafor nu conține întrebările. Folosește contul tău Școala Rutieră, așa
 - Interfață în **română și engleză**. Fără reclame. Internetul îl folosește doar fereastra cu întrebarea.
 
 ### Instalare
-1. Descarcă `Semafor-v1.5.apk` de la [Releases](https://github.com/cosminpaulet41-beep/Hunys-with-Claude-AI/releases) și deschide-l. Dacă telefonul îți cere, permite instalarea din surse necunoscute.
+1. Descarcă `Semafor-v1.6.apk` de la [Releases](https://github.com/cosminpaulet41-beep/Hunys-with-Claude-AI/releases) și deschide-l. Dacă telefonul îți cere, permite instalarea din surse necunoscute.
 2. Deschide Semafor și apasă **OPRIT — atinge ca să pornești**. Telefonul te duce la „Afișare peste alte aplicații”: pornește permisiunea pentru Semafor și revino. Cu ea, Semafor desenează întrebarea peste ecran, lucru pe care sistemul nu-l blochează (spre deosebire de deschiderea unei aplicații din fundal, pe care Huawei o blochează). Fără ea primești doar o notificare pe care o atingi.
 3. Apasă **„Intră în cont (o singură dată)”** și conectează-te cu contul tău Școala Rutieră (iconița din dreapta sus a site-ului). Așa continui de unde ai rămas.
 4. La „Ca să meargă la fiecare deblocare” apasă **„Scoate restricțiile de baterie”**. Pe **Huawei** (EMUI) fă obligatoriu și: Setări › Baterie › Lansare aplicații › Semafor › oprește „Gestionare automată” și pornește Lansare automată, Lansare secundară și **Rulare în fundal**; apoi în aplicațiile recente trage cardul Semafor în jos până apare lacătul. Altfel Huawei îngheață Semafor imediat ce ieși din el și nu vede deblocările (Semafor îți arată dacă s-a întâmplat).
@@ -45,7 +45,7 @@ Semafor makes you answer one driving-licence question (category B, Romania) **ev
 Semafor doesn't contain the questions. It uses your Școala Rutieră account, so your progress stays there.
 
 ### What it does
-- On every unlock it opens the next question of the learning environment directly (category B; can be changed).
+- On every unlock it opens the next question of the learning environment directly (category B; can be changed). The question is prepared beforehand while the screen is off, so it appears instantly.
 - Or, if you prefer, it opens an app you choose (e.g. the Școala Rutieră app).
 - **How often:** every unlock, every 2nd, every 3rd, or at most once every 10 / 30 / 60 minutes.
 - **Quiet at night** (optional): nothing between 23:00 and 07:00.
@@ -58,7 +58,7 @@ Semafor doesn't contain the questions. It uses your Școala Rutieră account, so
 - Interface in **Romanian and English**. No ads. Only the question window uses the internet.
 
 ### Install
-1. Download `Semafor-v1.5.apk` from [Releases](https://github.com/cosminpaulet41-beep/Hunys-with-Claude-AI/releases) and open it. If the phone asks, allow installs from unknown sources.
+1. Download `Semafor-v1.6.apk` from [Releases](https://github.com/cosminpaulet41-beep/Hunys-with-Claude-AI/releases) and open it. If the phone asks, allow installs from unknown sources.
 2. Open Semafor and tap **OFF — tap to turn on**. The phone takes you to "Display over other apps": turn it on for Semafor and come back. With it, Semafor draws the question over the screen, which the system doesn't block (unlike opening an app from the background, which Huawei blocks). Without it you only get a notification to tap.
 3. Tap **"Sign in (once)"** and sign in with your Școala Rutieră account (the icon top right of the site). That way you continue where you left off.
 4. Under "So it works on every unlock" tap **"Remove battery restrictions"**. On **Huawei** (EMUI) you must also do: Settings › Battery › App launch › Semafor › turn off "Manage automatically" and turn on Auto-launch, Secondary launch and **Run in background**; then in recent apps drag the Semafor card down until a padlock appears. Otherwise Huawei freezes Semafor as soon as you leave it and it can't see unlocks (Semafor shows you if that happened).

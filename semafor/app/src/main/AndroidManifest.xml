@@ -6,8 +6,8 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="ro.hunys.semafor"
-    android:versionCode="6"
-    android:versionName="1.5">
+    android:versionCode="7"
+    android:versionName="1.6">
 
     <!-- Fereastra cu întrebarea încarcă scoalarutiera.ro / The question window loads scoalarutiera.ro -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -19,6 +19,8 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- Ca sistemul să nu-l oprească în fundal / So the system doesn't stop it in the background -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <!-- Câteva secunde treaz cât se pregătește întrebarea / A few seconds awake while the question is prepared -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <!-- Vede aplicațiile din meniu, ca să poți alege Școala Rutieră / Sees the launcher apps so you can pick Școala Rutieră -->
     <queries>

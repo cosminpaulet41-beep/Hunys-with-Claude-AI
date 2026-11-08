@@ -19,6 +19,7 @@ import android.graphics.PixelFormat;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PowerManager;
 import android.os.SystemClock;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
@@ -36,14 +37,80 @@ final class QuestionOverlay implements QuestionView.Host {
         wm = (WindowManager) s.getSystemService(Context.WINDOW_SERVICE);
     }
 
-    /** Arată întrebarea și merge la următoarea / Shows the question and goes to the next one. */
+    /** Cât timp o întrebare pregătită e bună de arătat / How long a preloaded question is good to show. */
+    private static final long READY_MAX_MS = 30L * 60L * 1000L;
+    /** După cât timp o reîmprospătăm la stingerea/aprinderea ecranului / When to refresh it on screen off/on. */
+    private static final long REFRESH_AFTER_MS = 5L * 60L * 1000L;
+    private boolean destroyed;
+    private PowerManager.WakeLock wakeLock;
+    private int lastW;
+    private int lastH;
+
+    private void ensureView() {
+        if (view == null) {
+            long t = SystemClock.elapsedRealtime();
+            view = new QuestionView(ctx, this, true);
+            Jurnal.log("strat", "pagina creată / view created în " + (SystemClock.elapsedRealtime() - t) + " ms");
+        }
+    }
+
+    /**
+     * Pregătește următoarea întrebare ascunsă, ca la deblocare să apară imediat.
+     * Prepares the next question hidden, so it appears instantly on unlock.
+     *
+     * @param force chiar dacă e deja una pregătită (ex. după ce ai răspuns) / even if one is ready (e.g. after answering)
+     */
+    void preload(String why, boolean force) {
+        if (destroyed) return;
+        try {
+            ensureView();
+            if (shown) return;
+            if (view.isLoading(15000)) return;
+            if (!force && view.isReady(REFRESH_AFTER_MS)) return;
+            sizeOffscreen();
+            holdAwake();
+            view.resume();
+            view.load(null);
+            Jurnal.log("strat", "pregătesc întrebarea ascunsă / preloading hidden question (" + why + ")");
+        } catch (Throwable e) {
+            Jurnal.error("strat", "preload", e);
+        }
+    }
+
+    /** Ține telefonul treaz 15 s, cât se încarcă pagina cu ecranul stins / Keeps the phone awake 15 s while loading with the screen off. */
+    private void holdAwake() {
+        try {
+            if (wakeLock == null) {
+                PowerManager pm = (PowerManager) ctx.getSystemService(Context.POWER_SERVICE);
+                wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "semafor:preload");
+                wakeLock.setReferenceCounted(false);
+            }
+            wakeLock.acquire(15000);
+        } catch (Throwable e) {
+            Jurnal.error("strat", "wakeLock", e);
+        }
+    }
+
+    /** O pagină ascunsă trebuie să știe cât de mare e ecranul / A hidden page needs to know the screen size. */
+    private void sizeOffscreen() {
+        int w = lastW;
+        int h = lastH;
+        if (w <= 0 || h <= 0) {
+            android.util.DisplayMetrics dm = ctx.getResources().getDisplayMetrics();
+            w = dm.widthPixels;
+            h = dm.heightPixels;
+        }
+        view.measure(android.view.View.MeasureSpec.makeMeasureSpec(w, android.view.View.MeasureSpec.EXACTLY),
+                android.view.View.MeasureSpec.makeMeasureSpec(h, android.view.View.MeasureSpec.EXACTLY));
+        view.layout(0, 0, w, h);
+    }
+
+    /** Arată întrebarea (pregătită dinainte, dacă există) / Shows the question (preloaded, if there is one). */
     boolean show() {
         try {
-            if (view == null) {
-                long t = SystemClock.elapsedRealtime();
-                view = new QuestionView(ctx, this, true);
-                Jurnal.log("strat", "pagina creată / view created în " + (SystemClock.elapsedRealtime() - t) + " ms");
-            }
+            ensureView();
+            boolean ready = view.isReady(READY_MAX_MS);
+            boolean loading = view.isLoading(15000);
             if (!shown) {
                 wm.addView(view, params());
                 shown = true;
@@ -52,7 +119,13 @@ final class QuestionOverlay implements QuestionView.Host {
                 Jurnal.log("strat", "era deja pe ecran / was already shown");
             }
             view.resume();
-            view.load(null);
+            if (ready) {
+                Jurnal.log("strat", "INSTANT: întrebare pregătită de / question prepared " + (view.readyAge() / 1000) + " s în urmă / ago");
+            } else if (loading) {
+                Jurnal.log("strat", "se pregătea deja, continuă / was already preparing, continuing");
+            } else {
+                view.load(null);
+            }
             view.requestFocus();
             checkLater(500);
             checkLater(2500);
@@ -85,6 +158,10 @@ final class QuestionOverlay implements QuestionView.Host {
                     v.getLocationOnScreen(loc);
                 } catch (RuntimeException ignored) {
                 }
+                if (v.isAttachedToWindow() && v.getWidth() > 0) {
+                    lastW = v.getWidth();
+                    lastH = v.getHeight();
+                }
                 Jurnal.log("strat", "+" + ms + " ms: arătat/shown=" + shown
                         + " atașat/attached=" + v.isAttachedToWindow()
                         + " vizibil fereastră/windowVisibility=" + visibilityName(v.getWindowVisibility())
@@ -113,10 +190,23 @@ final class QuestionOverlay implements QuestionView.Host {
             Jurnal.error("strat", "removeView", e);
         }
         shown = false;
+        // Următoarea întrebare se pregătește de acum / The next question starts preparing now
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                preload("după închidere / after closing", true);
+            }
+        }, 400);
     }
 
     void destroy() {
+        destroyed = true;
         hide();
+        handler.removeCallbacksAndMessages(null);
+        try {
+            if (wakeLock != null && wakeLock.isHeld()) wakeLock.release();
+        } catch (Throwable ignored) {
+        }
         if (view != null) {
             view.destroy();
             view = null;
@@ -147,7 +237,7 @@ final class QuestionOverlay implements QuestionView.Host {
         lp.gravity = Gravity.TOP | Gravity.START;
         lp.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
                 | WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN;
-        lp.windowAnimations = android.R.style.Animation_Dialog;
+        lp.windowAnimations = 0; // fără animație: apare imediat / no animation: appears at once
         return lp;
     }
 }

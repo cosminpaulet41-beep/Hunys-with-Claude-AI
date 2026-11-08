@@ -46,7 +46,7 @@ public class UnlockService extends Service {
     private static final String CHANNEL = "semafor_on";
     private static final int NOTIF_ID = 51;
     /** O mică pauză, ca ecranul de blocare să dispară întâi / A short delay so the lock screen goes away first. */
-    private static final long OPEN_DELAY_MS = 350;
+    private static final long OPEN_DELAY_MS = 0;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private static UnlockService instance;
@@ -123,7 +123,9 @@ public class UnlockService extends Service {
                 trigger("verificare");
             }
             lastUnlocked = unlocked;
-            lastPollDelay = on ? 700 : 3000;
+            // Des pe ecranul de blocare (ca să prindem deblocarea imediat), rar în rest.
+            // Often on the lock screen (to catch the unlock at once), rarely otherwise.
+            lastPollDelay = !on ? 3000 : (unlocked ? 1000 : 200);
             handler.postDelayed(this, lastPollDelay);
         }
     };
@@ -163,11 +165,21 @@ public class UnlockService extends Service {
                     handler.postDelayed(onUnlock, OPEN_DELAY_MS);
                 } else if (Intent.ACTION_SCREEN_ON.equals(a)) {
                     handler.removeCallbacks(onScreenOn);
-                    handler.postDelayed(onScreenOn, 700);
+                    handler.postDelayed(onScreenOn, 250);
+                    // Verificarea proprie trece imediat pe ritm rapid / Own check switches to the fast pace at once
+                    handler.removeCallbacks(poll);
+                    handler.post(poll);
+                    if (overlay != null) overlay.preload("ecran aprins / screen on", false);
                 } else if (Intent.ACTION_SCREEN_OFF.equals(a)) {
                     handler.removeCallbacks(onScreenOn);
                     handler.removeCallbacks(onUnlock);
-                    if (overlay != null) overlay.hide();
+                    if (overlay != null) {
+                        if (overlay.isShown()) {
+                            overlay.hide(); // pregătește singur următoarea / prepares the next one itself
+                        } else {
+                            overlay.preload("ecran stins / screen off", false);
+                        }
+                    }
                 } else if (Intent.ACTION_CLOSE_SYSTEM_DIALOGS.equals(a)) {
                     // Butonul Acasă / The Home button
                     String reason = intent.getStringExtra("reason");
@@ -193,6 +205,12 @@ public class UnlockService extends Service {
             unlockReceiver = null;
         }
         handler.post(poll);
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (overlay != null) overlay.preload("pornire / start", false);
+            }
+        }, 1500);
     }
 
     /** Ce a trimis sistemul și starea ecranului în acel moment / What the system sent and the screen state then. */
@@ -295,6 +313,12 @@ public class UnlockService extends Service {
     static boolean showOverlayNow() {
         UnlockService s = instance;
         return s != null && s.overlay != null && Gate.canDrawOverlays(s) && s.overlay.show();
+    }
+
+    /** Pregătește din nou întrebarea (ex. după ce ai intrat în cont) / Prepares the question again (e.g. after signing in). */
+    static void refreshPreload() {
+        UnlockService s = instance;
+        if (s != null && s.overlay != null) s.overlay.preload("după fereastră / after window", true);
     }
 
     /** Închide întrebarea de peste ecran (ex. când se deschide fereastra normală) / Closes the overlay question. */

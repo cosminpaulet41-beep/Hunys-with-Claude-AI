@@ -25,6 +25,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -77,6 +78,10 @@ final class QuestionView extends FrameLayout {
     /** Încă trebuie apăsat „Continuă” pe pagina asta / "Continuă" still needs tapping on this load. */
     private boolean autoContinue;
     private int tries;
+    /** Când a început încărcarea și când a fost gata întrebarea (elapsedRealtime) / When loading started and the question was ready. */
+    private long loadStartedAt;
+    private long readyAt;
+    private boolean loadFailed;
 
     private final Runnable tryContinue = new Runnable() {
         @Override
@@ -98,12 +103,38 @@ final class QuestionView extends FrameLayout {
         hideCustomView();
         autoContinue = url == null;
         tries = 0;
+        loadStartedAt = SystemClock.elapsedRealtime();
+        readyAt = 0;
+        loadFailed = false;
         handler.removeCallbacks(tryContinue);
         hint.setVisibility(View.GONE);
         if (web == null) createWeb();
         String target = url == null ? Site.categoryUrl(getContext()) : url;
         Jurnal.log("pagina", "încarc / loading " + target + (autoContinue ? " (+ apăs Continuă / then tap Continue)" : ""));
         if (web != null) web.loadUrl(target);
+    }
+
+    /** Întrebarea e gata și nu e mai veche de maxAgeMs / The question is ready and not older than maxAgeMs. */
+    boolean isReady(long maxAgeMs) {
+        return web != null && !loadFailed && readyAt > 0 && SystemClock.elapsedRealtime() - readyAt < maxAgeMs;
+    }
+
+    /** Se încarcă chiar acum / Is loading right now. */
+    boolean isLoading(long withinMs) {
+        return web != null && !loadFailed && readyAt == 0 && loadStartedAt > 0
+                && SystemClock.elapsedRealtime() - loadStartedAt < withinMs;
+    }
+
+    /** De cât timp e gata (ms) / How long it has been ready (ms). */
+    long readyAge() {
+        return readyAt == 0 ? -1 : SystemClock.elapsedRealtime() - readyAt;
+    }
+
+    private void markReady() {
+        if (readyAt == 0) {
+            readyAt = SystemClock.elapsedRealtime();
+            Jurnal.log("pagina", "întrebarea e gata în / question ready in " + (readyAt - loadStartedAt) + " ms");
+        }
     }
 
     @Override
@@ -187,11 +218,19 @@ final class QuestionView extends FrameLayout {
                 boolean logged = v.endsWith("1\"");
                 if (v.startsWith("\"ok")) {
                     autoContinue = false;
+                    // Încă puțin cât se deschide întrebarea / A little longer while the question opens
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            markReady();
+                        }
+                    }, 1200);
                     if (!logged) showHint(txt.notLoggedHint(), AMBER);
                 } else if (++tries < MAX_TRIES) {
                     handler.postDelayed(tryContinue, 500);
                 } else {
                     autoContinue = false;
+                    markReady();
                     showHint(logged ? txt.noContinueHint() : txt.notLoggedHint(), logged ? RED : AMBER);
                 }
             }
@@ -314,6 +353,7 @@ final class QuestionView extends FrameLayout {
                 @Override
                 public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
                     if (request.isForMainFrame()) {
+                        loadFailed = true;
                         Jurnal.log("pagina", "EROARE încărcare / load ERROR " + error.getErrorCode() + " " + error.getDescription() + " — " + request.getUrl());
                     }
                 }
@@ -345,6 +385,8 @@ final class QuestionView extends FrameLayout {
                     if (autoContinue && Site.isCategoryPage(url)) {
                         handler.removeCallbacks(tryContinue);
                         handler.postDelayed(tryContinue, 150);
+                    } else if (!autoContinue) {
+                        markReady();
                     }
                 }
             });

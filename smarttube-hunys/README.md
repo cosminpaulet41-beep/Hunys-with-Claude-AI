@@ -20,7 +20,7 @@ O versiune modificată a SmartTube (YouTube fără reclame pentru Android TV), f
 - **Calitate:** fiecare deschidere pornește la 720p (se schimbă în Setări Hunys); nimic peste 1080p.
 - **10 teme întunecate**, fontul Inter, scris puțin mai mare, bară laterală rotunjită care se strânge în iconițe.
 - **Întunecare ecran** 0–80% (și automată noaptea), **volum egalizat**, **contor de date**, **mod ușor**, subtitrări mai vizibile.
-- **Previzualizare pe Acasă** 60 de secunde, cu sunet.
+- **Previzualizare pe Acasă** 60 de secunde, cu sunet; scrisul de sub clip începe să se deruleze după 2,5 secunde.
 - **Titlul, canalul și data** sus în stânga în player; **redare automată** cu buton (oprită implicit).
 - **Derulare cu confirmare:** ← → alege locul, saltul se face doar după OK.
 - Meniul de pe clip începe cu „Nu mă interesează” și „Nu recomanda canalul”.
@@ -41,7 +41,7 @@ A modified SmartTube (ad-free YouTube for Android TV), built for an Android 14 p
 - **Quality:** every launch starts at 720p (changeable in Hunys settings); nothing above 1080p.
 - **10 dark themes**, Inter font, slightly larger text, rounded sidebar that collapses to icons.
 - **Screen dimming** 0–80% (also automatic at night), **loudness normalization**, **data counter**, **light mode**, more visible subtitles.
-- **Home preview** for 60 seconds, with sound.
+- **Home preview** for 60 seconds, with sound; the text under a video starts scrolling after 2.5 seconds.
 - **Title, channel and date** at the top left in the player; **autoplay** switch (off by default).
 - **Seek with confirmation:** left/right choose the spot, the jump happens only after OK.
 - The video menu starts with "Not interested" and "Don't recommend channel".

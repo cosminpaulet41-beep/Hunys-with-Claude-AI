@@ -1,6 +1,6 @@
 # Semafor
 
-**Autor / Author:** Hunys with Claude AI · **Licență / License:** MIT (open source) · **v1.4**
+**Autor / Author:** Hunys with Claude AI · **Licență / License:** MIT (open source) · **v1.5**
 
 <img src="icon.png" width="96" alt="Semafor">
 
@@ -26,10 +26,10 @@ Semafor nu conține întrebările. Folosește contul tău Școala Rutieră, așa
 - Interfață în **română și engleză**. Fără reclame. Internetul îl folosește doar fereastra cu întrebarea.
 
 ### Instalare
-1. Descarcă `Semafor-v1.4.apk` de la [Releases](https://github.com/cosminpaulet41-beep/Hunys-with-Claude-AI/releases) și deschide-l. Dacă telefonul îți cere, permite instalarea din surse necunoscute.
+1. Descarcă `Semafor-v1.5.apk` de la [Releases](https://github.com/cosminpaulet41-beep/Hunys-with-Claude-AI/releases) și deschide-l. Dacă telefonul îți cere, permite instalarea din surse necunoscute.
 2. Deschide Semafor și apasă **OPRIT — atinge ca să pornești**. Telefonul te duce la „Afișare peste alte aplicații”: pornește permisiunea pentru Semafor și revino. Cu ea, Semafor desenează întrebarea peste ecran, lucru pe care sistemul nu-l blochează (spre deosebire de deschiderea unei aplicații din fundal, pe care Huawei o blochează). Fără ea primești doar o notificare pe care o atingi.
 3. Apasă **„Intră în cont (o singură dată)”** și conectează-te cu contul tău Școala Rutieră (iconița din dreapta sus a site-ului). Așa continui de unde ai rămas.
-4. La „Ca să meargă la fiecare deblocare” apasă **„Scoate restricțiile de baterie”**. Pe **Huawei** (EMUI) fă și: Setări › Baterie › Lansare aplicații › Semafor › gestionare manuală, cu toate cele trei opțiuni pornite. Altfel sistemul îl poate opri în fundal. Butonul „Lansare aplicații” din Semafor te duce acolo.
+4. La „Ca să meargă la fiecare deblocare” apasă **„Scoate restricțiile de baterie”**. Pe **Huawei** (EMUI) fă obligatoriu și: Setări › Baterie › Lansare aplicații › Semafor › oprește „Gestionare automată” și pornește Lansare automată, Lansare secundară și **Rulare în fundal**; apoi în aplicațiile recente trage cardul Semafor în jos până apare lacătul. Altfel Huawei îngheață Semafor imediat ce ieși din el și nu vede deblocările (Semafor îți arată dacă s-a întâmplat).
 5. Blochează telefonul și deblochează-l. Ar trebui să apară următoarea întrebare.
 
 ### Compilare
@@ -58,10 +58,10 @@ Semafor doesn't contain the questions. It uses your Școala Rutieră account, so
 - Interface in **Romanian and English**. No ads. Only the question window uses the internet.
 
 ### Install
-1. Download `Semafor-v1.4.apk` from [Releases](https://github.com/cosminpaulet41-beep/Hunys-with-Claude-AI/releases) and open it. If the phone asks, allow installs from unknown sources.
+1. Download `Semafor-v1.5.apk` from [Releases](https://github.com/cosminpaulet41-beep/Hunys-with-Claude-AI/releases) and open it. If the phone asks, allow installs from unknown sources.
 2. Open Semafor and tap **OFF — tap to turn on**. The phone takes you to "Display over other apps": turn it on for Semafor and come back. With it, Semafor draws the question over the screen, which the system doesn't block (unlike opening an app from the background, which Huawei blocks). Without it you only get a notification to tap.
 3. Tap **"Sign in (once)"** and sign in with your Școala Rutieră account (the icon top right of the site). That way you continue where you left off.
-4. Under "So it works on every unlock" tap **"Remove battery restrictions"**. On **Huawei** (EMUI) also do: Settings › Battery › App launch › Semafor › manage manually, with all three options on. Otherwise the system may stop it in the background. The "App launch" button in Semafor takes you there.
+4. Under "So it works on every unlock" tap **"Remove battery restrictions"**. On **Huawei** (EMUI) you must also do: Settings › Battery › App launch › Semafor › turn off "Manage automatically" and turn on Auto-launch, Secondary launch and **Run in background**; then in recent apps drag the Semafor card down until a padlock appears. Otherwise Huawei freezes Semafor as soon as you leave it and it can't see unlocks (Semafor shows you if that happened).
 5. Lock the phone and unlock it. The next question should appear.
 
 ### Building

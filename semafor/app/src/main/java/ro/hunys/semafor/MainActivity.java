@@ -83,6 +83,7 @@ public class MainActivity extends Activity {
     private TextView overlayCheck;
     private TextView batteryCheck;
     private Button batteryButton;
+    private TextView frozenCheck;
 
     private final Runnable ticker = new Runnable() {
         @Override
@@ -591,6 +592,8 @@ public class MainActivity extends Activity {
         });
         checkCard.addView(batteryButton, topMargin(8));
         if (isHuawei()) {
+            frozenCheck = help("", TEXT, 15);
+            checkCard.addView(frozenCheck);
             TextView hwTitle = text(txt.huaweiTitle(), 16, AMBER, true);
             hwTitle.setPadding(0, dp(14), 0, 0);
             checkCard.addView(hwTitle);
@@ -708,6 +711,13 @@ public class MainActivity extends Activity {
         batteryCheck.setText(txt.batteryCheck(battery));
         batteryCheck.setTextColor(battery ? GREEN : RED);
         batteryButton.setVisibility(battery || Build.VERSION.SDK_INT < 23 ? View.GONE : View.VISIBLE);
+        if (frozenCheck != null) {
+            int frozen = Prefs.getFrozenCount(prefs);
+            frozenCheck.setText(frozen > 0
+                    ? txt.frozenBad(frozen, Txt.time(this, Prefs.getFrozenAt(prefs)))
+                    : txt.frozenOk());
+            frozenCheck.setTextColor(frozen > 0 ? RED : GREEN);
+        }
     }
 
     // ---------------------------------------------------------------- helpers

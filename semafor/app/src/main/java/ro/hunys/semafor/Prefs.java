@@ -44,6 +44,8 @@ final class Prefs {
     private static final String K_LANG = "lang";
     private static final String K_ASKED_NOTIF = "asked_notif";
     private static final String K_LOG = "log";
+    private static final String K_FROZEN = "frozen_count";
+    private static final String K_FROZEN_AT = "frozen_at";
 
     // Coduri pentru lista „Ultimele deblocări” / Codes for the "Recent unlocks" list
     static final String LOG_SERVICE = "svc";
@@ -191,6 +193,19 @@ final class Prefs {
     static String[] getLog(SharedPreferences sp) {
         String s = sp.getString(K_LOG, "");
         return s.length() == 0 ? new String[0] : s.split("\n");
+    }
+
+    /** De câte ori a înghețat sistemul Semafor / How many times the system froze Semafor. */
+    static void recordFrozen(SharedPreferences sp) {
+        sp.edit().putInt(K_FROZEN, sp.getInt(K_FROZEN, 0) + 1).putLong(K_FROZEN_AT, System.currentTimeMillis()).apply();
+    }
+
+    static int getFrozenCount(SharedPreferences sp) {
+        return sp.getInt(K_FROZEN, 0);
+    }
+
+    static long getFrozenAt(SharedPreferences sp) {
+        return sp.getLong(K_FROZEN_AT, 0L);
     }
 
     private static int dayKey() {

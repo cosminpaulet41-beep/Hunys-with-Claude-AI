@@ -86,6 +86,51 @@ public class UnlockService extends Service {
         }
     };
 
+    /**
+     * Verificare proprie la fiecare 0,7 s cât timp ecranul e aprins: Huawei poate ține semnalul
+     * „deblocat” până deschizi aplicația, așa că nu ne bazăm doar pe el. Tot de aici vedem dacă
+     * sistemul a înghețat Semafor (pauze mari între verificări cât timp telefonul era treaz).
+     *
+     * Own check every 0.7 s while the screen is on: Huawei can hold the "unlocked" signal until
+     * you open the app, so we don't rely on it alone. From here we also see whether the system
+     * froze Semafor (long gaps between checks while the phone was awake).
+     */
+    private final Runnable poll = new Runnable() {
+        @Override
+        public void run() {
+            long up = SystemClock.uptimeMillis();
+            if (lastPollUptime != 0) {
+                // uptimeMillis nu crește în somnul adânc, deci o pauză mare = proces înghețat.
+                // uptimeMillis doesn't grow in deep sleep, so a long gap = frozen process.
+                long gap = up - lastPollUptime - lastPollDelay;
+                if (gap > 4000) {
+                    Jurnal.log("îngheț", "sistemul a ținut Semafor înghețat ~" + (gap / 1000) + " s / the system kept Semafor frozen");
+                    Prefs.recordFrozen(Prefs.get(UnlockService.this));
+                }
+            }
+            lastPollUptime = up;
+            boolean on = false;
+            boolean unlocked = false;
+            try {
+                KeyguardManager km = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
+                PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
+                on = pm.isInteractive();
+                unlocked = on && !km.isKeyguardLocked();
+            } catch (RuntimeException ignored) {
+            }
+            if (unlocked && !lastUnlocked) {
+                Jurnal.log("verificare", "deblocare văzută de verificarea proprie / unlock seen by own check");
+                trigger("verificare");
+            }
+            lastUnlocked = unlocked;
+            lastPollDelay = on ? 700 : 3000;
+            handler.postDelayed(this, lastPollDelay);
+        }
+    };
+    private long lastPollUptime;
+    private long lastPollDelay;
+    private boolean lastUnlocked = true;
+
     private final Runnable hideTrampolineLater = new Runnable() {
         @Override
         public void run() {
@@ -147,6 +192,7 @@ public class UnlockService extends Service {
             Jurnal.error("serviciu", "registerReceiver", e);
             unlockReceiver = null;
         }
+        handler.post(poll);
     }
 
     /** Ce a trimis sistemul și starea ecranului în acel moment / What the system sent and the screen state then. */

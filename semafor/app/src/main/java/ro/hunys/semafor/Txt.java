@@ -191,13 +191,24 @@ final class Txt {
     String logCopied() { return t("Jurnalul e copiat. Lipește-l în conversație.", "Log copied. Paste it into the chat."); }
     String logSaved(String name) { return t("Salvat în Descărcări: ", "Saved to Downloads: ") + name; }
 
+    String frozenOk() { return t("✓ Huawei nu a înghețat Semafor (până acum)", "✓ Huawei hasn't frozen Semafor (so far)"); }
+    String frozenBad(int n, String hhmm) {
+        return t("✗ Huawei a înghețat Semafor de " + n + " ori (ultima dată la " + hhmm + "). Cât e înghețat, nu vede deblocările. Fă pașii de mai jos.",
+                "✗ Huawei froze Semafor " + n + " times (last at " + hhmm + "). While frozen it can't see unlocks. Do the steps below.");
+    }
+
     String huaweiTitle() { return t("Pe Huawei / Honor", "On Huawei / Honor"); }
     String huaweiBody() {
-        return t("Ca sistemul să nu oprească Semafor în fundal: Setări › Baterie › Lansare aplicații › Semafor › gestionare manuală, cu toate cele trei opțiuni pornite. "
-                        + "Dacă tot nu se deschide la deblocare, vezi și Setări › Aplicații › Semafor › Permisiuni (ferestre pop-up / pornire în fundal).",
-                "So the system doesn't stop Semafor in the background: Settings › Battery › App launch › Semafor › manage manually, with all three options on. "
-                        + "If it still doesn't open on unlock, also check Settings › Apps › Semafor › Permissions (pop-up windows / background start).");
+        return t("1. Setări › Baterie › Lansare aplicații › Semafor: oprește „Gestionare automată”, apoi în fereastra care apare pornește toate trei: "
+                        + "Lansare automată, Lansare secundară și Rulare în fundal › OK. (Butonul „Lansare aplicații” de mai jos te duce acolo.)\n"
+                        + "2. Deschide aplicațiile recente (pătratul de jos), trage în jos cardul Semafor până apare lacătul, ca sistemul să nu-l închidă.\n"
+                        + "3. Dacă există: Setări › Aplicații › Semafor › Baterie / Consum de energie › permite activitatea în fundal.",
+                "1. Settings › Battery › App launch › Semafor: turn off \"Manage automatically\", then in the window that appears turn on all three: "
+                        + "Auto-launch, Secondary launch and Run in background › OK. (The \"App launch\" button below takes you there.)\n"
+                        + "2. Open recent apps (the square at the bottom), drag the Semafor card down until a padlock appears, so the system doesn't close it.\n"
+                        + "3. If present: Settings › Apps › Semafor › Battery / Power usage › allow background activity.");
     }
+
     String launchSettings() { return t("Lansare aplicații", "App launch"); }
     String appSettings() { return t("Setările aplicației", "App settings"); }
 

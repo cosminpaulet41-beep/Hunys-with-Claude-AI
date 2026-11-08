@@ -21,6 +21,8 @@ O versiune modificată a SmartTube (YouTube fără reclame pentru Android TV), f
 - **10 teme întunecate**, fontul Inter, scris puțin mai mare, bară laterală rotunjită care se strânge în iconițe.
 - **Întunecare ecran** 0–80% (și automată noaptea), **volum egalizat**, **contor de date**, **mod ușor**, subtitrări mai vizibile.
 - **Previzualizare pe Acasă** 60 de secunde, cu sunet.
+- **Titlul, canalul și data** sus în stânga în player; **redare automată** cu buton (oprită implicit).
+- **Derulare cu confirmare:** ← → alege locul, saltul se face doar după OK.
 - Meniul de pe clip începe cu „Nu mă interesează” și „Nu recomanda canalul”.
 - În română și engleză.
 
@@ -40,6 +42,8 @@ A modified SmartTube (ad-free YouTube for Android TV), built for an Android 14 p
 - **10 dark themes**, Inter font, slightly larger text, rounded sidebar that collapses to icons.
 - **Screen dimming** 0–80% (also automatic at night), **loudness normalization**, **data counter**, **light mode**, more visible subtitles.
 - **Home preview** for 60 seconds, with sound.
+- **Title, channel and date** at the top left in the player; **autoplay** switch (off by default).
+- **Seek with confirmation:** left/right choose the spot, the jump happens only after OK.
 - The video menu starts with "Not interested" and "Don't recommend channel".
 - In Romanian and English.
 

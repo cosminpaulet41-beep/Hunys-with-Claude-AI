@@ -13,7 +13,7 @@ O versiune modificată a SmartTube (YouTube fără reclame pentru Android TV), f
 
 ### Ce are în plus
 - **Player ca la YouTube:** timpii deasupra barei, ⏮ ▶ ⏭ în centru, canal / Descriere / Abonează-te în stânga, like, dislike, modul de noapte, ⚙, comentarii, playlist și subtitrări în dreapta.
-- **Repere (capitole):** ↑ de pe bara video deschide capitolele cu titlul întreg; rămân pe ecran 30 de secunde.
+- **Repere (capitole):** ↑ de pe bara video deschide capitolele cu titlul întreg; rămân pe ecran 30 de secunde. Nu mai apar ca rând separat sub player.
 - **Meniul ⚙:** Calitate, Limbă audio, Viteză, Repetare, PiP, Doar sunet, Căutare, Statistici.
 - **← → în două apăsări:** prima apăsare arată bara, a doua derulează 10 secunde.
 - **Pornește pe Acasă**, cu „Continuă vizionarea”, fără ecranul negru.
@@ -34,7 +34,7 @@ A modified SmartTube (ad-free YouTube for Android TV), built for an Android 14 p
 
 ### What it adds
 - **YouTube-like player:** times above the bar, prev / play / next in the center, channel / Description / Subscribe on the left, like, dislike, night mode, ⚙, comments, playlist and subtitles on the right.
-- **Chapters:** up from the progress bar opens the chapters with their full titles; they stay on screen for 30 seconds.
+- **Chapters:** up from the progress bar opens the chapters with their full titles; they stay on screen for 30 seconds. They no longer show up as a separate row under the player.
 - **⚙ menu:** Quality, Audio language, Speed, Repeat, PiP, Audio only, Search, Stats.
 - **Left/right in two presses:** the first press shows the bar, the second one seeks 10 seconds.
 - **Opens on Home** with "Continue watching", no black screen.

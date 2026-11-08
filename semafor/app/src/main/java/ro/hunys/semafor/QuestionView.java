@@ -16,6 +16,7 @@ package ro.hunys.semafor;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -78,6 +79,8 @@ final class QuestionView extends FrameLayout {
     /** Încă trebuie apăsat „Continuă” pe pagina asta / "Continuă" still needs tapping on this load. */
     private boolean autoContinue;
     private int tries;
+    /** Scriptul care apasă singur pe pagina asta / The auto-tap script for this load. */
+    private String autoJs;
     /** Când a început încărcarea și când a fost gata întrebarea (elapsedRealtime) / When loading started and the question was ready. */
     private long loadStartedAt;
     private long readyAt;
@@ -101,7 +104,8 @@ final class QuestionView extends FrameLayout {
     /** @param url null = mediul de învățare, direct la următoarea întrebare / null = the learning page, straight to the next question */
     void load(String url) {
         hideCustomView();
-        autoContinue = url == null;
+        autoJs = url == null ? Site.autoJs(getContext()) : null;
+        autoContinue = autoJs != null;
         tries = 0;
         loadStartedAt = SystemClock.elapsedRealtime();
         readyAt = 0;
@@ -109,7 +113,7 @@ final class QuestionView extends FrameLayout {
         handler.removeCallbacks(tryContinue);
         hint.setVisibility(View.GONE);
         if (web == null) createWeb();
-        String target = url == null ? Site.categoryUrl(getContext()) : url;
+        String target = url == null ? Site.startUrl(getContext()) : url;
         Jurnal.log("pagina", "încarc / loading " + target + (autoContinue ? " (+ apăs Continuă / then tap Continue)" : ""));
         if (web != null) web.loadUrl(target);
     }
@@ -208,15 +212,15 @@ final class QuestionView extends FrameLayout {
     // ---------------------------------------------------------------- „Continuă”
 
     private void pressContinue() {
-        if (!autoContinue || web == null) return;
-        web.evaluateJavascript(Site.CONTINUE_JS, new ValueCallback<String>() {
+        if (!autoContinue || web == null || autoJs == null) return;
+        web.evaluateJavascript(autoJs, new ValueCallback<String>() {
             @Override
             public void onReceiveValue(String value) {
-                String v = value == null ? "" : value;
-                Jurnal.log("pagina", "Continuă: încercarea / try " + (tries + 1) + " → " + v
+                String v = value == null ? "" : value.replace("\"", "");
+                Jurnal.log("pagina", "Apăs singur / auto-tap: încercarea / try " + (tries + 1) + " → " + v
                         + " (ok=apăsat/tapped, no=negăsit/not found; 1=în cont/signed in, 0=nu/not)");
-                boolean logged = v.endsWith("1\"");
-                if (v.startsWith("\"ok")) {
+                boolean logged = v.length() > 2 && v.charAt(2) == '1';
+                if (v.startsWith("ok")) {
                     autoContinue = false;
                     // Încă puțin cât se deschide întrebarea / A little longer while the question opens
                     handler.postDelayed(new Runnable() {
@@ -230,11 +234,27 @@ final class QuestionView extends FrameLayout {
                     handler.postDelayed(tryContinue, 500);
                 } else {
                     autoContinue = false;
-                    markReady();
-                    showHint(logged ? txt.noContinueHint() : txt.notLoggedHint(), logged ? RED : AMBER);
+                    fallbackAfterNotFound(logged);
                 }
             }
         });
+    }
+
+    /**
+     * N-am găsit ce trebuia apăsat: la „greșite” deschid linkul tău, altfel arăt pagina cu un mesaj.
+     * Nothing to tap was found: for "wrong answers" open your link, otherwise show the page with a message.
+     */
+    private void fallbackAfterNotFound(boolean logged) {
+        SharedPreferences sp = Prefs.get(getContext());
+        String link = Prefs.getLink(sp);
+        if (Prefs.getTarget(sp) == Prefs.TARGET_WRONG && link.length() > 0 && web != null) {
+            Jurnal.log("pagina", "n-am găsit întrebările greșite pe pagină → deschid linkul tău / not found → opening your link " + link);
+            web.loadUrl(link);
+            if (!logged) showHint(txt.notLoggedHint(), AMBER);
+            return;
+        }
+        markReady();
+        showHint(logged ? txt.noContinueHint() : txt.notLoggedHint(), logged ? RED : AMBER);
     }
 
     private void showHint(String s, int color) {

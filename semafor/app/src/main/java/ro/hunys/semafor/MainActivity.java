@@ -31,7 +31,9 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.text.InputType;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -72,6 +74,8 @@ public class MainActivity extends Activity {
     private TextView modeValue;
     private LinearLayout windowBox;
     private TextView catValue;
+    private TextView targetValue;
+    private TextView linkValue;
     private LinearLayout appBox;
     private TextView appName;
     private TextView appHelp;
@@ -191,6 +195,74 @@ public class MainActivity extends Activity {
                 .show();
     }
 
+    private void showTarget() {
+        String[] names = {txt.targetName(Prefs.TARGET_WRONG), txt.targetName(Prefs.TARGET_GENERAL), txt.targetName(Prefs.TARGET_LINK)};
+        new AlertDialog.Builder(this, AlertDialog.THEME_DEVICE_DEFAULT_DARK)
+                .setTitle(txt.targetTitle())
+                .setSingleChoiceItems(names, Prefs.getTarget(prefs), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface d, int which) {
+                        Prefs.setTarget(prefs, which);
+                        d.dismiss();
+                        Jurnal.log("setări", "ce se deschide / target → " + which);
+                        UnlockService.refreshPreload();
+                        refreshUi();
+                        if (which == Prefs.TARGET_LINK && Prefs.getLink(prefs).length() == 0) editLink();
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    /** Linkul tău: îl lipești aici / Your link: paste it here. */
+    private void editLink() {
+        final EditText input = new EditText(this);
+        input.setSingleLine(true);
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
+        input.setHint(txt.linkHint());
+        input.setText(Prefs.getLink(prefs));
+        input.setSelectAllOnFocus(true);
+        Padded box = new Padded(input);
+        new AlertDialog.Builder(this, AlertDialog.THEME_DEVICE_DEFAULT_DARK)
+                .setTitle(txt.editLink())
+                .setView(box.view)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface d, int which) {
+                        String link = input.getText().toString().trim();
+                        if (link.length() > 0 && !link.startsWith("http://") && !link.startsWith("https://")) {
+                            Toast.makeText(MainActivity.this, txt.linkInvalid(), Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        Prefs.setLink(prefs, link);
+                        Jurnal.log("setări", "linkul meu / my link → " + link);
+                        UnlockService.refreshPreload();
+                        refreshUi();
+                    }
+                })
+                .setNeutralButton(txt.linkReset(), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface d, int which) {
+                        Prefs.setLink(prefs, Prefs.DEFAULT_LINK);
+                        UnlockService.refreshPreload();
+                        refreshUi();
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    /** Câmpul de text cu margini / The text field with margins. */
+    private final class Padded {
+        final android.widget.FrameLayout view;
+
+        Padded(View child) {
+            view = new android.widget.FrameLayout(MainActivity.this);
+            view.setPadding(dp(20), dp(8), dp(20), 0);
+            view.addView(child, new android.widget.FrameLayout.LayoutParams(-1, -2));
+        }
+    }
+
     private void showCategory() {
         int n = Site.SLUGS.length;
         String[] names = new String[n];
@@ -203,6 +275,7 @@ public class MainActivity extends Activity {
                         Prefs.setCategory(prefs, which);
                         d.dismiss();
                         Gate.apply(MainActivity.this);
+                        UnlockService.refreshPreload();
                         refreshUi();
                     }
                 })
@@ -474,9 +547,32 @@ public class MainActivity extends Activity {
         // Fereastra Semafor / Semafor window
         windowBox = new LinearLayout(this);
         windowBox.setOrientation(LinearLayout.VERTICAL);
-        catValue = text("", 17, TEXT, true);
-        catValue.setPadding(0, dp(12), 0, 0);
+        targetValue = text("", 17, AMBER, true);
+        targetValue.setPadding(0, dp(12), 0, 0);
+        windowBox.addView(targetValue);
+        catValue = text("", 15, TEXT, false);
+        catValue.setPadding(0, dp(4), 0, 0);
         windowBox.addView(catValue);
+        linkValue = help("", MUTED, 12);
+        windowBox.addView(linkValue);
+        LinearLayout targetRow = row();
+        Button targetBtn = button(txt.targetTitle());
+        targetBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showTarget();
+            }
+        });
+        targetRow.addView(targetBtn, weight(0));
+        Button linkBtn = button(txt.editLink());
+        linkBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                editLink();
+            }
+        });
+        targetRow.addView(linkBtn, weight(8));
+        windowBox.addView(targetRow, topMargin(10));
         windowBox.addView(help(txt.windowHelp(), MUTED, 13));
         LinearLayout winRow = row();
         Button signIn = button(txt.signIn());
@@ -663,6 +759,10 @@ public class MainActivity extends Activity {
         windowBox.setVisibility(window ? View.VISIBLE : View.GONE);
         appBox.setVisibility(window ? View.GONE : View.VISIBLE);
         catValue.setText(txt.category(Prefs.getCategory(prefs)));
+        int target = Prefs.getTarget(prefs);
+        targetValue.setText(txt.targetLine(target));
+        catValue.setVisibility(target == Prefs.TARGET_LINK ? View.GONE : View.VISIBLE);
+        linkValue.setText(txt.linkLine(Prefs.getLink(prefs), target));
         if (!window) {
             String pkg = Gate.targetPackage(this);
             if (pkg.length() == 0) {

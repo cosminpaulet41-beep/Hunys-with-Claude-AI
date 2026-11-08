@@ -32,6 +32,15 @@ final class Prefs {
     private static final String K_ACTIVE = "active";
     private static final String K_MODE = "mode";
     private static final String K_CATEGORY = "category";
+    private static final String K_TARGET = "target";
+    private static final String K_LINK = "link";
+
+    /** Ce se deschide în fereastră / What opens in the window. */
+    static final int TARGET_WRONG = 0;   // întrebările greșite / wrong answers
+    static final int TARGET_GENERAL = 1; // mediul GENERAL, „Continuă” / GENERAL, "Continue"
+    static final int TARGET_LINK = 2;    // linkul meu, exact / my link, exactly
+    /** Linkul dat de autor / The link the author gave. */
+    static final String DEFAULT_LINK = "https://www.scoalarutiera.ro/intrebari-la-care-ai-raspuns-gresit-categoria-b/4104";
     private static final String K_PKG = "pkg";
     private static final String K_FREQ = "freq";
     private static final String K_NIGHT = "night_quiet";
@@ -90,6 +99,22 @@ final class Prefs {
 
     static void setCategory(SharedPreferences sp, int idx) {
         sp.edit().putInt(K_CATEGORY, clamp(idx, 0, Site.SLUGS.length - 1)).apply();
+    }
+
+    static int getTarget(SharedPreferences sp) {
+        return clamp(sp.getInt(K_TARGET, TARGET_WRONG), TARGET_WRONG, TARGET_LINK);
+    }
+
+    static void setTarget(SharedPreferences sp, int t) {
+        sp.edit().putInt(K_TARGET, clamp(t, TARGET_WRONG, TARGET_LINK)).apply();
+    }
+
+    static String getLink(SharedPreferences sp) {
+        return sp.getString(K_LINK, DEFAULT_LINK);
+    }
+
+    static void setLink(SharedPreferences sp, String link) {
+        sp.edit().putString(K_LINK, link == null ? "" : link.trim()).apply();
     }
 
     /** Pachetul aplicației cu întrebări / The quiz app's package. */

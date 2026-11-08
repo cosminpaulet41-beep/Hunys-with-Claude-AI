@@ -79,13 +79,30 @@ final class Txt {
         return t("Școala Rutieră · cat. ", "Școala Rutieră · cat. ") + short_;
     }
     String windowHelp() {
-        return t("La deblocare se deschide mediul de învățare GENERAL de pe scoalarutiera.ro și Semafor apasă singur „Continuă”, deci ajungi direct la următoarea întrebare. "
+        return t("La deblocare apare direct o întrebare de pe scoalarutiera.ro: următoarea dintre cele la care ai greșit, următoarea din mediul GENERAL sau linkul tău, cum alegi mai sus. "
                         + "Răspunsul corect ți-l arată site-ul când greșești. „Gata ✓” te întoarce unde erai.\n"
                         + "O singură dată: apasă „Intră în cont” și conectează-te cu contul tău Școala Rutieră (iconița din dreapta sus), ca să continui de unde ai rămas.",
-                "On unlock the GENERAL learning environment on scoalarutiera.ro opens and Semafor taps \"Continuă\" by itself, so you land straight on the next question. "
+                "On unlock a scoalarutiera.ro question appears straight away: the next one you got wrong, the next one in the GENERAL environment, or your link, as chosen above. "
                         + "The site shows the correct answer when you get one wrong. \"Done ✓\" takes you back to where you were.\n"
                         + "Once only: tap \"Sign in\" and sign in with your Școala Rutieră account (the icon top right) so you continue where you left off.");
     }
+    String targetTitle() { return t("Ce se deschide", "What opens"); }
+    String targetName(int target) {
+        if (target == Prefs.TARGET_GENERAL) return t("Mediul GENERAL (apasă singur „Continuă”)", "GENERAL environment (taps \"Continue\" itself)");
+        if (target == Prefs.TARGET_LINK) return t("Linkul meu, exact cum e", "My link, exactly as it is");
+        return t("Întrebările la care ai greșit (următoarea)", "Questions you got wrong (the next one)");
+    }
+    String targetLine(int target) { return t("Se deschide: ", "Opens: ") + targetName(target); }
+    String linkLine(String link, int target) {
+        String l = link == null || link.length() == 0 ? t("(niciunul)", "(none)") : link;
+        if (target == Prefs.TARGET_WRONG) return t("Dacă nu găsesc lista pe pagină, deschid linkul tău: ", "If I can't find the list on the page, I open your link: ") + l;
+        return t("Linkul tău: ", "Your link: ") + l;
+    }
+    String editLink() { return t("Linkul meu", "My link"); }
+    String linkHint() { return t("Lipește linkul (https://…)", "Paste the link (https://…)"); }
+    String linkInvalid() { return t("Linkul trebuie să înceapă cu https://", "The link must start with https://"); }
+    String linkReset() { return t("Linkul inițial", "Original link"); }
+
     String signIn() { return t("Intră în cont (o singură dată)", "Sign in (once)"); }
     String windowDone() { return t("Gata ✓", "Done ✓"); }
     String notLoggedHint() {
@@ -93,8 +110,8 @@ final class Txt {
                 "You're not signed in here. Tap the icon top right and sign in once with your Școala Rutieră account to continue where you left off. (Tap to hide.)");
     }
     String noContinueHint() {
-        return t("Nu am găsit butonul „Continuă mediul GENERAL”. Apasă-l tu de pe pagină. (Atinge ca să ascunzi.)",
-                "Couldn't find the \"Continuă mediul GENERAL\" button. Tap it on the page yourself. (Tap to hide.)");
+        return t("Nu am găsit pe pagină ce trebuia apăsat. Alege tu din pagină. (Atinge ca să ascunzi.)",
+                "Couldn't find what to tap on the page. Pick it on the page yourself. (Tap to hide.)");
     }
 
     String appTitle() { return t("Aplicația cu întrebări", "Quiz app"); }

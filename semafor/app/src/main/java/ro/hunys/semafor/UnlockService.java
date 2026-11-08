@@ -59,7 +59,7 @@ public class UnlockService extends Service {
     private final Runnable onUnlock = new Runnable() {
         @Override
         public void run() {
-            trigger();
+            trigger("deblocare");
         }
     };
 
@@ -75,8 +75,13 @@ public class UnlockService extends Service {
             try {
                 KeyguardManager km = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
                 PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
-                if (pm.isInteractive() && !km.isKeyguardLocked()) trigger();
-            } catch (RuntimeException ignored) {
+                boolean on = pm.isInteractive();
+                boolean locked = km.isKeyguardLocked();
+                Jurnal.log("ecran", "verificare după aprindere / check after screen on: aprins=" + on + " blocat=" + locked
+                        + (on && !locked ? " → tratat ca deblocare / treated as unlock" : " → aștept deblocarea / waiting for unlock"));
+                if (on && !locked) trigger("ecran-fără-blocare");
+            } catch (RuntimeException e) {
+                Jurnal.error("ecran", "verificare după aprindere", e);
             }
         }
     };
@@ -99,12 +104,14 @@ public class UnlockService extends Service {
     public void onCreate() {
         super.onCreate();
         instance = this;
+        Jurnal.log("serviciu", "onCreate (pid " + android.os.Process.myPid() + ")");
         overlay = new QuestionOverlay(this);
         Prefs.addLog(Prefs.get(this), Prefs.LOG_SERVICE);
         unlockReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String a = intent.getAction();
+                logBroadcast(intent);
                 if (Intent.ACTION_USER_PRESENT.equals(a)) {
                     handler.removeCallbacks(onScreenOn);
                     handler.removeCallbacks(onUnlock);
@@ -135,21 +142,43 @@ public class UnlockService extends Service {
             } else {
                 registerReceiver(unlockReceiver, f);
             }
+            Jurnal.log("serviciu", "ascult / listening: USER_PRESENT, SCREEN_ON, SCREEN_OFF, CLOSE_SYSTEM_DIALOGS");
         } catch (RuntimeException e) {
+            Jurnal.error("serviciu", "registerReceiver", e);
             unlockReceiver = null;
         }
     }
 
+    /** Ce a trimis sistemul și starea ecranului în acel moment / What the system sent and the screen state then. */
+    private void logBroadcast(Intent intent) {
+        String a = intent.getAction();
+        String shortName = a == null ? "null" : a.substring(a.lastIndexOf('.') + 1);
+        StringBuilder b = new StringBuilder(shortName);
+        try {
+            KeyguardManager km = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
+            PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
+            b.append(" | aprins/on=").append(pm.isInteractive()).append(" blocat/locked=").append(km.isKeyguardLocked());
+        } catch (RuntimeException ignored) {
+        }
+        if (Intent.ACTION_CLOSE_SYSTEM_DIALOGS.equals(a)) b.append(" reason=").append(intent.getStringExtra("reason"));
+        if (overlay != null) b.append(" | strat/overlay arătat/shown=").append(overlay.isShown());
+        Jurnal.log("sistem", b.toString());
+    }
+
     // ---------------------------------------------------------------- deblocare / unlock
 
-    private void trigger() {
+    private void trigger(String source) {
         long now = SystemClock.elapsedRealtime();
         // Aprinderea ecranului și deblocarea pot veni amândouă / Screen-on and unlock may both arrive.
-        if (lastTriggerAt != 0 && now - lastTriggerAt < 3000) return;
+        if (lastTriggerAt != 0 && now - lastTriggerAt < 3000) {
+            Jurnal.log("decizie", "ignorat (dublură, " + (now - lastTriggerAt) + " ms) / ignored (duplicate), sursa " + source);
+            return;
+        }
         lastTriggerAt = now;
 
         final SharedPreferences sp = Prefs.get(this);
         String skip = Gate.decide(this);
+        Jurnal.log("decizie", "sursa/source=" + source + " → " + (skip == null ? "ARĂT întrebarea / SHOW question" : "sărit/skipped: " + skip));
         if (skip != null) {
             if (!Prefs.LOG_OFF.equals(skip)) Prefs.addLog(sp, skip);
             updateNotification();
@@ -157,15 +186,18 @@ public class UnlockService extends Service {
         }
         final Intent launch = Gate.launchIntent(this);
         if (launch == null) {
+            Jurnal.log("decizie", "nicio aplicație / no app to open");
             Prefs.addLog(sp, Prefs.LOG_NO_APP);
             updateNotification();
             return;
         }
+        boolean canOverlay = Gate.canDrawOverlays(this);
         if (Prefs.getMode(sp) == Prefs.MODE_WINDOW) {
             // Întrebarea desenată direct peste ecran: sistemul nu o poate bloca ca pe o fereastră
             // deschisă din fundal. The question drawn straight over the screen: the system can't
             // block it like a window opened from the background.
-            if (Gate.canDrawOverlays(this) && overlay != null && overlay.show()) {
+            Jurnal.log("arăt", "mod fereastră; permisiune peste aplicații / overlay permission=" + canOverlay);
+            if (canOverlay && overlay != null && overlay.show()) {
                 Prefs.recordOpen(sp);
                 Prefs.addLog(sp, Prefs.LOG_OPEN);
                 updateNotification();
@@ -174,7 +206,8 @@ public class UnlockService extends Service {
             }
             return;
         }
-        if (!Gate.canDrawOverlays(this)) {
+        Jurnal.log("arăt", "mod aplicație / app mode: " + launch + "; overlay permission=" + canOverlay);
+        if (!canOverlay) {
             fallback(launch);
             return;
         }
@@ -205,7 +238,9 @@ public class UnlockService extends Service {
     private void fallback(Intent launch) {
         hideTrampoline();
         SharedPreferences sp = Prefs.get(this);
-        if (Gate.notifyQuestion(this, launch)) Prefs.recordOpen(sp);
+        boolean ok = Gate.notifyQuestion(this, launch);
+        Jurnal.log("arăt", "rezervă: notificare / fallback notification → " + (ok ? "trimisă / posted" : "EȘUAT / FAILED"));
+        if (ok) Prefs.recordOpen(sp);
         Prefs.addLog(sp, Prefs.LOG_BLOCKED);
         updateNotification();
     }
@@ -225,7 +260,9 @@ public class UnlockService extends Service {
     private void startSafely(Intent launch) {
         try {
             startActivity(launch);
-        } catch (RuntimeException ignored) {
+            Jurnal.log("arăt", "startActivity trimis / sent: " + launch.getComponent() + " " + launch.getData());
+        } catch (RuntimeException e) {
+            Jurnal.error("arăt", "startActivity", e);
         }
     }
 
@@ -251,6 +288,7 @@ public class UnlockService extends Service {
             wm.addView(v, lp);
             trampoline = v;
         } catch (RuntimeException e) {
+            Jurnal.error("arăt", "pixelul invizibil / trampoline addView", e);
             trampoline = null;
         }
     }
@@ -268,12 +306,13 @@ public class UnlockService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // Mereu întâi notificarea, cum cere Android / Always the notification first, as Android requires.
+        String action = intent != null ? intent.getAction() : null;
+        Jurnal.log("serviciu", "onStartCommand action=" + action + (intent == null ? " (repornit de sistem / restarted by the system)" : "") + " flags=" + flags);
         if (!goForeground()) {
             stopSelf();
             return START_NOT_STICKY;
         }
         SharedPreferences sp = Prefs.get(this);
-        String action = intent != null ? intent.getAction() : null;
         if (ACTION_PAUSE.equals(action)) {
             Prefs.setPauseUntil(sp, System.currentTimeMillis() + PAUSE_MS);
         } else if (ACTION_RESUME.equals(action)) {
@@ -283,6 +322,7 @@ public class UnlockService extends Service {
         }
 
         if (!Prefs.isActive(sp)) {
+            Jurnal.log("serviciu", "oprit din setări / turned off → stopSelf");
             stopSelf();
             return START_NOT_STICKY;
         }
@@ -304,6 +344,7 @@ public class UnlockService extends Service {
 
     @Override
     public void onDestroy() {
+        Jurnal.log("serviciu", "onDestroy");
         handler.removeCallbacksAndMessages(null);
         hideTrampoline();
         if (overlay != null) {
@@ -326,6 +367,16 @@ public class UnlockService extends Service {
         return null;
     }
 
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        Jurnal.log("serviciu", "onTaskRemoved (aplicația a fost scoasă din recente / swiped from recents)");
+        super.onTaskRemoved(rootIntent);
+    }
+
+    static boolean isRunning() {
+        return instance != null;
+    }
+
     // ---------------------------------------------------------------- notificare / notification
 
     private boolean goForeground() {
@@ -338,6 +389,7 @@ public class UnlockService extends Service {
             }
             return true;
         } catch (RuntimeException e) {
+            Jurnal.error("serviciu", "startForeground", e);
             return false;
         }
     }

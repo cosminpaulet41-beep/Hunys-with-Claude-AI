@@ -123,6 +123,7 @@ public class MainActivity extends Activity {
     // ---------------------------------------------------------------- acțiuni / actions
 
     private void togglePower() {
+        Jurnal.log("setări", "buton pornire / power button; era pornit/was active=" + Prefs.isActive(prefs));
         if (Prefs.isActive(prefs)) {
             Gate.setActive(this, false);
         } else if (!Gate.canDrawOverlays(this)) {
@@ -155,6 +156,8 @@ public class MainActivity extends Activity {
     }
 
     private void tryNow() {
+        Jurnal.log("încearcă", "apăsat / pressed; mod=" + Prefs.getMode(prefs) + " pornit/active=" + Prefs.isActive(prefs)
+                + " serviciu/service=" + UnlockService.isRunning() + " overlay=" + Gate.canDrawOverlays(this));
         if (Prefs.getMode(prefs) == Prefs.MODE_APP && Gate.targetPackage(this).length() == 0) {
             showPicker();
         } else if (Prefs.getMode(prefs) == Prefs.MODE_WINDOW && Prefs.isActive(prefs) && UnlockService.showOverlayNow()) {
@@ -562,6 +565,14 @@ public class MainActivity extends Activity {
         logText = help("", TEXT, 14);
         logCard.addView(logText);
         logCard.addView(help(txt.logHelp(), MUTED, 12));
+        Button journal = button(txt.logOpen());
+        journal.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tryStart(new Intent(MainActivity.this, LogActivity.class));
+            }
+        });
+        logCard.addView(journal, topMargin(10));
         root.addView(logCard, cardParams());
 
         // ---- Ca să meargă la fiecare deblocare / So it works on every unlock

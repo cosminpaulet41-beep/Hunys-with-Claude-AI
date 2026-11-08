@@ -176,6 +176,21 @@ final class Txt {
         return code;
     }
 
+    String logOpen() { return t("Jurnal pentru depanare", "Debug log"); }
+    String logScreenTitle() { return t("Jurnal", "Log"); }
+    String logHowTo() {
+        return t("1. Apasă „Șterge”.  2. Blochează și deblochează telefonul de 3–4 ori (și apasă o dată „Încearcă acum”).  "
+                        + "3. Revino aici și apasă „Trimite fișierul”, apoi alege Claude. Fișierul rămâne și în Descărcări.",
+                "1. Tap \"Clear\".  2. Lock and unlock the phone 3–4 times (and tap \"Try it now\" once).  "
+                        + "3. Come back here, tap \"Send the file\" and pick Claude. The file also stays in Downloads.");
+    }
+    String logSend() { return t("Trimite fișierul", "Send the file"); }
+    String logCopy() { return t("Copiază", "Copy"); }
+    String logRefresh() { return t("Reîmprospătează", "Refresh"); }
+    String logClear() { return t("Șterge", "Clear"); }
+    String logCopied() { return t("Jurnalul e copiat. Lipește-l în conversație.", "Log copied. Paste it into the chat."); }
+    String logSaved(String name) { return t("Salvat în Descărcări: ", "Saved to Downloads: ") + name; }
+
     String huaweiTitle() { return t("Pe Huawei / Honor", "On Huawei / Honor"); }
     String huaweiBody() {
         return t("Ca sistemul să nu oprească Semafor în fundal: Setări › Baterie › Lansare aplicații › Semafor › gestionare manuală, cu toate cele trei opțiuni pornite. "

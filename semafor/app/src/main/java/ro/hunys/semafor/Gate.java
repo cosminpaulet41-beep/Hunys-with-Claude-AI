@@ -93,8 +93,10 @@ final class Gate {
         if (launch == null) return false;
         try {
             c.startActivity(launch);
+            Jurnal.log("încearcă", "deschis în fereastră normală / opened in a normal window: " + launch.getComponent());
             return true;
         } catch (RuntimeException e) {
+            Jurnal.error("încearcă", "openNow", e);
             return false;
         }
     }
@@ -151,6 +153,7 @@ final class Gate {
             nm.notify(NOTIF_QUESTION, b.build());
             return true;
         } catch (RuntimeException e) {
+            Jurnal.error("notificare", "notifyQuestion", e);
             return false;
         }
     }
@@ -268,6 +271,7 @@ final class Gate {
     static boolean apply(Context c) {
         Intent i = new Intent(c, UnlockService.class);
         if (!Prefs.isActive(Prefs.get(c))) {
+            Jurnal.log("serviciu", "oprit / turned off");
             try {
                 c.stopService(i);
             } catch (RuntimeException ignored) {
@@ -282,6 +286,7 @@ final class Gate {
             }
             return true;
         } catch (RuntimeException e) {
+            Jurnal.error("serviciu", "pornirea serviciului / starting the service", e);
             return false;
         }
     }

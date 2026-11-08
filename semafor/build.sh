@@ -18,8 +18,8 @@ OUT="$HERE/build"
 KEYSTORE="$HERE/keystore/semafor.keystore"
 KS_PASS="${KS_PASS:-semafor}"
 KS_ALIAS="${KS_ALIAS:-semafor}"
-VERSION_CODE=4
-VERSION_NAME=1.3
+VERSION_CODE=5
+VERSION_NAME=1.4
 
 : "${AAPT2:?setează AAPT2 / set AAPT2}"
 : "${ANDROID_JAR:?setează ANDROID_JAR / set ANDROID_JAR}"

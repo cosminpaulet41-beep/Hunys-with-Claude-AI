@@ -16,6 +16,7 @@ import android.content.Intent;
 public class BootReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
+        Jurnal.log("pornire", "primit / received " + intent.getAction() + ", pornit/active=" + Prefs.isActive(Prefs.get(context)));
         if (Prefs.isActive(Prefs.get(context))) {
             Gate.apply(context);
         }

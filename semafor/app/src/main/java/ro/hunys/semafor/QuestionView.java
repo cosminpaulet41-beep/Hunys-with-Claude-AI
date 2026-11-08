@@ -35,7 +35,10 @@ import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
+import android.webkit.RenderProcessGoneDetail;
+import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -65,6 +68,7 @@ final class QuestionView extends FrameLayout {
     private final Txt txt;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private WebView web;
+    private LinearLayout col;
     private ProgressBar progress;
     private TextView hint;
     private View customView;
@@ -96,7 +100,34 @@ final class QuestionView extends FrameLayout {
         tries = 0;
         handler.removeCallbacks(tryContinue);
         hint.setVisibility(View.GONE);
-        if (web != null) web.loadUrl(url == null ? Site.categoryUrl(getContext()) : url);
+        if (web == null) createWeb();
+        String target = url == null ? Site.categoryUrl(getContext()) : url;
+        Jurnal.log("pagina", "încarc / loading " + target + (autoContinue ? " (+ apăs Continuă / then tap Continue)" : ""));
+        if (web != null) web.loadUrl(target);
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        Jurnal.log("pagina", "atașată la fereastră / attached to window (" + (overlay ? "strat/overlay" : "fereastră/activity") + ")");
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        Jurnal.log("pagina", "desprinsă de fereastră / detached from window");
+        super.onDetachedFromWindow();
+    }
+
+    @Override
+    protected void onWindowVisibilityChanged(int visibility) {
+        super.onWindowVisibilityChanged(visibility);
+        Jurnal.log("pagina", "vizibilitate fereastră / window visibility → " + QuestionOverlay.visibilityName(visibility));
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasWindowFocus) {
+        super.onWindowFocusChanged(hasWindowFocus);
+        Jurnal.log("pagina", "focus → " + hasWindowFocus);
     }
 
     void resume() {
@@ -151,6 +182,8 @@ final class QuestionView extends FrameLayout {
             @Override
             public void onReceiveValue(String value) {
                 String v = value == null ? "" : value;
+                Jurnal.log("pagina", "Continuă: încercarea / try " + (tries + 1) + " → " + v
+                        + " (ok=apăsat/tapped, no=negăsit/not found; 1=în cont/signed in, 0=nu/not)");
                 boolean logged = v.endsWith("1\"");
                 if (v.startsWith("\"ok")) {
                     autoContinue = false;
@@ -178,7 +211,7 @@ final class QuestionView extends FrameLayout {
         Context c = getContext();
         setBackgroundColor(Color.BLACK);
 
-        LinearLayout col = new LinearLayout(c);
+        col = new LinearLayout(c);
         col.setOrientation(LinearLayout.VERTICAL);
         addView(col, new FrameLayout.LayoutParams(-1, -1));
 
@@ -237,92 +270,132 @@ final class QuestionView extends FrameLayout {
         });
         col.addView(hint, new LinearLayout.LayoutParams(-1, -2));
 
-        // ---- Pagina / The page
-        web = new WebView(c);
-        WebSettings s = web.getSettings();
-        s.setJavaScriptEnabled(true);
-        s.setDomStorageEnabled(true);
-        s.setDatabaseEnabled(true);
-        s.setLoadWithOverviewMode(true);
-        s.setUseWideViewPort(true);
-        s.setSupportZoom(true);
-        s.setBuiltInZoomControls(true);
-        s.setDisplayZoomControls(false);
-        s.setMediaPlaybackRequiresUserGesture(true);
-        CookieManager cm = CookieManager.getInstance();
-        cm.setAcceptCookie(true);
-        cm.setAcceptThirdPartyCookies(web, true);
+        createWeb();
+    }
 
-        web.setWebViewClient(new WebViewClient() {
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                return openOutside(request.getUrl());
-            }
+    /** Pagina web; se reface dacă motorul ei s-a oprit / The web page; rebuilt if its engine stopped. */
+    @SuppressLint("SetJavaScriptEnabled")
+    private void createWeb() {
+        Context c = getContext();
+        try {
+            web = new WebView(c);
+            WebSettings s = web.getSettings();
+            s.setJavaScriptEnabled(true);
+            s.setDomStorageEnabled(true);
+            s.setDatabaseEnabled(true);
+            s.setLoadWithOverviewMode(true);
+            s.setUseWideViewPort(true);
+            s.setSupportZoom(true);
+            s.setBuiltInZoomControls(true);
+            s.setDisplayZoomControls(false);
+            s.setMediaPlaybackRequiresUserGesture(true);
+            CookieManager cm = CookieManager.getInstance();
+            cm.setAcceptCookie(true);
+            cm.setAcceptThirdPartyCookies(web, true);
 
-            @SuppressWarnings("deprecation")
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                return openOutside(Uri.parse(url));
-            }
-
-            @Override
-            public void onPageStarted(WebView view, String url, Bitmap favicon) {
-                progress.setVisibility(View.VISIBLE);
-            }
-
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                progress.setVisibility(View.GONE);
-                if (autoContinue && Site.isCategoryPage(url)) {
-                    handler.removeCallbacks(tryContinue);
-                    handler.postDelayed(tryContinue, 150);
+            web.setWebViewClient(new WebViewClient() {
+                @Override
+                public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                    return openOutside(request.getUrl());
                 }
-            }
-        });
-        web.setWebChromeClient(new WebChromeClient() {
-            @Override
-            public void onProgressChanged(WebView view, int newProgress) {
-                progress.setProgress(newProgress);
-            }
 
-            // Explicațiile video pe tot ecranul / The video explanations full screen
-            @Override
-            public void onShowCustomView(View view, CustomViewCallback callback) {
-                hideCustomView();
-                customView = view;
-                customCallback = callback;
-                addView(view, new FrameLayout.LayoutParams(-1, -1));
-            }
+                @SuppressWarnings("deprecation")
+                @Override
+                public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                    return openOutside(Uri.parse(url));
+                }
 
-            @Override
-            public void onHideCustomView() {
-                hideCustomView();
-            }
+                @Override
+                public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                    Jurnal.log("pagina", "începe / started " + url);
+                    progress.setVisibility(View.VISIBLE);
+                }
 
-            // Peste ecran nu se pot arăta dialoguri: le confirmăm singuri.
-            // Over the screen no dialogs can be shown: confirm them ourselves.
-            @Override
-            public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
-                if (!overlay) return super.onJsAlert(view, url, message, result);
-                result.confirm();
-                return true;
-            }
+                @Override
+                public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+                    if (request.isForMainFrame()) {
+                        Jurnal.log("pagina", "EROARE încărcare / load ERROR " + error.getErrorCode() + " " + error.getDescription() + " — " + request.getUrl());
+                    }
+                }
 
-            @Override
-            public boolean onJsConfirm(WebView view, String url, String message, JsResult result) {
-                if (!overlay) return super.onJsConfirm(view, url, message, result);
-                result.confirm();
-                return true;
-            }
+                @Override
+                public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse response) {
+                    if (request.isForMainFrame()) {
+                        Jurnal.log("pagina", "EROARE HTTP " + response.getStatusCode() + " — " + request.getUrl());
+                    }
+                }
 
-            @Override
-            public boolean onJsPrompt(WebView view, String url, String message, String defaultValue, JsPromptResult result) {
-                if (!overlay) return super.onJsPrompt(view, url, message, defaultValue, result);
-                result.confirm(defaultValue);
-                return true;
-            }
-        });
-        col.addView(web, new LinearLayout.LayoutParams(-1, 0, 1f));
+                @Override
+                public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
+                    Jurnal.log("pagina", "motorul paginii s-a oprit / renderer gone, crash=" + detail.didCrash());
+                    try {
+                        col.removeView(view);
+                        view.destroy();
+                    } catch (Throwable ignored) {
+                    }
+                    if (view == web) web = null;
+                    host.onDone();
+                    return true;
+                }
+
+                @Override
+                public void onPageFinished(WebView view, String url) {
+                    Jurnal.log("pagina", "gata / finished " + url + " (titlu/title: " + view.getTitle() + ")");
+                    progress.setVisibility(View.GONE);
+                    if (autoContinue && Site.isCategoryPage(url)) {
+                        handler.removeCallbacks(tryContinue);
+                        handler.postDelayed(tryContinue, 150);
+                    }
+                }
+            });
+            web.setWebChromeClient(new WebChromeClient() {
+                @Override
+                public void onProgressChanged(WebView view, int newProgress) {
+                    progress.setProgress(newProgress);
+                }
+
+                // Explicațiile video pe tot ecranul / The video explanations full screen
+                @Override
+                public void onShowCustomView(View view, CustomViewCallback callback) {
+                    hideCustomView();
+                    customView = view;
+                    customCallback = callback;
+                    addView(view, new FrameLayout.LayoutParams(-1, -1));
+                }
+
+                @Override
+                public void onHideCustomView() {
+                    hideCustomView();
+                }
+
+                // Peste ecran nu se pot arăta dialoguri: le confirmăm singuri.
+                // Over the screen no dialogs can be shown: confirm them ourselves.
+                @Override
+                public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
+                    if (!overlay) return super.onJsAlert(view, url, message, result);
+                    result.confirm();
+                    return true;
+                }
+
+                @Override
+                public boolean onJsConfirm(WebView view, String url, String message, JsResult result) {
+                    if (!overlay) return super.onJsConfirm(view, url, message, result);
+                    result.confirm();
+                    return true;
+                }
+
+                @Override
+                public boolean onJsPrompt(WebView view, String url, String message, String defaultValue, JsPromptResult result) {
+                    if (!overlay) return super.onJsPrompt(view, url, message, defaultValue, result);
+                    result.confirm(defaultValue);
+                    return true;
+                }
+            });
+            col.addView(web, new LinearLayout.LayoutParams(-1, 0, 1f));
+        } catch (Throwable e) {
+            Jurnal.error("pagina", "nu am putut crea pagina web / couldn't create the WebView", e);
+            web = null;
+        }
     }
 
     /** Adresele web rămân aici; restul (mail, telefon, aplicații) se deschid afară. */
@@ -330,10 +403,12 @@ final class QuestionView extends FrameLayout {
         if (uri == null) return false;
         String scheme = uri.getScheme();
         if ("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme)) return false;
+        Jurnal.log("pagina", "deschid în afară / opening outside: " + uri);
         try {
             getContext().startActivity(new Intent(Intent.ACTION_VIEW, uri).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             if (overlay) host.onDone();
-        } catch (RuntimeException ignored) {
+        } catch (RuntimeException e) {
+            Jurnal.error("pagina", "deschidere în afară", e);
         }
         return true;
     }

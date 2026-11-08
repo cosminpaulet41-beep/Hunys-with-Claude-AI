@@ -29,6 +29,7 @@ public class QuestionActivity extends Activity implements QuestionView.Host {
         getWindow().setNavigationBarColor(Color.BLACK);
         // Nu două pagini deodată: stratul de peste ecran se închide / Not two pages at once: the overlay closes.
         UnlockService.hideOverlay();
+        Jurnal.log("fereastră", "onCreate");
         view = new QuestionView(this, this, false);
         setContentView(view);
         view.load(getIntent() != null ? getIntent().getStringExtra(EXTRA_URL) : null);
@@ -43,17 +44,20 @@ public class QuestionActivity extends Activity implements QuestionView.Host {
 
     @Override
     public void onDone() {
+        Jurnal.log("fereastră", "Gata / Done");
         finishAndRemoveTask();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        Jurnal.log("fereastră", "onResume");
         view.resume();
     }
 
     @Override
     protected void onPause() {
+        Jurnal.log("fereastră", "onPause");
         view.pause();
         super.onPause();
     }

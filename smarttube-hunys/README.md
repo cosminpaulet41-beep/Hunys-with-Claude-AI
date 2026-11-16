@@ -25,6 +25,7 @@ O versiune modificată a SmartTube (YouTube fără reclame pentru Android TV), f
 - **Înapoi** din orice secțiune a barei laterale duce pe Acasă; doar de pe Acasă cere dublu click ca să ieși.
 - **Derulare cu confirmare:** ← → alege locul, saltul se face doar după OK.
 - **La sfârșitul clipului** ecranul rămâne pe loc, fără salt la sugestii.
+- **Sugestiile din player:** ↑ ↓ păstrează coloana; meniul (OK ținut apăsat) are „Nu sunt interesat” și „Nu recomanda canalul” primele; clipul selectat arată previzualizarea animată de la YouTube, fără sunet.
 - **Rândurile de pe Acasă** încarcă și clipurile din spatele butonului „mai mult” de la capăt.
 - Bazat pe SmartTube 32.72.
 - Meniul de pe clip începe cu „Nu mă interesează” și „Nu recomanda canalul”.
@@ -50,6 +51,7 @@ A modified SmartTube (ad-free YouTube for Android TV), built for an Android 14 p
 - **Back** from any sidebar section goes to Home; only Home asks for a double press to exit.
 - **Seek with confirmation:** left/right choose the spot, the jump happens only after OK.
 - **At the end of a video** the screen stays put, no jump to suggestions.
+- **Player suggestions:** up/down keep the column; the menu (hold OK) starts with "Not interested" and "Don't recommend channel"; the selected video shows YouTube's silent animated preview.
 - **Home rows** also load the videos behind the "more" button at their end.
 - Based on SmartTube 32.72.
 - The video menu starts with "Not interested" and "Don't recommend channel".

@@ -20,8 +20,8 @@ final class Prefs {
      * Cât de des se deschide: la a câta deblocare, sau o dată la câte minute.
      * How often it opens: on which unlock, or once every how many minutes.
      */
-    static final int[] FREQ_EVERY = {1, 2, 3, 0, 0, 0};
-    static final int[] FREQ_MINUTES = {0, 0, 0, 10, 30, 60};
+    static final int[] FREQ_EVERY = {1, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0};
+    static final int[] FREQ_MINUTES = {0, 0, 0, 10, 30, 60, 120, 300, 600, 720, 1440};
 
     /** Fereastra Semafor, direct la întrebare / Semafor window, straight to the question. */
     static final int MODE_WINDOW = 0;

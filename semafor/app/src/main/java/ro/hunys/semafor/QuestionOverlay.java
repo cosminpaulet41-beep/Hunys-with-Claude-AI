@@ -38,7 +38,7 @@ final class QuestionOverlay implements QuestionView.Host {
     }
 
     /** Cât timp o întrebare pregătită e bună de arătat / How long a preloaded question is good to show. */
-    private static final long READY_MAX_MS = 30L * 60L * 1000L;
+    private static final long READY_MAX_MS = 3L * 60L * 60L * 1000L;
     /** După cât timp o reîmprospătăm la stingerea/aprinderea ecranului / When to refresh it on screen off/on. */
     private static final long REFRESH_AFTER_MS = 5L * 60L * 1000L;
     private boolean destroyed;
@@ -62,6 +62,7 @@ final class QuestionOverlay implements QuestionView.Host {
      */
     void preload(String why, boolean force) {
         if (destroyed) return;
+        if (!Gate.showsSoon(ctx)) return; // întrebarea nu apare curând: nu consumăm internet / not due soon: save data
         try {
             ensureView();
             if (shown) return;
@@ -75,6 +76,17 @@ final class QuestionOverlay implements QuestionView.Host {
         } catch (Throwable e) {
             Jurnal.error("strat", "preload", e);
         }
+    }
+
+    /**
+     * La aprinderea ecranului: doar dacă nu e nicio întrebare pregătită. Una mai veche e arătată
+     * imediat, în loc să o reîncărcăm chiar înainte de deblocare.
+     * On screen-on: only if no question is prepared. An older one is shown at once instead of
+     * being reloaded right before the unlock.
+     */
+    void preloadIfMissing(String why) {
+        if (destroyed || view != null && (view.isReady(READY_MAX_MS) || view.isLoading(15000))) return;
+        preload(why, true);
     }
 
     /** Ține telefonul treaz 15 s, cât se încarcă pagina cu ecranul stins / Keeps the phone awake 15 s while loading with the screen off. */

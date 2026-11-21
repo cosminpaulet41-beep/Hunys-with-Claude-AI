@@ -6,8 +6,8 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="ro.hunys.semafor"
-    android:versionCode="8"
-    android:versionName="1.7">
+    android:versionCode="9"
+    android:versionName="1.8">
 
     <!-- Fereastra cu întrebarea încarcă scoalarutiera.ro / The question window loads scoalarutiera.ro -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -74,6 +74,11 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Opens the user's chosen study app each time the user unlocks the phone" />
         </service>
+
+        <!-- Alarma de dinaintea următoarei întrebări / The alarm before the next question -->
+        <receiver
+            android:name=".PreloadReceiver"
+            android:exported="false" />
 
         <receiver
             android:name=".BootReceiver"

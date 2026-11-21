@@ -69,6 +69,36 @@ final class Gate {
         return null;
     }
 
+    /**
+     * Ora (System.currentTimeMillis) după care apare următoarea întrebare, sau 0 dacă apare la
+     * următoarea deblocare. Doar pentru „o dată la … minute/ore”.
+     * The time after which the next question appears, or 0 if it appears on the next unlock.
+     */
+    static long nextDueAt(SharedPreferences sp) {
+        int minutes = Prefs.FREQ_MINUTES[Prefs.getFreq(sp)];
+        if (minutes <= 0) return 0;
+        long last = Prefs.getLastOpen(sp);
+        if (last <= 0) return 0;
+        long due = last + minutes * 60000L;
+        return due > System.currentTimeMillis() ? due : 0;
+    }
+
+    /**
+     * Va apărea o întrebare la următoarea deblocare (sau în cel mult 5 minute)? Doar atunci merită
+     * pregătită dinainte; altfel nu consumăm internet degeaba.
+     * Will a question appear on the next unlock (or within 5 minutes)? Only then is it worth
+     * preparing in advance; otherwise we don't waste data.
+     */
+    static boolean showsSoon(Context c) {
+        SharedPreferences sp = Prefs.get(c);
+        if (!Prefs.isActive(sp) || Prefs.isPaused(sp)) return false;
+        if (Prefs.isNightQuiet(sp) && isNight()) return false;
+        int every = Prefs.FREQ_EVERY[Prefs.getFreq(sp)];
+        if (every > 0) return Prefs.getCounter(sp) + 1 >= every;
+        long due = nextDueAt(sp);
+        return due == 0 || due - System.currentTimeMillis() <= 5L * 60L * 1000L;
+    }
+
     /** Ce se deschide: fereastra Semafor sau aplicația aleasă / What opens: the Semafor window or the chosen app. */
     static Intent launchIntent(Context c) {
         Intent launch;

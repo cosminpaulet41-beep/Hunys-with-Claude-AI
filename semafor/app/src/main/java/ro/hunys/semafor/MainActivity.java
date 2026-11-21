@@ -80,6 +80,7 @@ public class MainActivity extends Activity {
     private TextView appName;
     private TextView appHelp;
     private TextView freqValue;
+    private TextView nextText;
     private Button nightButton;
     private TextView statsText;
     private TextView lastText;
@@ -628,6 +629,9 @@ public class MainActivity extends Activity {
         freqValue = text("", 20, AMBER, true);
         freqValue.setPadding(0, dp(4), 0, 0);
         freqCard.addView(freqValue);
+        nextText = help("", GREEN, 14);
+        freqCard.addView(nextText);
+        freqCard.addView(help(txt.freqHelp(), MUTED, 12));
         Button change = button(txt.change());
         change.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -777,6 +781,9 @@ public class MainActivity extends Activity {
         }
 
         freqValue.setText(txt.freqName(Prefs.getFreq(prefs)));
+        long due = Gate.nextDueAt(prefs);
+        nextText.setText(due > 0 ? txt.nextAfter(Txt.when(this, due, txt.ro)) : txt.nextNow());
+        nextText.setVisibility(active ? View.VISIBLE : View.GONE);
         nightButton.setText(txt.nightQuiet(Prefs.isNightQuiet(prefs)));
 
         statsText.setText(txt.stats(Prefs.getToday(prefs), Prefs.getTotal(prefs)));

@@ -5,6 +5,7 @@
  */
 package ro.hunys.semafor;
 
+import android.app.AlarmManager;
 import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -169,7 +170,7 @@ public class UnlockService extends Service {
                     // Verificarea proprie trece imediat pe ritm rapid / Own check switches to the fast pace at once
                     handler.removeCallbacks(poll);
                     handler.post(poll);
-                    if (overlay != null) overlay.preload("ecran aprins / screen on", false);
+                    if (overlay != null) overlay.preloadIfMissing("ecran aprins / screen on");
                 } else if (Intent.ACTION_SCREEN_OFF.equals(a)) {
                     handler.removeCallbacks(onScreenOn);
                     handler.removeCallbacks(onUnlock);
@@ -315,6 +316,39 @@ public class UnlockService extends Service {
         return s != null && s.overlay != null && Gate.canDrawOverlays(s) && s.overlay.show();
     }
 
+    /** Aproape de ora următoarei întrebări: o pregătim / Near the next question's time: prepare it. */
+    static void preloadDue() {
+        UnlockService s = instance;
+        if (s != null && s.overlay != null) s.overlay.preload("aproape de ora întrebării / near due time", false);
+    }
+
+    /**
+     * Pentru „o dată la … ore”: o alarmă cu 3 minute înainte, ca întrebarea să fie gata când
+     * deblochezi. For "once every … hours": an alarm 3 minutes before, so the question is ready.
+     */
+    private void scheduleDueAlarm() {
+        try {
+            AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
+            Intent i = new Intent(this, PreloadReceiver.class);
+            PendingIntent pi = PendingIntent.getBroadcast(this, 11, i, piFlags());
+            SharedPreferences sp = Prefs.get(this);
+            long due = Prefs.isActive(sp) ? Gate.nextDueAt(sp) : 0;
+            if (due == 0) {
+                am.cancel(pi);
+                return;
+            }
+            long inMs = Math.max(0, due - 3L * 60L * 1000L - System.currentTimeMillis());
+            long at = SystemClock.elapsedRealtime() + inMs;
+            if (Build.VERSION.SDK_INT >= 23) {
+                am.setAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, at, pi);
+            } else {
+                am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, at, pi);
+            }
+        } catch (RuntimeException e) {
+            Jurnal.error("serviciu", "alarma / alarm", e);
+        }
+    }
+
     /** Pregătește din nou întrebarea (ex. după ce ai intrat în cont) / Prepares the question again (e.g. after signing in). */
     static void refreshPreload() {
         UnlockService s = instance;
@@ -401,6 +435,7 @@ public class UnlockService extends Service {
     }
 
     void updateNotification() {
+        scheduleDueAlarm();
         try {
             NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             nm.notify(NOTIF_ID, buildNotification());
@@ -488,6 +523,8 @@ public class UnlockService extends Service {
         String text = label.length() == 0
                 ? txt.notifNoApp()
                 : txt.notifText(label, Prefs.getFreq(sp));
+        long due = Gate.nextDueAt(sp);
+        if (due > 0 && label.length() > 0) text += txt.notifNext(Txt.when(this, due, txt.ro));
 
         Intent open = new Intent(this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         b.setSmallIcon(R.drawable.ic_notif)

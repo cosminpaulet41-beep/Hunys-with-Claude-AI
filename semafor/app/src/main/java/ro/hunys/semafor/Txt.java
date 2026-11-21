@@ -139,9 +139,34 @@ final class Txt {
             case 3: return t("Cel mult o dată la 10 minute", "At most once every 10 minutes");
             case 4: return t("Cel mult o dată la 30 de minute", "At most once every 30 minutes");
             case 5: return t("Cel mult o dată pe oră", "At most once an hour");
+            case 6: return t("O dată la 2 ore", "Once every 2 hours");
+            case 7: return t("O dată la 5 ore", "Once every 5 hours");
+            case 8: return t("O dată la 10 ore", "Once every 10 hours");
+            case 9: return t("O dată la 12 ore", "Once every 12 hours");
+            case 10: return t("O dată pe zi", "Once a day");
             default: return t("La fiecare deblocare", "Every unlock");
         }
     }
+    String freqHelp() {
+        return t("„O dată la … ore”: întrebarea apare la prima deblocare după ce a trecut timpul ales de la ultima întrebare.",
+                "\"Once every … hours\": the question appears on the first unlock after the chosen time has passed since the last question.");
+    }
+    String nextNow() { return t("Următoarea întrebare: la următoarea deblocare", "Next question: on the next unlock"); }
+    String nextAfter(String when) { return t("Următoarea întrebare: la prima deblocare după ", "Next question: on the first unlock after ") + when; }
+    /** Ora, cu „mâine” sau data dacă nu e azi / The time, with "tomorrow" or the date if not today. */
+    static String when(Context c, long ms, boolean ro) {
+        java.util.Calendar now = java.util.Calendar.getInstance();
+        java.util.Calendar at = java.util.Calendar.getInstance();
+        at.setTimeInMillis(ms);
+        String hhmm = time(c, ms);
+        int dNow = now.get(java.util.Calendar.YEAR) * 400 + now.get(java.util.Calendar.DAY_OF_YEAR);
+        int dAt = at.get(java.util.Calendar.YEAR) * 400 + at.get(java.util.Calendar.DAY_OF_YEAR);
+        if (dAt == dNow) return hhmm;
+        if (dAt == dNow + 1) return (ro ? "mâine " : "tomorrow ") + hhmm;
+        return new java.text.SimpleDateFormat("dd.MM", Locale.ROOT).format(new Date(ms)) + " " + hhmm;
+    }
+    String notifNext(String when) { return t(" · următoarea după ", " · next after ") + when; }
+
     String nightQuiet(boolean on) {
         return t("Liniște noaptea (23:00–07:00): ", "Quiet at night (23:00–07:00): ") + (on ? t("DA", "ON") : t("NU", "OFF"));
     }

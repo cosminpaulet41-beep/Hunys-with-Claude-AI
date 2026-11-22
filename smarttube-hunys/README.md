@@ -19,7 +19,12 @@ O versiune modificată a SmartTube (YouTube fără reclame pentru Android TV), f
 - **Pornește pe Acasă**, cu „Continuă vizionarea”, fără ecranul negru.
 - **Calitate:** fiecare deschidere pornește la 720p (se schimbă în Setări Hunys); nimic peste 1080p.
 - **10 teme întunecate**, fontul Inter, scris puțin mai mare, bară laterală rotunjită care se strânge în iconițe.
-- **Întunecare ecran** 0–80% (și automată noaptea), **volum egalizat**, **contor de date**, **mod ușor**, subtitrări mai vizibile.
+- **Bara laterală:** deschisă, se termină puțin după cel mai lung cuvânt, cu căutare, cont și lună sus, în rând cu iconițele; strânsă, iconițele stau mereu pe loc, iar secțiunea curentă are un cerc albastru transparent.
+- **Shorts mari** pe Acasă și în fila Shorts: cardurile ocupă tot ecranul de sub titlu; Shorts-ul selectat pornește în card după 1 secundă, cu sunet, și se reia la final (OK deschide playerul).
+- **Întunecare ecran** 0–80% (și automată noaptea) și **Fără apăsări**: după 5 min – 2 ore fără nicio apăsare (nu în timpul unui clip), ecranul se întunecă 10–100%; primul buton doar îl reaprinde.
+- **Volum stabil** (Oprit / Normal / Puternic): clipurile se aud la fel de tare, cele încete sunt ridicate, iar sunetul din clip e ținut constant.
+- **Contor de date** cu grafic pe ultimele 30 de zile (← → alegi ziua), Azi, Luna asta, Media lunară, limită și avertizare; nu mai pierde datele când proiectorul e scos din priză.
+- **Mod ușor**, subtitrări mai vizibile, iconiță nouă pentru Setări Hunys.
 - **Previzualizare pe Acasă** 60 de secunde, cu sunet; scrisul de sub clip, puțin mai gros, începe să se deruleze lin după 2,5 secunde.
 - **Titlul, canalul și data** sus în stânga în player (fără like-uri și abonați); **redare automată** cu buton (oprită implicit).
 - **Înapoi** din orice secțiune a barei laterale duce pe Acasă; doar de pe Acasă cere dublu click ca să ieși.
@@ -45,7 +50,12 @@ A modified SmartTube (ad-free YouTube for Android TV), built for an Android 14 p
 - **Opens on Home** with "Continue watching", no black screen.
 - **Quality:** every launch starts at 720p (changeable in Hunys settings); nothing above 1080p.
 - **10 dark themes**, Inter font, slightly larger text, rounded sidebar that collapses to icons.
-- **Screen dimming** 0–80% (also automatic at night), **loudness normalization**, **data counter**, **light mode**, more visible subtitles.
+- **Sidebar:** when open it ends just after the longest word, with search, account and moon at the top, lined up with the icons; when collapsed the icons always stay in place and the current section has a translucent blue circle.
+- **Big Shorts** on Home and in the Shorts tab: the cards fill the screen below the title; the selected Short starts in its card after 1 second, with sound, and starts over at the end (OK opens the player).
+- **Screen dimming** 0–80% (also automatic at night) and **No key presses**: after 5 min – 2 hours without any key press (not while a video plays), the screen dims 10–100%; the first button only brings it back.
+- **Stable volume** (Off / Normal / Strong): videos play equally loud, quiet ones are raised, and the sound inside a video is kept steady.
+- **Data counter** with a chart of the last 30 days (left/right choose the day), Today, This month, Monthly average, limit and warning; it no longer loses data when the projector is unplugged.
+- **Light mode**, more visible subtitles, new icon for Hunys settings.
 - **Home preview** for 60 seconds, with sound; the slightly bolder text under a video starts scrolling smoothly after 2.5 seconds.
 - **Title, channel and date** at the top left in the player (no likes or subscribers); **autoplay** switch (off by default).
 - **Back** from any sidebar section goes to Home; only Home asks for a double press to exit.
